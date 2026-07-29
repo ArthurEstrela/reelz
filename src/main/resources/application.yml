@@ -1,4 +1,6 @@
 spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/reelz}
     username: ${DATABASE_USERNAME:reelz}
@@ -10,3 +12,18 @@ spring:
     hibernate:
       ddl-auto: validate
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+reelz:
+  security:
+    jwt:
+      secret: ${JWT_SECRET}
+      issuer: ${JWT_ISSUER:reelz-api}
+      expiration: ${JWT_EXPIRATION:PT2H}
+  legal:
+    terms-version: ${TERMS_VERSION:1.0}
+    privacy-version: ${PRIVACY_VERSION:1.0}

@@ -4,7 +4,7 @@
 
 ```http
 POST /api/v1/roulette/spin
-X-User-Id: 2c09cc0a-0de5-41a9-96ae-7035fe8962c3
+Authorization: Bearer eyJ...
 Content-Type: application/json
 ```
 
@@ -17,7 +17,7 @@ Content-Type: application/json
 }
 ```
 
-`X-User-Id` é temporário e simula a identidade autenticada. Ele deve ser substituído pelo usuário extraído do `Principal`/token quando Spring Security for implementado.
+O usuário é obtido do `sub` do JWT validado pelo Spring Security. O header legado `X-User-Id` não é mais aceito.
 
 ## Transação
 
@@ -56,7 +56,6 @@ No banco é armazenada a quantidade usada. Por isso, “consumir/decrementar a f
 
 ## Decisões pendentes
 
-- Autenticação real e remoção do header simulado.
 - Política de retries automáticos após conflito otimista.
 - Auditoria durável de tentativas sem candidato. Como `NoMoviesFoundException` causa rollback, apenas giros bem-sucedidos são persistidos nesta etapa.
 - Definição de um limite de recompensas por anúncio por dia.

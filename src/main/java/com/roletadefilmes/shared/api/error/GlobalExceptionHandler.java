@@ -1,11 +1,14 @@
 package com.roletadefilmes.shared.api.error;
 
+import com.roletadefilmes.auth.domain.exception.InvalidCredentialsException;
 import com.roletadefilmes.roulette.domain.exception.DailyLimitExceededException;
 import com.roletadefilmes.roulette.domain.exception.DuplicateSpinException;
 import com.roletadefilmes.roulette.domain.exception.EmptyProviderSelectionException;
 import com.roletadefilmes.roulette.domain.exception.FreePlanProviderLimitException;
 import com.roletadefilmes.roulette.domain.exception.NoMoviesFoundException;
 import com.roletadefilmes.user.domain.exception.UserNotFoundException;
+import com.roletadefilmes.user.domain.exception.EmailAlreadyRegisteredException;
+import com.roletadefilmes.user.domain.exception.InvalidTimezoneException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -58,6 +61,51 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ) {
         return error(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", exception.getMessage(), request, List.of());
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiErrorResponse handleInvalidCredentials(
+            InvalidCredentialsException exception,
+            HttpServletRequest request
+    ) {
+        return error(
+                HttpStatus.UNAUTHORIZED,
+                "INVALID_CREDENTIALS",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ExceptionHandler(EmailAlreadyRegisteredException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiErrorResponse handleEmailAlreadyRegistered(
+            EmailAlreadyRegisteredException exception,
+            HttpServletRequest request
+    ) {
+        return error(
+                HttpStatus.CONFLICT,
+                "EMAIL_ALREADY_REGISTERED",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ExceptionHandler(InvalidTimezoneException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrorResponse handleInvalidTimezone(
+            InvalidTimezoneException exception,
+            HttpServletRequest request
+    ) {
+        return error(
+                HttpStatus.BAD_REQUEST,
+                "INVALID_TIMEZONE",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
     }
 
     @ExceptionHandler({EmptyProviderSelectionException.class, FreePlanProviderLimitException.class})

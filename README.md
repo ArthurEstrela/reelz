@@ -4,7 +4,7 @@ Reelz é uma roleta de filmes gamificada para reduzir o tempo de escolha do que 
 
 ## Estado atual
 
-O repositório está na terceira etapa do backend:
+O repositório está na quarta etapa do backend:
 
 - modelagem inicial do domínio e do PostgreSQL;
 - DTOs de cadastro de usuário;
@@ -17,7 +17,11 @@ O repositório está na terceira etapa do backend:
 - testes de integração com PostgreSQL Testcontainers;
 - serviço transacional do motor da roleta;
 - endpoint REST para executar giros;
-- erros de negócio padronizados e testes unitários com Mockito.
+- erros de negócio padronizados e testes unitários com Mockito;
+- autenticação stateless com Spring Security e JWT;
+- cadastro com BCrypt e registro de aceites legais;
+- rotas públicas/protegidas e principal tipado na roleta;
+- testes MVC da cadeia de segurança.
 
 O frontend ainda não foi iniciado.
 
@@ -29,6 +33,8 @@ O frontend ainda não foi iniciado.
 - PostgreSQL 16
 - Flyway
 - Testcontainers
+- Spring Security
+- JJWT
 
 ## Executar os testes
 
@@ -38,8 +44,11 @@ mvn test
 
 Os testes de persistência precisam do Docker em execução. Para iniciar a aplicação, configure `DATABASE_URL`, `DATABASE_USERNAME` e `DATABASE_PASSWORD`; os valores padrão apontam para um PostgreSQL local chamado `reelz`.
 
+Também é obrigatório configurar `JWT_SECRET` com uma chave aleatória de pelo menos 256 bits em Base64. Não existe segredo padrão no código.
+
 ## Documentação
 
 - [Modelagem inicial](docs/01-modelagem-inicial.md)
 - [Camada de persistência](docs/02-persistencia.md)
 - [Serviço e API da roleta](docs/03-servico-api.md)
+- [Spring Security e JWT](docs/04-seguranca-jwt.md)
