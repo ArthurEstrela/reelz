@@ -83,6 +83,10 @@ public class RouletteDailyUsageEntity extends AuditableUuidEntity {
         return version;
     }
 
+    public int getRewardedSpinsRemaining() {
+        return rewardedSpinsGranted - rewardedSpinsUsed;
+    }
+
     public void consumeBaseSpin() {
         baseSpinsUsed++;
     }

@@ -112,6 +112,11 @@ public class UserAccountEntity extends AuditableUuidEntity {
         return version;
     }
 
+    public boolean isPremiumAt(Instant instant) {
+        return plan == PlanType.PREMIUM
+                && (premiumUntil == null || premiumUntil.isAfter(instant));
+    }
+
     public void markEmailVerified(Instant verifiedAt) {
         this.emailVerifiedAt = verifiedAt;
     }

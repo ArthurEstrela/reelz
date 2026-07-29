@@ -4,17 +4,20 @@ Reelz é uma roleta de filmes gamificada para reduzir o tempo de escolha do que 
 
 ## Estado atual
 
-O repositório está na segunda etapa do backend:
+O repositório está na terceira etapa do backend:
 
 - modelagem inicial do domínio e do PostgreSQL;
 - DTOs de cadastro de usuário;
 - DTOs de histórico e watchlist;
 - validações de entrada;
-- testes unitários dos contratos.
+- testes unitários dos contratos;
 - schema PostgreSQL versionado com Flyway;
 - entidades e repositories Spring Data JPA;
 - query aleatória do motor da roleta;
-- testes de integração com PostgreSQL Testcontainers.
+- testes de integração com PostgreSQL Testcontainers;
+- serviço transacional do motor da roleta;
+- endpoint REST para executar giros;
+- erros de negócio padronizados e testes unitários com Mockito.
 
 O frontend ainda não foi iniciado.
 
@@ -39,3 +42,4 @@ Os testes de persistência precisam do Docker em execução. Para iniciar a apli
 
 - [Modelagem inicial](docs/01-modelagem-inicial.md)
 - [Camada de persistência](docs/02-persistencia.md)
+- [Serviço e API da roleta](docs/03-servico-api.md)

@@ -231,6 +231,30 @@ class PersistenceIntegrationTest extends PostgresRepositoryIntegrationTest {
         )).isInstanceOf(ObjectOptimisticLockingFailureException.class);
     }
 
+    @Test
+    void shouldCreateOnlyOneDailyUsageForTheSameUserAndDate() {
+        var user = userRepository.saveAndFlush(newUser("daily-usage@reelz.app"));
+        var usageDate = LocalDate.of(2026, 7, 29);
+
+        var firstInsert = dailyUsageRepository.createIfAbsent(
+                UUID.randomUUID(),
+                user.getId(),
+                usageDate,
+                user.getTimezone()
+        );
+        var duplicateInsert = dailyUsageRepository.createIfAbsent(
+                UUID.randomUUID(),
+                user.getId(),
+                usageDate,
+                user.getTimezone()
+        );
+
+        assertThat(firstInsert).isOne();
+        assertThat(duplicateInsert).isZero();
+        assertThat(dailyUsageRepository.findByUserIdAndUsageDate(user.getId(), usageDate))
+                .isPresent();
+    }
+
     private UserAccountEntity newUser(String email) {
         return new UserAccountEntity(
                 email,
