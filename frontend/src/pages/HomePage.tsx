@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
 import { ReelzLogo } from '../components/brand/ReelzLogo'
@@ -6,29 +6,29 @@ import { FilterPills, type PillOption } from '../components/roulette/FilterPills
 import { MovieCard } from '../components/roulette/MovieCard'
 import { SlotMachine } from '../components/roulette/SlotMachine'
 import { SpinLimitModal } from '../components/roulette/SpinLimitModal'
-import {
-  GENRE_OPTIONS,
-  STREAMING_PROVIDER_OPTIONS,
-  VIBE_OPTIONS,
-} from '../config/rouletteFilters'
+import { GENRE_OPTIONS } from '../config/rouletteFilters'
 import { useAuth } from '../hooks/useAuth'
-import { spinRoulette } from '../services/rouletteService'
+import { getProviders, getVibes } from '../services/catalogService'
+import { markMovieAsWatched } from '../services/historyService'
+import { getTodayUsage, spinRoulette } from '../services/rouletteService'
+import type { CatalogItem } from '../types/catalog'
 import type { RouletteMovie, SpinQuota } from '../types/roulette'
 import { getApiErrorMessage } from '../utils/apiError'
 
 type RouletteState = 'idle' | 'spinning' | 'result' | 'empty'
+type CatalogState = 'loading' | 'ready' | 'error'
 
 interface HomePageProps {
-  providerOptions?: PillOption<string>[]
-  vibeOptions?: PillOption<string>[]
   minimumSpinDuration?: number
 }
 
-const INITIAL_QUOTA: SpinQuota = {
-  unlimited: false,
-  dailyLimit: 5,
-  remainingDailySpins: 5,
-  remainingRewardedSpins: 0,
+interface ToastMessage {
+  id: number
+  message: string
+}
+
+function toPillOptions(items: CatalogItem[]): PillOption<string>[] {
+  return items.map((item) => ({ value: item.id, label: item.name }))
 }
 
 async function waitForMinimumDuration(startedAt: number, minimumDuration: number) {
@@ -36,35 +36,97 @@ async function waitForMinimumDuration(startedAt: number, minimumDuration: number
   if (remaining > 0) await new Promise((resolve) => window.setTimeout(resolve, remaining))
 }
 
-export function HomePage({
-  providerOptions = STREAMING_PROVIDER_OPTIONS,
-  vibeOptions = VIBE_OPTIONS,
-  minimumSpinDuration = 850,
-}: HomePageProps) {
+export function HomePage({ minimumSpinDuration = 850 }: HomePageProps) {
   const { user, logout } = useAuth()
-  const firstProvider = providerOptions.find((option) => !option.disabled)?.value
-  const [selectedProviders, setSelectedProviders] = useState<string[]>(firstProvider ? [firstProvider] : [])
+  const quotaRequestSequence = useRef(0)
+  const [providerOptions, setProviderOptions] = useState<PillOption<string>[]>([])
+  const [vibeOptions, setVibeOptions] = useState<PillOption<string>[]>([])
+  const [catalogState, setCatalogState] = useState<CatalogState>('loading')
+  const [catalogReloadKey, setCatalogReloadKey] = useState(0)
+  const [selectedProviders, setSelectedProviders] = useState<string[]>([])
   const [selectedGenre, setSelectedGenre] = useState<number | null>(null)
   const [selectedVibe, setSelectedVibe] = useState<string | null>(null)
   const [rouletteState, setRouletteState] = useState<RouletteState>('idle')
   const [movie, setMovie] = useState<RouletteMovie | null>(null)
-  const [quota, setQuota] = useState<SpinQuota>(INITIAL_QUOTA)
+  const [quota, setQuota] = useState<SpinQuota | null>(null)
+  const [quotaSyncFailed, setQuotaSyncFailed] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [failureKey, setFailureKey] = useState(0)
   const [showLimitModal, setShowLimitModal] = useState(false)
+  const [toast, setToast] = useState<ToastMessage | null>(null)
+
+  const synchronizeQuota = useCallback(async () => {
+    const requestSequence = ++quotaRequestSequence.current
+    try {
+      const currentQuota = await getTodayUsage()
+      if (requestSequence !== quotaRequestSequence.current) return
+      setQuota(currentQuota)
+      setQuotaSyncFailed(false)
+    } catch {
+      if (requestSequence === quotaRequestSequence.current) setQuotaSyncFailed(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    Promise.all([getProviders(), getVibes()])
+      .then(([providers, vibes]) => {
+        if (cancelled) return
+        const nextProviderOptions = toPillOptions(providers)
+        const nextVibeOptions = toPillOptions(vibes)
+        const validProviderIds = new Set(providers.map((provider) => provider.id))
+        const validVibeIds = new Set(vibes.map((vibe) => vibe.id))
+
+        setProviderOptions(nextProviderOptions)
+        setVibeOptions(nextVibeOptions)
+        setSelectedProviders((current) => {
+          const validSelection = current.filter((providerId) => validProviderIds.has(providerId))
+          if (validSelection.length > 0) return validSelection
+          return providers[0] ? [providers[0].id] : []
+        })
+        setSelectedVibe((current) => current && validVibeIds.has(current) ? current : null)
+        setCatalogState('ready')
+      })
+      .catch(() => {
+        if (!cancelled) setCatalogState('error')
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [catalogReloadKey])
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => void synchronizeQuota(), 0)
+    return () => window.clearTimeout(timeout)
+  }, [synchronizeQuota])
+
+  useEffect(() => {
+    if (!toast) return
+    const timeout = window.setTimeout(() => setToast(null), 4_500)
+    return () => window.clearTimeout(timeout)
+  }, [toast])
 
   const remainingSpins = useMemo(() => {
+    if (!quota) return quotaSyncFailed ? '?' : '…'
     if (quota.unlimited) return '∞'
     return String(Math.max(0, (quota.remainingDailySpins ?? 0) + quota.remainingRewardedSpins))
-  }, [quota])
+  }, [quota, quotaSyncFailed])
 
-  const hasConfiguredProviders = providerOptions.some((option) => !option.disabled)
+  const quotaAriaLabel = quota
+    ? `${remainingSpins} giros restantes hoje`
+    : quotaSyncFailed
+      ? 'Não foi possível sincronizar os giros restantes hoje'
+      : 'Carregando giros restantes hoje'
   const isSpinning = rouletteState === 'spinning'
+  const catalogLoading = catalogState === 'loading'
+  const hasProviders = providerOptions.length > 0
 
   function toggleProvider(providerId: string) {
     setSelectedProviders((current) => {
       if (current.includes(providerId)) return current.filter((id) => id !== providerId)
-      return quota.unlimited ? [...current, providerId] : [providerId]
+      return quota?.unlimited ? [...current, providerId] : [providerId]
     })
   }
 
@@ -76,17 +138,14 @@ export function HomePage({
     setSelectedVibe((current) => (current === vibeId ? null : vibeId))
   }
 
-  async function handleSpin() {
-    if (isSpinning) return
+  function showSpinFailure(nextMessage: string) {
+    setMessage(nextMessage)
+    setMovie(null)
+    setRouletteState('empty')
+    setFailureKey((current) => current + 1)
+  }
 
-    if (selectedProviders.length === 0) {
-      setMessage('Escolha pelo menos um streaming antes de girar. A roleta também tem seus limites!')
-      setMovie(null)
-      setRouletteState('empty')
-      setFailureKey((current) => current + 1)
-      return
-    }
-
+  async function executeSpin() {
     const startedAt = performance.now()
     setMessage(null)
     setMovie(null)
@@ -99,32 +158,70 @@ export function HomePage({
         genreId: selectedGenre,
         vibeId: selectedVibe,
       })
+      setQuota(response.quota)
+      void synchronizeQuota()
       await waitForMinimumDuration(startedAt, minimumSpinDuration)
       setMovie(response.movie)
-      setQuota(response.quota)
       setRouletteState('result')
     } catch (error) {
       await waitForMinimumDuration(startedAt, minimumSpinDuration)
       const status = axios.isAxiosError(error) ? error.response?.status : undefined
 
       if (status === 404) {
-        setMessage('A roleta procurou até debaixo do sofá e não achou nada. Que tal mudar os filtros?')
-        setRouletteState('empty')
-        setFailureKey((current) => current + 1)
+        showSpinFailure('A roleta procurou até debaixo do sofá e não achou nada. Que tal mudar os filtros?')
         return
       }
 
       if (status === 429 || status === 403) {
-        setQuota((current) => ({ ...current, remainingDailySpins: 0, remainingRewardedSpins: 0 }))
+        setQuota((current) => ({
+          unlimited: current?.unlimited ?? false,
+          dailyLimit: current?.dailyLimit ?? 5,
+          remainingDailySpins: 0,
+          remainingRewardedSpins: 0,
+        }))
         setRouletteState('idle')
         setShowLimitModal(true)
         return
       }
 
-      setMessage(getApiErrorMessage(error, 'A projeção falhou por um instante. Tente girar novamente.'))
-      setRouletteState('empty')
-      setFailureKey((current) => current + 1)
+      showSpinFailure(getApiErrorMessage(error, 'A projeção falhou por um instante. Tente girar novamente.'))
     }
+  }
+
+  function handleSpin() {
+    if (isSpinning) return
+    if (selectedProviders.length === 0) {
+      showSpinFailure('Escolha pelo menos um streaming antes de girar. A roleta também tem seus limites!')
+      return
+    }
+    void executeSpin()
+  }
+
+  function retryCatalog() {
+    setCatalogState('loading')
+    setCatalogReloadKey((key) => key + 1)
+  }
+
+  function handleWatchedAndSpinAgain() {
+    if (!movie || isSpinning) return
+    const watchedMovie = movie
+
+    setMessage(null)
+    setMovie(null)
+    setRouletteState('spinning')
+
+    const historyRequest = markMovieAsWatched(watchedMovie.tmdbId)
+    void historyRequest.catch((error: unknown) => {
+      setToast({
+        id: Date.now(),
+        message: getApiErrorMessage(
+          error,
+          `Não conseguimos marcar “${watchedMovie.title}” como visto. Tente novamente depois.`,
+        ),
+      })
+    })
+
+    void executeSpin()
   }
 
   return (
@@ -135,9 +232,12 @@ export function HomePage({
         <header className="relative mx-auto flex max-w-5xl items-center justify-between gap-3">
           <ReelzLogo />
           <div className="flex items-center gap-2">
-            <div className="rounded-full border border-white/10 bg-white/[0.045] px-3 py-2 text-right">
+            <div
+              className="rounded-full border border-white/10 bg-white/[0.045] px-3 py-2 text-right"
+              title={quotaSyncFailed ? 'Não foi possível atualizar a franquia.' : undefined}
+            >
               <span className="block text-[9px] font-extrabold uppercase tracking-[0.14em] text-white/35">Giros hoje</span>
-              <span className="block text-sm font-black leading-none text-white" aria-label={`${remainingSpins} giros restantes hoje`}>
+              <span className="block text-sm font-black leading-none text-white" aria-label={quotaAriaLabel}>
                 {remainingSpins}
               </span>
             </div>
@@ -185,7 +285,12 @@ export function HomePage({
               {rouletteState === 'spinning' ? <SlotMachine key="spinning" /> : null}
 
               {rouletteState === 'result' && movie ? (
-                <MovieCard key={movie.id} movie={movie} onSpinAgain={handleSpin} spinning={isSpinning} />
+                <MovieCard
+                  key={movie.id}
+                  movie={movie}
+                  onWatchedAndSpinAgain={handleWatchedAndSpinAgain}
+                  spinning={isSpinning}
+                />
               ) : null}
 
               {rouletteState === 'empty' ? (
@@ -209,46 +314,73 @@ export function HomePage({
             <motion.button
               type="button"
               onClick={handleSpin}
-              disabled={isSpinning || !hasConfiguredProviders}
+              disabled={isSpinning || catalogLoading || !hasProviders}
               whileTap={{ scale: 0.95 }}
               whileHover={isSpinning ? undefined : { scale: 1.015 }}
               transition={{ type: 'spring', stiffness: 380, damping: 22 }}
               className="mx-auto w-full max-w-md rounded-[1.4rem] bg-reel px-7 py-5 text-lg font-black text-white shadow-[0_18px_55px_rgba(255,60,72,.3)] transition-colors hover:bg-reel-bright disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/30 disabled:shadow-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-reel"
             >
-              {isSpinning ? 'Girando…' : 'Girar Roleta'}
+              {isSpinning ? 'Girando…' : catalogLoading ? 'Carregando catálogo…' : 'Girar Roleta'}
             </motion.button>
           ) : null}
 
-          {!hasConfiguredProviders ? (
+          {catalogState === 'error' ? (
+            <div className="mx-auto mt-3 flex max-w-md items-center gap-2 text-center text-xs text-amber-200/70" role="alert">
+              <span>Não foi possível carregar os filtros.</span>
+              <button type="button" onClick={retryCatalog} className="font-black underline underline-offset-2">
+                Tentar novamente
+              </button>
+            </div>
+          ) : null}
+
+          {catalogState === 'ready' && !hasProviders ? (
             <p className="mx-auto mt-3 max-w-md text-center text-xs leading-5 text-amber-200/65">
-              Configure <code>VITE_STREAMING_PROVIDERS</code> com os UUIDs do backend para liberar a roleta.
+              Nenhum streaming está ativo no catálogo no momento.
             </p>
           ) : null}
 
           <section className="mt-9 space-y-6 rounded-[1.75rem] border border-white/8 bg-white/[0.025] p-4 sm:p-6" aria-label="Filtros rápidos">
             <FilterPills
-              legend={quota.unlimited ? 'Onde assistir · escolha vários' : 'Onde assistir · 1 por vez'}
+              legend={quota?.unlimited ? 'Onde assistir · escolha vários' : 'Onde assistir · 1 por vez'}
               options={providerOptions}
               selectedValues={selectedProviders}
               onToggle={toggleProvider}
+              loading={catalogLoading}
+              disabled={isSpinning}
             />
             <FilterPills
               legend="Gênero · opcional"
               options={GENRE_OPTIONS}
               selectedValues={selectedGenre === null ? [] : [selectedGenre]}
               onToggle={toggleGenre}
+              disabled={isSpinning}
             />
             <FilterPills
               legend="Vibe · opcional"
               options={vibeOptions}
               selectedValues={selectedVibe === null ? [] : [selectedVibe]}
               onToggle={toggleVibe}
+              loading={catalogLoading}
+              disabled={isSpinning}
             />
           </section>
         </div>
 
         <AnimatePresence>
           {showLimitModal ? <SpinLimitModal key="limit-modal" onClose={() => setShowLimitModal(false)} /> : null}
+          {toast ? (
+            <motion.div
+              key={toast.id}
+              role="alert"
+              initial={{ opacity: 0, y: 28, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 18, scale: 0.94 }}
+              transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+              className="fixed inset-x-4 bottom-5 z-50 mx-auto max-w-md rounded-2xl border border-red-300/15 bg-[#241114]/95 px-4 py-3 text-sm font-bold text-red-100 shadow-2xl backdrop-blur"
+            >
+              {toast.message}
+            </motion.div>
+          ) : null}
         </AnimatePresence>
       </main>
     </MotionConfig>

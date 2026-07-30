@@ -12,6 +12,8 @@ interface FilterPillsProps<T extends string | number> {
   options: PillOption<T>[]
   selectedValues: readonly T[]
   onToggle: (value: T) => void
+  loading?: boolean
+  disabled?: boolean
 }
 
 export function FilterPills<T extends string | number>({
@@ -19,6 +21,8 @@ export function FilterPills<T extends string | number>({
   options,
   selectedValues,
   onToggle,
+  loading = false,
+  disabled = false,
 }: FilterPillsProps<T>) {
   return (
     <fieldset className="min-w-0">
@@ -27,7 +31,27 @@ export function FilterPills<T extends string | number>({
       </legend>
 
       <div className="scrollbar-hidden flex snap-x gap-2 overflow-x-auto px-1 pb-2">
-        {options.map((option) => {
+        {loading ? (
+          <div className="flex gap-2" role="status" aria-label={`Carregando ${legend.toLowerCase()}`}>
+            <span className="sr-only">Carregando filtros…</span>
+            {[5.5, 7, 6, 8].map((width, index) => (
+              <motion.span
+                key={width}
+                animate={{ opacity: [0.25, 0.55, 0.25] }}
+                transition={{ duration: 1.1, delay: index * 0.08, repeat: Infinity }}
+                className="h-10 shrink-0 rounded-full bg-white/10"
+                style={{ width: `${width}rem` }}
+                aria-hidden="true"
+              />
+            ))}
+          </div>
+        ) : null}
+
+        {!loading && options.length === 0 ? (
+          <p className="px-1 py-2 text-sm text-white/35">Nenhuma opção disponível.</p>
+        ) : null}
+
+        {!loading ? options.map((option) => {
           const selected = selectedValues.includes(option.value)
 
           return (
@@ -35,11 +59,11 @@ export function FilterPills<T extends string | number>({
               layout
               key={option.value}
               type="button"
-              disabled={option.disabled}
+              disabled={disabled || option.disabled}
               aria-pressed={selected}
               title={option.disabled ? 'Configure este filtro no ambiente para habilitá-lo.' : undefined}
               onClick={() => onToggle(option.value)}
-              whileTap={option.disabled ? undefined : { scale: 0.94 }}
+              whileTap={disabled || option.disabled ? undefined : { scale: 0.94 }}
               animate={selected ? { scale: 1.03, y: -1 } : { scale: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 420, damping: 28 }}
               className={`shrink-0 snap-start rounded-full border px-4 py-2.5 text-sm font-bold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-reel focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:cursor-not-allowed disabled:opacity-35 ${
@@ -52,7 +76,7 @@ export function FilterPills<T extends string | number>({
               {option.label}
             </motion.button>
           )
-        })}
+        }) : null}
       </div>
     </fieldset>
   )

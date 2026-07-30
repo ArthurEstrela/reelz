@@ -7,16 +7,23 @@ const TMDB_LOGO_BASE_URL = 'https://image.tmdb.org/t/p/original'
 
 interface MovieCardProps {
   movie: RouletteMovie
-  onSpinAgain: () => void
+  onWatchedAndSpinAgain: () => void
   spinning?: boolean
 }
 
-export function MovieCard({ movie, onSpinAgain, spinning = false }: MovieCardProps) {
+export function MovieCard({ movie, onWatchedAndSpinAgain, spinning = false }: MovieCardProps) {
   const [imageFailed, setImageFailed] = useState(false)
+  const [markingWatched, setMarkingWatched] = useState(false)
   const offer = movie.streamingAvailability[0]
   const posterUrl = movie.posterPath && !imageFailed ? `${TMDB_IMAGE_BASE_URL}${movie.posterPath}` : null
   const releaseYear = movie.releaseDate?.slice(0, 4)
   const formattedRating = movie.tmdbRating === null ? null : Number(movie.tmdbRating).toFixed(1)
+
+  function handleWatchedClick() {
+    if (markingWatched || spinning) return
+    setMarkingWatched(true)
+    onWatchedAndSpinAgain()
+  }
 
   return (
     <motion.article
@@ -84,12 +91,12 @@ export function MovieCard({ movie, onSpinAgain, spinning = false }: MovieCardPro
 
         <motion.button
           type="button"
-          onClick={onSpinAgain}
-          disabled={spinning}
+          onClick={handleWatchedClick}
+          disabled={spinning || markingWatched}
           whileTap={{ scale: 0.96 }}
           className="mt-3 w-full rounded-2xl border border-white/10 px-5 py-3.5 text-sm font-bold text-white/60 transition hover:border-white/20 hover:bg-white/[0.04] hover:text-white disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reel"
         >
-          Já vi / Girar de novo
+          {markingWatched ? 'Marcando como visto…' : 'Já vi / Girar de novo'}
         </motion.button>
       </div>
     </motion.article>
