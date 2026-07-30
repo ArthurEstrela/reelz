@@ -32,13 +32,13 @@ describe('AppRoutes', () => {
   it('renders the private home for an authenticated user', () => {
     renderRoutes(true)
 
-    expect(screen.getByRole('heading', { name: 'Roleta em breve' })).toBeInTheDocument()
-    expect(screen.getByText('person@reelz.app')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'A um giro de distância' })).toBeInTheDocument()
+    expect(screen.getByTitle('Sair de person@reelz.app')).toBeInTheDocument()
   })
 
   it('keeps authenticated users out of the login page', () => {
     renderRoutes(true, '/login')
 
-    expect(screen.getByRole('heading', { name: 'Roleta em breve' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'A um giro de distância' })).toBeInTheDocument()
   })
 })

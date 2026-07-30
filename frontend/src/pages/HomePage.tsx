@@ -1,48 +1,256 @@
+import { useMemo, useState } from 'react'
+import axios from 'axios'
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
 import { ReelzLogo } from '../components/brand/ReelzLogo'
+import { FilterPills, type PillOption } from '../components/roulette/FilterPills'
+import { MovieCard } from '../components/roulette/MovieCard'
+import { SlotMachine } from '../components/roulette/SlotMachine'
+import { SpinLimitModal } from '../components/roulette/SpinLimitModal'
+import {
+  GENRE_OPTIONS,
+  STREAMING_PROVIDER_OPTIONS,
+  VIBE_OPTIONS,
+} from '../config/rouletteFilters'
 import { useAuth } from '../hooks/useAuth'
+import { spinRoulette } from '../services/rouletteService'
+import type { RouletteMovie, SpinQuota } from '../types/roulette'
+import { getApiErrorMessage } from '../utils/apiError'
 
-export function HomePage() {
+type RouletteState = 'idle' | 'spinning' | 'result' | 'empty'
+
+interface HomePageProps {
+  providerOptions?: PillOption<string>[]
+  vibeOptions?: PillOption<string>[]
+  minimumSpinDuration?: number
+}
+
+const INITIAL_QUOTA: SpinQuota = {
+  unlimited: false,
+  dailyLimit: 5,
+  remainingDailySpins: 5,
+  remainingRewardedSpins: 0,
+}
+
+async function waitForMinimumDuration(startedAt: number, minimumDuration: number) {
+  const remaining = Math.max(0, minimumDuration - (performance.now() - startedAt))
+  if (remaining > 0) await new Promise((resolve) => window.setTimeout(resolve, remaining))
+}
+
+export function HomePage({
+  providerOptions = STREAMING_PROVIDER_OPTIONS,
+  vibeOptions = VIBE_OPTIONS,
+  minimumSpinDuration = 850,
+}: HomePageProps) {
   const { user, logout } = useAuth()
+  const firstProvider = providerOptions.find((option) => !option.disabled)?.value
+  const [selectedProviders, setSelectedProviders] = useState<string[]>(firstProvider ? [firstProvider] : [])
+  const [selectedGenre, setSelectedGenre] = useState<number | null>(null)
+  const [selectedVibe, setSelectedVibe] = useState<string | null>(null)
+  const [rouletteState, setRouletteState] = useState<RouletteState>('idle')
+  const [movie, setMovie] = useState<RouletteMovie | null>(null)
+  const [quota, setQuota] = useState<SpinQuota>(INITIAL_QUOTA)
+  const [message, setMessage] = useState<string | null>(null)
+  const [failureKey, setFailureKey] = useState(0)
+  const [showLimitModal, setShowLimitModal] = useState(false)
+
+  const remainingSpins = useMemo(() => {
+    if (quota.unlimited) return '∞'
+    return String(Math.max(0, (quota.remainingDailySpins ?? 0) + quota.remainingRewardedSpins))
+  }, [quota])
+
+  const hasConfiguredProviders = providerOptions.some((option) => !option.disabled)
+  const isSpinning = rouletteState === 'spinning'
+
+  function toggleProvider(providerId: string) {
+    setSelectedProviders((current) => {
+      if (current.includes(providerId)) return current.filter((id) => id !== providerId)
+      return quota.unlimited ? [...current, providerId] : [providerId]
+    })
+  }
+
+  function toggleGenre(genreId: number) {
+    setSelectedGenre((current) => (current === genreId ? null : genreId))
+  }
+
+  function toggleVibe(vibeId: string) {
+    setSelectedVibe((current) => (current === vibeId ? null : vibeId))
+  }
+
+  async function handleSpin() {
+    if (isSpinning) return
+
+    if (selectedProviders.length === 0) {
+      setMessage('Escolha pelo menos um streaming antes de girar. A roleta também tem seus limites!')
+      setMovie(null)
+      setRouletteState('empty')
+      setFailureKey((current) => current + 1)
+      return
+    }
+
+    const startedAt = performance.now()
+    setMessage(null)
+    setMovie(null)
+    setRouletteState('spinning')
+
+    try {
+      const response = await spinRoulette({
+        idempotencyKey: crypto.randomUUID(),
+        providerIds: selectedProviders,
+        genreId: selectedGenre,
+        vibeId: selectedVibe,
+      })
+      await waitForMinimumDuration(startedAt, minimumSpinDuration)
+      setMovie(response.movie)
+      setQuota(response.quota)
+      setRouletteState('result')
+    } catch (error) {
+      await waitForMinimumDuration(startedAt, minimumSpinDuration)
+      const status = axios.isAxiosError(error) ? error.response?.status : undefined
+
+      if (status === 404) {
+        setMessage('A roleta procurou até debaixo do sofá e não achou nada. Que tal mudar os filtros?')
+        setRouletteState('empty')
+        setFailureKey((current) => current + 1)
+        return
+      }
+
+      if (status === 429 || status === 403) {
+        setQuota((current) => ({ ...current, remainingDailySpins: 0, remainingRewardedSpins: 0 }))
+        setRouletteState('idle')
+        setShowLimitModal(true)
+        return
+      }
+
+      setMessage(getApiErrorMessage(error, 'A projeção falhou por um instante. Tente girar novamente.'))
+      setRouletteState('empty')
+      setFailureKey((current) => current + 1)
+    }
+  }
 
   return (
-    <main className="relative min-h-svh overflow-hidden bg-canvas px-5 py-6 text-white sm:px-8">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_36%,rgba(255,60,72,.14),transparent_26%)]" />
+    <MotionConfig reducedMotion="user">
+      <main className="relative min-h-svh overflow-hidden bg-canvas px-4 py-5 text-white sm:px-8 sm:py-6">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,rgba(255,60,72,.16),transparent_30%)]" />
 
-      <header className="relative mx-auto flex max-w-6xl items-center justify-between">
-        <ReelzLogo />
-        <div className="flex items-center gap-3">
-          <span className="hidden max-w-52 truncate text-xs text-white/35 sm:block">{user?.email}</span>
-          <button
-            type="button"
-            onClick={logout}
-            className="rounded-lg border border-white/10 px-3 py-2 text-xs font-bold text-white/60 transition hover:border-white/20 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reel"
-          >
-            Sair
-          </button>
+        <header className="relative mx-auto flex max-w-5xl items-center justify-between gap-3">
+          <ReelzLogo />
+          <div className="flex items-center gap-2">
+            <div className="rounded-full border border-white/10 bg-white/[0.045] px-3 py-2 text-right">
+              <span className="block text-[9px] font-extrabold uppercase tracking-[0.14em] text-white/35">Giros hoje</span>
+              <span className="block text-sm font-black leading-none text-white" aria-label={`${remainingSpins} giros restantes hoje`}>
+                {remainingSpins}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={logout}
+              title={user?.email ? `Sair de ${user.email}` : 'Sair'}
+              className="rounded-xl border border-white/10 px-3 py-2.5 text-xs font-bold text-white/50 transition hover:border-white/20 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reel"
+            >
+              Sair
+            </button>
+          </div>
+        </header>
+
+        <div className="relative mx-auto flex w-full max-w-3xl flex-col pb-12 pt-8 sm:pt-12">
+          <section className="flex min-h-[22rem] items-center justify-center text-center sm:min-h-[27rem]" aria-label="Roleta de filmes">
+            <AnimatePresence mode="wait">
+              {rouletteState === 'idle' ? (
+                <motion.div
+                  key="idle"
+                  initial={{ opacity: 0, scale: 0.7, y: 35 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.75, rotate: 8 }}
+                  transition={{ type: 'spring', bounce: 0.44, duration: 0.72 }}
+                  className="flex flex-col items-center"
+                >
+                  <motion.div
+                    animate={{ y: [0, -8, 0], rotate: [0, -2, 2, 0] }}
+                    transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
+                    className="relative grid size-40 place-items-center sm:size-48"
+                    aria-hidden="true"
+                  >
+                    <div className="absolute inset-0 rounded-full border border-dashed border-white/15" />
+                    <div className="absolute inset-5 rounded-full border border-white/10 bg-white/[0.025] shadow-[0_25px_90px_rgba(255,60,72,.22)]" />
+                    <div className="absolute inset-10 rounded-full bg-gradient-to-br from-reel-bright to-red-800" />
+                    <svg viewBox="0 0 24 24" className="relative ml-1 size-10 text-white">
+                      <path fill="currentColor" d="M8 6.7c0-1.2 1.3-1.9 2.3-1.3l7 4.1a1.7 1.7 0 0 1 0 2.9l-7 4.2A1.5 1.5 0 0 1 8 15.3V6.7Z" />
+                    </svg>
+                  </motion.div>
+                  <p className="mt-7 text-xs font-black uppercase tracking-[0.24em] text-reel">Sua próxima sessão</p>
+                  <h1 className="mt-2 text-4xl font-black tracking-[-0.055em] sm:text-5xl">A um giro de distância</h1>
+                </motion.div>
+              ) : null}
+
+              {rouletteState === 'spinning' ? <SlotMachine key="spinning" /> : null}
+
+              {rouletteState === 'result' && movie ? (
+                <MovieCard key={movie.id} movie={movie} onSpinAgain={handleSpin} spinning={isSpinning} />
+              ) : null}
+
+              {rouletteState === 'empty' ? (
+                <motion.div
+                  key={`empty-${failureKey}`}
+                  initial={{ opacity: 0, scale: 0.88 }}
+                  animate={{ opacity: 1, scale: 1, x: [0, -15, 13, -10, 7, 0] }}
+                  exit={{ opacity: 0, scale: 0.85 }}
+                  transition={{ type: 'spring', stiffness: 430, damping: 20 }}
+                  className="max-w-sm rounded-[2rem] border border-amber-300/15 bg-amber-300/[0.06] p-7"
+                  role="alert"
+                >
+                  <span className="text-4xl" aria-hidden="true">🫨</span>
+                  <p className="mt-4 text-base font-bold leading-7 text-white/75">{message}</p>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+          </section>
+
+          {rouletteState !== 'result' ? (
+            <motion.button
+              type="button"
+              onClick={handleSpin}
+              disabled={isSpinning || !hasConfiguredProviders}
+              whileTap={{ scale: 0.95 }}
+              whileHover={isSpinning ? undefined : { scale: 1.015 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 22 }}
+              className="mx-auto w-full max-w-md rounded-[1.4rem] bg-reel px-7 py-5 text-lg font-black text-white shadow-[0_18px_55px_rgba(255,60,72,.3)] transition-colors hover:bg-reel-bright disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/30 disabled:shadow-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-reel"
+            >
+              {isSpinning ? 'Girando…' : 'Girar Roleta'}
+            </motion.button>
+          ) : null}
+
+          {!hasConfiguredProviders ? (
+            <p className="mx-auto mt-3 max-w-md text-center text-xs leading-5 text-amber-200/65">
+              Configure <code>VITE_STREAMING_PROVIDERS</code> com os UUIDs do backend para liberar a roleta.
+            </p>
+          ) : null}
+
+          <section className="mt-9 space-y-6 rounded-[1.75rem] border border-white/8 bg-white/[0.025] p-4 sm:p-6" aria-label="Filtros rápidos">
+            <FilterPills
+              legend={quota.unlimited ? 'Onde assistir · escolha vários' : 'Onde assistir · 1 por vez'}
+              options={providerOptions}
+              selectedValues={selectedProviders}
+              onToggle={toggleProvider}
+            />
+            <FilterPills
+              legend="Gênero · opcional"
+              options={GENRE_OPTIONS}
+              selectedValues={selectedGenre === null ? [] : [selectedGenre]}
+              onToggle={toggleGenre}
+            />
+            <FilterPills
+              legend="Vibe · opcional"
+              options={vibeOptions}
+              selectedValues={selectedVibe === null ? [] : [selectedVibe]}
+              onToggle={toggleVibe}
+            />
+          </section>
         </div>
-      </header>
 
-      <section className="relative mx-auto flex min-h-[calc(100svh-92px)] max-w-3xl flex-col items-center justify-center pb-16 text-center">
-        <div className="relative mb-10 grid size-44 place-items-center sm:size-52" aria-hidden="true">
-          <div className="absolute inset-0 animate-[spin_24s_linear_infinite] rounded-full border border-dashed border-white/15" />
-          <div className="absolute inset-5 rounded-full border border-white/8 bg-white/[0.025] shadow-[0_30px_100px_rgba(255,60,72,.12)]" />
-          <div className="absolute inset-10 rounded-full bg-gradient-to-br from-reel to-red-800 shadow-[inset_0_1px_0_rgba(255,255,255,.25)]" />
-          <svg viewBox="0 0 24 24" className="relative ml-1 size-10 text-white" aria-hidden="true">
-            <path fill="currentColor" d="M8 6.7c0-1.2 1.3-1.9 2.3-1.3l7 4.1a1.7 1.7 0 0 1 0 2.9l-7 4.2A1.5 1.5 0 0 1 8 15.3V6.7Z" />
-          </svg>
-        </div>
-
-        <p className="mb-4 text-xs font-bold uppercase tracking-[0.25em] text-reel">Em produção</p>
-        <h1 className="text-4xl font-black tracking-[-0.055em] sm:text-6xl">Roleta em breve</h1>
-        <p className="mt-5 max-w-md text-sm leading-6 text-white/45 sm:text-base sm:leading-7">
-          A cabine de projeção está quase pronta. Em breve, um giro vai separar você da próxima grande história.
-        </p>
-
-        <div className="mt-10 flex items-center gap-3 rounded-full border border-white/8 bg-white/[0.035] px-4 py-2 text-xs text-white/35">
-          <span className="size-1.5 animate-pulse rounded-full bg-emerald-400" />
-          Sua sessão está autenticada
-        </div>
-      </section>
-    </main>
+        <AnimatePresence>
+          {showLimitModal ? <SpinLimitModal key="limit-modal" onClose={() => setShowLimitModal(false)} /> : null}
+        </AnimatePresence>
+      </main>
+    </MotionConfig>
   )
 }

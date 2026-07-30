@@ -4,7 +4,7 @@ Reelz é uma roleta de filmes gamificada para reduzir o tempo de escolha do que 
 
 ## Estado atual
 
-O repositório está na quinta etapa do produto:
+O repositório está na sexta etapa do produto:
 
 - modelagem inicial do domínio e do PostgreSQL;
 - DTOs de cadastro de usuário;
@@ -27,8 +27,12 @@ O repositório está na quinta etapa do produto:
 - autenticação JWT integrada via Axios e `sessionStorage`;
 - rotas públicas e privadas com React Router DOM v6;
 - testes de contexto, interceptors e navegação.
+- Home da roleta com filtros rápidos, animações de mola e slot machine;
+- integração do giro com estados de sucesso, catálogo vazio e limite diário;
+- card de resultado responsivo com link para o streaming;
+- testes dos fluxos centrais da experiência da roleta.
 
-A Home privada contém o placeholder da roleta; a experiência completa de giro será implementada na próxima etapa visual.
+A Home privada contém a experiência funcional da roleta. Os catálogos de provedores e vibes são configurados no ambiente enquanto o backend ainda não oferece endpoints públicos para consultá-los.
 
 ## Stack
 
@@ -45,6 +49,7 @@ A Home privada contém o placeholder da roleta; a experiência completa de giro 
 - Vite
 - Tailwind CSS
 - React Router DOM
+- Framer Motion
 
 ## Executar os testes
 
