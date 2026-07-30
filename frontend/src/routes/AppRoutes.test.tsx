@@ -41,4 +41,11 @@ describe('AppRoutes', () => {
 
     expect(screen.getByRole('heading', { name: 'A um giro de distância' })).toBeInTheDocument()
   })
+
+  it('renders the private library for an authenticated user', () => {
+    renderRoutes(true, '/library')
+
+    expect(screen.getByRole('heading', { name: 'Biblioteca' })).toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: 'Navegação principal' })).toBeInTheDocument()
+  })
 })

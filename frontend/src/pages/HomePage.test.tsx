@@ -1,6 +1,7 @@
 import { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AuthContext, type AuthContextValue } from '../context/authContextDefinition'
 import { getProviders, getVibes } from '../services/catalogService'
@@ -76,7 +77,9 @@ const context: AuthContextValue = {
 function renderHome() {
   render(
     <AuthContext.Provider value={context}>
-      <HomePage minimumSpinDuration={0} />
+      <MemoryRouter>
+        <HomePage minimumSpinDuration={0} />
+      </MemoryRouter>
     </AuthContext.Provider>,
   )
 }
@@ -198,6 +201,43 @@ describe('HomePage roulette', () => {
     expect(spinRoulette).toHaveBeenCalledTimes(2)
     expect(await screen.findByText('Procurando a sessão perfeita…')).toBeInTheDocument()
     expect(await screen.findByRole('alert')).toHaveTextContent('Não conseguimos marcar')
+  })
+
+  it('keeps the slot animation running but waits for history before requesting another movie', async () => {
+    let resolveHistory!: () => void
+    vi.mocked(spinRoulette)
+      .mockResolvedValueOnce(successfulSpin)
+      .mockResolvedValueOnce({
+        ...successfulSpin,
+        movie: { ...successfulSpin.movie, id: 'second-movie', tmdbId: 551, title: 'Novo filme' },
+      })
+    vi.mocked(markMovieAsWatched).mockReturnValueOnce(new Promise((resolve) => {
+      resolveHistory = () => resolve({
+        id: 'history-id',
+        movieId: 550,
+        status: 'WATCHED',
+        watchedAt: '2026-07-30T12:00:00Z',
+        rating: null,
+        createdAt: '2026-07-30T12:00:00Z',
+        updatedAt: '2026-07-30T12:00:00Z',
+      })
+    }))
+    const user = userEvent.setup()
+    renderHome()
+
+    await screen.findByRole('button', { name: 'Netflix' })
+    await user.click(screen.getByRole('button', { name: 'Girar Roleta' }))
+    await screen.findByRole('heading', { name: 'Clube da Luta' })
+    await user.click(screen.getByRole('button', { name: 'Já vi / Girar de novo' }))
+
+    expect(await screen.findByText('Procurando a sessão perfeita…')).toBeInTheDocument()
+    expect(markMovieAsWatched).toHaveBeenCalledWith(550)
+    expect(spinRoulette).toHaveBeenCalledTimes(1)
+
+    await act(async () => resolveHistory())
+
+    await waitFor(() => expect(spinRoulette).toHaveBeenCalledTimes(2))
+    expect(await screen.findByRole('heading', { name: 'Novo filme' })).toBeInTheDocument()
   })
 
   it('keeps filter skeletons visible while the catalog is pending', async () => {

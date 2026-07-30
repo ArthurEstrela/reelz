@@ -1,5 +1,7 @@
 package com.roletadefilmes.api;
 
+import com.roletadefilmes.history.domain.UserMovieStatus;
+import com.roletadefilmes.history.persistence.entity.UserMovieHistoryEntity;
 import com.roletadefilmes.history.persistence.repository.UserMovieHistoryRepository;
 import com.roletadefilmes.movie.persistence.entity.MovieCacheEntity;
 import com.roletadefilmes.movie.persistence.repository.MovieCacheRepository;
@@ -26,9 +28,12 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import static org.hamcrest.Matchers.nullValue;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -124,6 +129,73 @@ class UserExperienceEndpointsIntegrationTest {
 
         assertThat(historyRepository.findAll()).hasSize(1);
         assertThat(historyRepository.findAll().getFirst().getWatchedAt()).isNotNull();
+    }
+
+    @Test
+    void shouldReturnOnlyWatchedMoviesPaginatedByMostRecentWatchedDate() throws Exception {
+        var user = userRepository.saveAndFlush(newUser("library-api@reelz.app"));
+        var olderMovie = movieRepository.saveAndFlush(newMovie(
+                100L,
+                "Filme antigo",
+                "/older.jpg",
+                new BigDecimal("7.2")
+        ));
+        var newerMovie = movieRepository.saveAndFlush(newMovie(
+                200L,
+                "Filme recente",
+                "/newer.jpg",
+                new BigDecimal("8.6")
+        ));
+        var watchlistMovie = movieRepository.saveAndFlush(newMovie(
+                300L,
+                "Ainda quero ver",
+                "/watchlist.jpg",
+                new BigDecimal("6.5")
+        ));
+        var now = Instant.now();
+        historyRepository.saveAllAndFlush(List.of(
+                new UserMovieHistoryEntity(
+                        user,
+                        olderMovie,
+                        UserMovieStatus.WATCHED,
+                        now.minus(2, ChronoUnit.DAYS),
+                        null
+                ),
+                new UserMovieHistoryEntity(
+                        user,
+                        newerMovie,
+                        UserMovieStatus.WATCHED,
+                        now.minus(1, ChronoUnit.DAYS),
+                        5
+                ),
+                new UserMovieHistoryEntity(
+                        user,
+                        watchlistMovie,
+                        UserMovieStatus.WATCHLIST,
+                        null,
+                        null
+                )
+        ));
+
+        mockMvc.perform(get("/api/v1/history?page=0&size=1")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].movieId").value(200))
+                .andExpect(jsonPath("$.content[0].title").value("Filme recente"))
+                .andExpect(jsonPath("$.content[0].posterPath").value("/newer.jpg"))
+                .andExpect(jsonPath("$.content[0].tmdbRating").value(8.6))
+                .andExpect(jsonPath("$.content[0].rating").value(5))
+                .andExpect(jsonPath("$.page.totalElements").value(2))
+                .andExpect(jsonPath("$.page.totalPages").value(2))
+                .andExpect(jsonPath("$.page.number").value(0));
+
+        mockMvc.perform(get("/api/v1/history?page=1&size=1")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].movieId").value(100))
+                .andExpect(jsonPath("$.content[0].title").value("Filme antigo"))
+                .andExpect(jsonPath("$.page.number").value(1));
     }
 
     @Test
@@ -226,6 +298,30 @@ class UserExperienceEndpointsIntegrationTest {
                 "America/Sao_Paulo",
                 "BR"
         );
+    }
+
+    private MovieCacheEntity newMovie(
+            Long tmdbId,
+            String title,
+            String posterPath,
+            BigDecimal rating
+    ) {
+        var movie = new MovieCacheEntity(tmdbId, title, new Integer[]{18}, Instant.now());
+        movie.refreshMetadata(
+                title,
+                title,
+                "Sinopse",
+                posterPath,
+                LocalDate.of(2020, 1, 1),
+                rating,
+                1_000,
+                new Integer[]{18},
+                false,
+                "pt",
+                120,
+                Instant.now()
+        );
+        return movie;
     }
 
     private String bearerToken(UserAccountEntity user) {

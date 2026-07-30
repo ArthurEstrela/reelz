@@ -2,6 +2,7 @@ package com.roletadefilmes.history.service;
 
 import com.roletadefilmes.history.api.dto.HistoryResponse;
 import com.roletadefilmes.history.api.dto.SaveHistoryRequest;
+import com.roletadefilmes.history.api.dto.UserMovieHistoryResponse;
 import com.roletadefilmes.history.domain.UserMovieStatus;
 import com.roletadefilmes.history.persistence.entity.UserMovieHistoryEntity;
 import com.roletadefilmes.history.persistence.repository.UserMovieHistoryRepository;
@@ -9,6 +10,10 @@ import com.roletadefilmes.movie.domain.exception.MovieNotFoundException;
 import com.roletadefilmes.movie.persistence.repository.MovieCacheRepository;
 import com.roletadefilmes.user.domain.exception.UserNotFoundException;
 import com.roletadefilmes.user.persistence.repository.UserAccountRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +23,8 @@ import java.util.UUID;
 
 @Service
 public class HistoryService {
+
+    private static final int MAX_PAGE_SIZE = 48;
 
     private final UserAccountRepository userRepository;
     private final MovieCacheRepository movieRepository;
@@ -68,6 +75,42 @@ public class HistoryService {
                 saved.getUserRating(),
                 saved.getCreatedAt(),
                 saved.getUpdatedAt()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public Page<UserMovieHistoryResponse> listWatched(UUID userId, Pageable pageable) {
+        if (!userRepository.existsById(userId)) {
+            throw new UserNotFoundException(userId);
+        }
+
+        var safePageable = PageRequest.of(
+                pageable.getPageNumber(),
+                Math.min(pageable.getPageSize(), MAX_PAGE_SIZE),
+                Sort.by(
+                        Sort.Order.desc("watchedAt").nullsLast(),
+                        Sort.Order.desc("id")
+                )
+        );
+        return historyRepository.findPageByUserAndStatus(
+                        userId,
+                        UserMovieStatus.WATCHED,
+                        safePageable
+                )
+                .map(this::toListResponse);
+    }
+
+    private UserMovieHistoryResponse toListResponse(UserMovieHistoryEntity history) {
+        var movie = history.getMovie();
+        return new UserMovieHistoryResponse(
+                history.getId(),
+                movie.getTmdbId(),
+                movie.getTitle(),
+                movie.getPosterPath(),
+                movie.getVoteAverage(),
+                history.getStatus(),
+                history.getWatchedAt(),
+                history.getUserRating()
         );
     }
 

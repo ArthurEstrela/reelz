@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { api } from './api'
 import { getProviders, getVibes } from './catalogService'
-import { markMovieAsWatched } from './historyService'
+import { getWatchedHistory, markMovieAsWatched } from './historyService'
 import { getTodayUsage } from './rouletteService'
 
 vi.mock('./api', () => ({
@@ -48,6 +48,18 @@ describe('experience API services', () => {
     expect(api.post).toHaveBeenCalledWith('/api/v1/history', {
       movieId: 550,
       status: 'WATCHED',
+    })
+  })
+
+  it('loads a page from the watched history', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      data: { content: [], page: { number: 2, size: 24, totalElements: 0, totalPages: 0 } },
+    })
+
+    await getWatchedHistory(2, 24)
+
+    expect(api.get).toHaveBeenCalledWith('/api/v1/history', {
+      params: { page: 2, size: 24 },
     })
   })
 })

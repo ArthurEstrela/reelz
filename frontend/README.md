@@ -65,8 +65,16 @@ src/
 - A franquia é sincronizada na montagem e depois de cada sucesso por `/api/v1/roulette/usage/today`.
 - Respostas 404 exibem uma falha animada e sugerem novos filtros; 403/429 abrem o modal de limite.
 - Usuários Free escolhem um provedor por vez. Quando a resposta informa cota ilimitada, múltiplos provedores são liberados.
-- O botão “Já vi / Girar de novo” inicia imediatamente outro giro e registra o filme em `/api/v1/history` de forma otimista.
-- Falhas no histórico são isoladas em um toast e não interrompem o giro em andamento.
+- O botão “Já vi / Girar de novo” inicia a animação e registra o filme em `/api/v1/history`.
+- A nova busca aguarda o histórico terminar, garantindo consistência read-after-write sem congelar a interface.
+- Falhas no histórico são isoladas em um toast e não impedem a continuação do giro.
+
+## Biblioteca
+
+- A rota privada `/library` lista somente filmes assistidos em uma grade responsiva de pôsteres.
+- O contador usa `totalElements` do backend, representando toda a coleção e não apenas a página carregada.
+- As próximas páginas são carregadas sob demanda pelo botão “Carregar mais”.
+- A navegação inferior permite alternar entre Roleta e Biblioteca em uma experiência adequada para PWA.
 
 ## Dependência do React Router
 

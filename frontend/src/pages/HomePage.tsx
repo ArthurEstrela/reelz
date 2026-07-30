@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
 import { ReelzLogo } from '../components/brand/ReelzLogo'
+import { BottomNavigation } from '../components/navigation/BottomNavigation'
 import { FilterPills, type PillOption } from '../components/roulette/FilterPills'
 import { MovieCard } from '../components/roulette/MovieCard'
 import { SlotMachine } from '../components/roulette/SlotMachine'
@@ -36,7 +37,7 @@ async function waitForMinimumDuration(startedAt: number, minimumDuration: number
   if (remaining > 0) await new Promise((resolve) => window.setTimeout(resolve, remaining))
 }
 
-export function HomePage({ minimumSpinDuration = 850 }: HomePageProps) {
+export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
   const { user, logout } = useAuth()
   const quotaRequestSequence = useRef(0)
   const [providerOptions, setProviderOptions] = useState<PillOption<string>[]>([])
@@ -145,8 +146,7 @@ export function HomePage({ minimumSpinDuration = 850 }: HomePageProps) {
     setFailureKey((current) => current + 1)
   }
 
-  async function executeSpin() {
-    const startedAt = performance.now()
+  async function executeSpin(startedAt = performance.now()) {
     setMessage(null)
     setMovie(null)
     setRouletteState('spinning')
@@ -202,16 +202,18 @@ export function HomePage({ minimumSpinDuration = 850 }: HomePageProps) {
     setCatalogReloadKey((key) => key + 1)
   }
 
-  function handleWatchedAndSpinAgain() {
+  async function handleWatchedAndSpinAgain() {
     if (!movie || isSpinning) return
     const watchedMovie = movie
+    const animationStartedAt = performance.now()
 
     setMessage(null)
     setMovie(null)
     setRouletteState('spinning')
 
-    const historyRequest = markMovieAsWatched(watchedMovie.tmdbId)
-    void historyRequest.catch((error: unknown) => {
+    try {
+      await markMovieAsWatched(watchedMovie.tmdbId)
+    } catch (error) {
       setToast({
         id: Date.now(),
         message: getApiErrorMessage(
@@ -219,14 +221,14 @@ export function HomePage({ minimumSpinDuration = 850 }: HomePageProps) {
           `Não conseguimos marcar “${watchedMovie.title}” como visto. Tente novamente depois.`,
         ),
       })
-    })
+    }
 
-    void executeSpin()
+    void executeSpin(animationStartedAt)
   }
 
   return (
     <MotionConfig reducedMotion="user">
-      <main className="relative min-h-svh overflow-hidden bg-canvas px-4 py-5 text-white sm:px-8 sm:py-6">
+      <main className="relative min-h-svh overflow-hidden bg-canvas px-4 pt-5 pb-28 text-white sm:px-8 sm:pt-6 sm:pb-28">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,rgba(255,60,72,.16),transparent_30%)]" />
 
         <header className="relative mx-auto flex max-w-5xl items-center justify-between gap-3">
@@ -376,12 +378,13 @@ export function HomePage({ minimumSpinDuration = 850 }: HomePageProps) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 18, scale: 0.94 }}
               transition={{ type: 'spring', stiffness: 420, damping: 28 }}
-              className="fixed inset-x-4 bottom-5 z-50 mx-auto max-w-md rounded-2xl border border-red-300/15 bg-[#241114]/95 px-4 py-3 text-sm font-bold text-red-100 shadow-2xl backdrop-blur"
+              className="fixed inset-x-4 bottom-24 z-50 mx-auto max-w-md rounded-2xl border border-red-300/15 bg-[#241114]/95 px-4 py-3 text-sm font-bold text-red-100 shadow-2xl backdrop-blur"
             >
               {toast.message}
             </motion.div>
           ) : null}
         </AnimatePresence>
+        <BottomNavigation />
       </main>
     </MotionConfig>
   )

@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { HomePage } from '../pages/HomePage'
+import { LibraryPage } from '../pages/LibraryPage'
 import { LoginPage } from '../pages/LoginPage'
 import { RegisterPage } from '../pages/RegisterPage'
 import { PrivateRoute } from './PrivateRoute'
@@ -15,6 +16,7 @@ export function AppRoutes() {
 
       <Route element={<PrivateRoute />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/library" element={<LibraryPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

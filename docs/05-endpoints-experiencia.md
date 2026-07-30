@@ -22,6 +22,39 @@ Content-Type: application/json
 `WATCHLIST`, ambos ficam nulos para respeitar a constraint do banco. Uma nova chamada para o mesmo
 usuário e filme atualiza a linha existente.
 
+### Listagem da biblioteca
+
+```http
+GET /api/v1/history?page=0&size=24
+```
+
+A listagem contém somente `WATCHED`, ordenada por `watchedAt DESC`, e enriquece cada item com título,
+pôster e nota do TMDB vindos de `movie_cache`. O tamanho máximo aceito pelo serviço é 48 itens. A
+paginação usa o formato estável do Spring Data:
+
+```json
+{
+  "content": [
+    {
+      "id": "82b74df4-1bcd-4a77-baa2-62a22bcdb554",
+      "movieId": 550,
+      "title": "Clube da Luta",
+      "posterPath": "/poster.jpg",
+      "tmdbRating": 8.4,
+      "status": "WATCHED",
+      "watchedAt": "2026-07-30T12:00:00Z",
+      "rating": null
+    }
+  ],
+  "page": {
+    "size": 24,
+    "number": 0,
+    "totalElements": 1,
+    "totalPages": 1
+  }
+}
+```
+
 ## Uso diário
 
 ```http
@@ -62,3 +95,9 @@ Somente registros ativos são retornados. Os DTOs são deliberadamente leves:
 `V2__fix_watched_at_current_time_check.sql` troca `CURRENT_TIMESTAMP` por `clock_timestamp()` no
 trigger de `watched_at`. No PostgreSQL, `CURRENT_TIMESTAMP` representa o início da transação e podia
 rejeitar um instante legítimo criado alguns milissegundos depois pelo backend.
+
+## Migration V3
+
+`V3__optimize_watched_history_pagination.sql` adiciona um índice parcial por usuário e
+`watched_at DESC NULLS LAST`, com desempate pelo ID, para manter a paginação da Biblioteca eficiente
+e estável conforme a coleção cresce.

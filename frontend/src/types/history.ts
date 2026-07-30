@@ -14,3 +14,14 @@ export interface HistoryResponse {
   createdAt: string
   updatedAt: string
 }
+
+export interface WatchedMovie {
+  id: string
+  movieId: number
+  title: string
+  posterPath: string | null
+  tmdbRating: number | null
+  status: 'WATCHED'
+  watchedAt: string | null
+  rating: number | null
+}

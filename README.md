@@ -4,7 +4,7 @@ Reelz é uma roleta de filmes gamificada para reduzir o tempo de escolha do que 
 
 ## Estado atual
 
-O repositório está na oitava etapa do produto:
+O repositório está na nona etapa do produto:
 
 - modelagem inicial do domínio e do PostgreSQL;
 - DTOs de cadastro de usuário;
@@ -37,7 +37,11 @@ O repositório está na oitava etapa do produto:
 - testes end-to-end do backend com JWT, MockMvc e PostgreSQL Testcontainers.
 - catálogo dinâmico integrado aos filtros da Home;
 - franquia diária sincronizada na abertura e depois de cada giro;
-- ação otimista “Já vi” integrada ao histórico, com fallback por toast.
+- ação “Já vi” integrada ao histórico, com fallback por toast;
+- listagem paginada e enriquecida dos filmes assistidos;
+- Biblioteca mobile-first com contador de coleção e carregamento incremental;
+- navegação inferior entre Roleta e Biblioteca;
+- consistência read-after-write entre “Já vi” e o próximo giro.
 
 A Home privada contém a experiência funcional da roleta e consome os catálogos, a franquia diária e o histórico diretamente dos endpoints autenticados do backend.
 
