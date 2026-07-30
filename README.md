@@ -4,7 +4,7 @@ Reelz é uma roleta de filmes gamificada para reduzir o tempo de escolha do que 
 
 ## Estado atual
 
-O repositório está na quarta etapa do backend:
+O repositório está na quinta etapa do produto:
 
 - modelagem inicial do domínio e do PostgreSQL;
 - DTOs de cadastro de usuário;
@@ -21,9 +21,14 @@ O repositório está na quarta etapa do backend:
 - autenticação stateless com Spring Security e JWT;
 - cadastro com BCrypt e registro de aceites legais;
 - rotas públicas/protegidas e principal tipado na roleta;
-- testes MVC da cadeia de segurança.
+- testes MVC da cadeia de segurança;
+- front-end React com Vite e TypeScript;
+- interface dark, responsiva e mobile-first com Tailwind CSS;
+- autenticação JWT integrada via Axios e `sessionStorage`;
+- rotas públicas e privadas com React Router DOM v6;
+- testes de contexto, interceptors e navegação.
 
-O frontend ainda não foi iniciado.
+A Home privada contém o placeholder da roleta; a experiência completa de giro será implementada na próxima etapa visual.
 
 ## Stack
 
@@ -35,6 +40,11 @@ O frontend ainda não foi iniciado.
 - Testcontainers
 - Spring Security
 - JJWT
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- React Router DOM
 
 ## Executar os testes
 
@@ -46,9 +56,18 @@ Os testes de persistência precisam do Docker em execução. Para iniciar a apli
 
 Também é obrigatório configurar `JWT_SECRET` com uma chave aleatória de pelo menos 256 bits em Base64. Não existe segredo padrão no código.
 
+Para executar o front-end:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
 ## Documentação
 
 - [Modelagem inicial](docs/01-modelagem-inicial.md)
 - [Camada de persistência](docs/02-persistencia.md)
 - [Serviço e API da roleta](docs/03-servico-api.md)
 - [Spring Security e JWT](docs/04-seguranca-jwt.md)
+- [Front-end React](frontend/README.md)

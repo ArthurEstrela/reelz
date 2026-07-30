@@ -1,0 +1,43 @@
+import type { AuthSession } from '../types/auth'
+
+const AUTH_SESSION_KEY = 'reelz.auth.session'
+
+export const AUTH_SESSION_EXPIRED_EVENT = 'reelz:auth-session-expired'
+
+function isAuthSession(value: unknown): value is AuthSession {
+  if (typeof value !== 'object' || value === null) return false
+
+  const session = value as Partial<AuthSession>
+  return (
+    typeof session.accessToken === 'string' &&
+    session.accessToken.length > 0 &&
+    typeof session.expiresAt === 'number' &&
+    typeof session.user?.id === 'string' &&
+    typeof session.user.email === 'string'
+  )
+}
+
+export function getAuthSession(): AuthSession | null {
+  const serializedSession = sessionStorage.getItem(AUTH_SESSION_KEY)
+  if (!serializedSession) return null
+
+  try {
+    const session: unknown = JSON.parse(serializedSession)
+    if (!isAuthSession(session) || session.expiresAt <= Date.now()) {
+      clearAuthSession()
+      return null
+    }
+    return session
+  } catch {
+    clearAuthSession()
+    return null
+  }
+}
+
+export function saveAuthSession(session: AuthSession): void {
+  sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session))
+}
+
+export function clearAuthSession(): void {
+  sessionStorage.removeItem(AUTH_SESSION_KEY)
+}
