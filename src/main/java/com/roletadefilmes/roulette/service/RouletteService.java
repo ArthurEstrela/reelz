@@ -40,7 +40,7 @@ import java.util.UUID;
 @Service
 public class RouletteService {
 
-    public static final int FREE_DAILY_SPIN_LIMIT = 5;
+    public static final int FREE_DAILY_SPIN_LIMIT = RouletteQuotaPolicy.FREE_DAILY_SPIN_LIMIT;
 
     private static final Set<MonetizationType> ELIGIBLE_MONETIZATION_TYPES = Set.of(
             MonetizationType.FLATRATE,
@@ -277,15 +277,6 @@ public class RouletteService {
     }
 
     private SpinQuotaResponse buildQuotaResponse(RouletteDailyUsageEntity usage, boolean premium) {
-        if (premium) {
-            return new SpinQuotaResponse(true, null, null, usage.getRewardedSpinsRemaining());
-        }
-        var remaining = Math.max(0, FREE_DAILY_SPIN_LIMIT - usage.getBaseSpinsUsed());
-        return new SpinQuotaResponse(
-                false,
-                FREE_DAILY_SPIN_LIMIT,
-                remaining,
-                usage.getRewardedSpinsRemaining()
-        );
+        return RouletteQuotaPolicy.toResponse(usage, premium);
     }
 }

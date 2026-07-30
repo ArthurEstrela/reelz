@@ -1,6 +1,7 @@
 package com.roletadefilmes.shared.api.error;
 
 import com.roletadefilmes.auth.domain.exception.InvalidCredentialsException;
+import com.roletadefilmes.movie.domain.exception.MovieNotFoundException;
 import com.roletadefilmes.roulette.domain.exception.DailyLimitExceededException;
 import com.roletadefilmes.roulette.domain.exception.DuplicateSpinException;
 import com.roletadefilmes.roulette.domain.exception.EmptyProviderSelectionException;
@@ -61,6 +62,15 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ) {
         return error(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", exception.getMessage(), request, List.of());
+    }
+
+    @ExceptionHandler(MovieNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiErrorResponse handleMovieNotFound(
+            MovieNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        return error(HttpStatus.NOT_FOUND, "MOVIE_NOT_FOUND", exception.getMessage(), request, List.of());
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
