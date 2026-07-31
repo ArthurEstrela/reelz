@@ -73,10 +73,20 @@ src/
 
 ## Biblioteca
 
-- A rota privada `/library` lista somente filmes assistidos em uma grade responsiva de pôsteres.
+- A rota privada `/library` separa Assistidos e Quero Ver em abas.
 - O contador usa `totalElements` do backend, representando toda a coleção e não apenas a página carregada.
 - As próximas páginas são carregadas sob demanda pelo botão “Carregar mais”.
+- Itens da Watchlist podem ser removidos ou convertidos em assistidos com atualização otimista.
 - A navegação inferior permite alternar entre Roleta e Biblioteca em uma experiência adequada para PWA.
+
+## PWA
+
+- O manifest define identidade visual, modo standalone e atalhos para Roleta e Biblioteca.
+- O service worker usa network-first para navegação e cache-first para assets versionados.
+- Rotas `/api/`, métodos diferentes de GET e recursos externos nunca entram no cache.
+- O worker recebe uma versão derivada do bundle durante o build do Vite.
+- A interface oferece instalação quando o navegador disponibiliza o evento e avisa sobre atualizações pendentes.
+- Em produção é necessário HTTPS; `localhost` funciona como origem segura para desenvolvimento.
 
 ## Dependência do React Router
 

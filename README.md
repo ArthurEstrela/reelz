@@ -50,6 +50,8 @@ O repositório está na nona etapa do produto:
 - histórico inicial persistido em lote e bloqueio de rotas até a conclusão.
 - Watchlist integrada ao resultado da roleta e à Biblioteca;
 - atualização otimista para remover ou marcar itens da Watchlist como assistidos.
+- PWA instalável com manifest, ícones, atalhos e shell offline;
+- atualização segura do app sem armazenar respostas autenticadas no cache.
 
 A Home privada contém a experiência funcional da roleta e consome os catálogos, a franquia diária e o histórico diretamente dos endpoints autenticados do backend.
 
@@ -99,4 +101,5 @@ npm run dev
 - [Preferências de streaming](docs/07-preferencias-streaming.md)
 - [Onboarding de filmes](docs/08-onboarding-filmes.md)
 - [Watchlist](docs/09-watchlist.md)
+- [Progressive Web App](docs/10-pwa.md)
 - [Front-end React](frontend/README.md)
