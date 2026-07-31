@@ -77,10 +77,15 @@ const successfulSpin: RouletteSpinResponse = {
 }
 
 const context: AuthContextValue = {
-  user: { id: '0198f032-7370-7000-8000-000000000020', email: 'moviegoer@reelz.app' },
+  user: {
+    id: '0198f032-7370-7000-8000-000000000020',
+    email: 'moviegoer@reelz.app',
+    onboardingCompleted: true,
+  },
   isAuthenticated: true,
   login: vi.fn(),
   register: vi.fn(),
+  markOnboardingCompleted: vi.fn(),
   logout: vi.fn(),
 }
 

@@ -32,6 +32,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       user: {
         id: response.userId,
         email: email.trim().toLowerCase(),
+        onboardingCompleted: response.onboardingCompleted,
       },
     }
     saveAuthSession(nextSession)
@@ -40,6 +41,21 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const register = useCallback(async (payload: RegisterRequest) => {
     await registerRequest(payload)
+  }, [])
+
+  const markOnboardingCompleted = useCallback(() => {
+    setSession((currentSession) => {
+      if (!currentSession) return null
+      const nextSession: AuthSession = {
+        ...currentSession,
+        user: {
+          ...currentSession.user,
+          onboardingCompleted: true,
+        },
+      }
+      saveAuthSession(nextSession)
+      return nextSession
+    })
   }, [])
 
   useEffect(() => {
@@ -65,9 +81,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
       isAuthenticated: session !== null,
       login,
       register,
+      markOnboardingCompleted,
       logout,
     }),
-    [login, logout, register, session],
+    [login, logout, markOnboardingCompleted, register, session],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

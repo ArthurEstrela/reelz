@@ -38,6 +38,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
@@ -361,6 +362,64 @@ class UserExperienceEndpointsIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("INVALID_STREAMING_PREFERENCE"));
         assertThat(streamingPreferenceRepository.findAllByUserId(user.getId())).hasSize(2);
+    }
+
+    @Test
+    void shouldServePopularMoviesAndCompleteOnboardingAtomically() throws Exception {
+        var user = userRepository.saveAndFlush(newUser("onboarding-api@reelz.app"));
+        var provider = providerRepository.saveAndFlush(new StreamingProviderEntity(8, "Netflix"));
+        var movies = IntStream.rangeClosed(1, 25)
+                .mapToObj(index -> newMovie(
+                        20_000L + index,
+                        "Filme popular " + index,
+                        "/popular-" + index + ".jpg",
+                        new BigDecimal("7.5")
+                ))
+                .toList();
+        movieRepository.saveAllAndFlush(movies);
+        offerRepository.saveAllAndFlush(movies.stream()
+                .map(movie -> new MovieStreamingOfferEntity(
+                        movie,
+                        provider,
+                        "BR",
+                        MonetizationType.FLATRATE,
+                        Instant.now()
+                ))
+                .toList());
+
+        mockMvc.perform(get("/api/v1/onboarding/movies?limit=25")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.targetCount").value(25))
+                .andExpect(jsonPath("$.movies.length()").value(25))
+                .andExpect(jsonPath("$.movies[0].posterPath").isNotEmpty());
+
+        var firstMovieId = movies.get(0).getTmdbId();
+        var secondMovieId = movies.get(1).getTmdbId();
+        var presentedIds = movies.stream()
+                .map(MovieCacheEntity::getTmdbId)
+                .map(String::valueOf)
+                .reduce((left, right) -> left + "," + right)
+                .orElseThrow();
+
+        mockMvc.perform(post("/api/v1/onboarding/complete")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "presentedMovieIds":[%s],
+                                  "watchedMovieIds":[%d,%d]
+                                }
+                                """.formatted(presentedIds, firstMovieId, secondMovieId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.onboardingCompleted").value(true))
+                .andExpect(jsonPath("$.watchedMoviesAdded").value(2));
+
+        assertThat(userRepository.findById(user.getId()).orElseThrow().getOnboardingCompletedAt())
+                .isNotNull();
+        assertThat(historyRepository.findAll())
+                .extracting(history -> history.getMovie().getTmdbId())
+                .containsExactlyInAnyOrder(firstMovieId, secondMovieId);
     }
 
     @Test

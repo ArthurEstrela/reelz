@@ -45,7 +45,9 @@ O repositório está na nona etapa do produto:
 - sincronização incremental por provedor, com checkpoint, lease e auditoria operacional;
 - catálogo brasileiro de filmes e disponibilidade sincronizado pelo TMDB;
 - preferências persistentes de streaming, separadas dos filtros de cada giro;
-- atribuição de disponibilidade JustWatch e catálogo filtrado por ofertas elegíveis.
+- atribuição de disponibilidade JustWatch e catálogo filtrado por ofertas elegíveis;
+- onboarding Tinder-style com filmes populares e disponíveis no país do usuário;
+- histórico inicial persistido em lote e bloqueio de rotas até a conclusão.
 
 A Home privada contém a experiência funcional da roleta e consome os catálogos, a franquia diária e o histórico diretamente dos endpoints autenticados do backend.
 
@@ -93,4 +95,5 @@ npm run dev
 - [Endpoints de experiência](docs/05-endpoints-experiencia.md)
 - [Catálogo TMDB](docs/06-catalogo-tmdb.md)
 - [Preferências de streaming](docs/07-preferencias-streaming.md)
+- [Onboarding de filmes](docs/08-onboarding-filmes.md)
 - [Front-end React](frontend/README.md)

@@ -7,6 +7,7 @@ export interface AuthContextValue {
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
   register: (payload: RegisterRequest) => Promise<void>
+  markOnboardingCompleted: () => void
   logout: () => void
 }
 

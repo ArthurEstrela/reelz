@@ -9,11 +9,18 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 public interface UserMovieHistoryRepository extends JpaRepository<UserMovieHistoryEntity, UUID> {
 
     Optional<UserMovieHistoryEntity> findByUserIdAndMovieId(UUID userId, UUID movieId);
+
+    List<UserMovieHistoryEntity> findAllByUserIdAndMovieIdIn(
+            UUID userId,
+            Collection<UUID> movieIds
+    );
 
     @Query(
             value = """

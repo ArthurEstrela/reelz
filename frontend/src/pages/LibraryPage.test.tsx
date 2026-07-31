@@ -13,10 +13,11 @@ vi.mock('../services/historyService', () => ({
 }))
 
 const context: AuthContextValue = {
-  user: { id: 'user-id', email: 'collector@reelz.app' },
+  user: { id: 'user-id', email: 'collector@reelz.app', onboardingCompleted: true },
   isAuthenticated: true,
   login: vi.fn(),
   register: vi.fn(),
+  markOnboardingCompleted: vi.fn(),
   logout: vi.fn(),
 }
 

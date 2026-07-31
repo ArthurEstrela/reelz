@@ -13,7 +13,8 @@ function isAuthSession(value: unknown): value is AuthSession {
     session.accessToken.length > 0 &&
     typeof session.expiresAt === 'number' &&
     typeof session.user?.id === 'string' &&
-    typeof session.user.email === 'string'
+    typeof session.user.email === 'string' &&
+    typeof session.user.onboardingCompleted === 'boolean'
   )
 }
 

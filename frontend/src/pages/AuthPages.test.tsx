@@ -13,6 +13,7 @@ function renderAt(path: string, overrides: Partial<AuthContextValue> = {}) {
     isAuthenticated: false,
     login: vi.fn(),
     register: vi.fn(),
+    markOnboardingCompleted: vi.fn(),
     logout: vi.fn(),
     ...overrides,
   }

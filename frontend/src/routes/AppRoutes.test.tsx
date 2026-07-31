@@ -4,12 +4,19 @@ import { describe, expect, it, vi } from 'vitest'
 import { AuthContext, type AuthContextValue } from '../context/authContextDefinition'
 import { AppRoutes } from './AppRoutes'
 
-function renderRoutes(isAuthenticated: boolean, initialPath = '/') {
+function renderRoutes(
+  isAuthenticated: boolean,
+  initialPath = '/',
+  onboardingCompleted = true,
+) {
   const context: AuthContextValue = {
-    user: isAuthenticated ? { id: 'user-id', email: 'person@reelz.app' } : null,
+    user: isAuthenticated
+      ? { id: 'user-id', email: 'person@reelz.app', onboardingCompleted }
+      : null,
     isAuthenticated,
     login: vi.fn(),
     register: vi.fn(),
+    markOnboardingCompleted: vi.fn(),
     logout: vi.fn(),
   }
 
@@ -47,5 +54,11 @@ describe('AppRoutes', () => {
 
     expect(screen.getByRole('heading', { name: 'Biblioteca' })).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: 'Navegação principal' })).toBeInTheDocument()
+  })
+
+  it('redirects a new authenticated user to onboarding', () => {
+    renderRoutes(true, '/', false)
+
+    expect(screen.getByRole('heading', { name: 'O que você já assistiu?' })).toBeInTheDocument()
   })
 })

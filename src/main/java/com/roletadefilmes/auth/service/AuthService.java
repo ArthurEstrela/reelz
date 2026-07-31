@@ -48,7 +48,8 @@ public class AuthService {
                 jwtService.generateToken(user.getId()),
                 "Bearer",
                 jwtService.getExpirationSeconds(),
-                user.getId()
+                user.getId(),
+                user.getOnboardingCompletedAt() != null
         );
     }
 }

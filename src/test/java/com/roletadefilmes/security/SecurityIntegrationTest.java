@@ -117,7 +117,7 @@ class SecurityIntegrationTest {
     @Test
     void shouldAllowLoginWithoutAuthentication() throws Exception {
         when(authService.login(any())).thenReturn(
-                new LoginResponse("token", "Bearer", 7_200, UUID.randomUUID())
+                new LoginResponse("token", "Bearer", 7_200, UUID.randomUUID(), false)
         );
 
         mockMvc.perform(post("/api/v1/auth/login")

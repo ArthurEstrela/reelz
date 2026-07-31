@@ -54,6 +54,7 @@ describe('AuthProvider', () => {
       tokenType: 'Bearer',
       expiresInSeconds: 7_200,
       userId: 'user-id',
+      onboardingCompleted: false,
     })
     const user = userEvent.setup()
     render(<AuthProvider><AuthProbe /></AuthProvider>)
@@ -62,6 +63,7 @@ describe('AuthProvider', () => {
 
     expect(await screen.findByText('person@reelz.app')).toBeInTheDocument()
     expect(getAuthSession()?.accessToken).toBe('signed-token')
+    expect(getAuthSession()?.user.onboardingCompleted).toBe(false)
 
     await user.click(screen.getByRole('button', { name: 'logout' }))
     expect(screen.getByText('anonymous')).toBeInTheDocument()

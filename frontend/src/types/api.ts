@@ -23,6 +23,7 @@ export interface LoginResponse {
   tokenType: 'Bearer'
   expiresInSeconds: number
   userId: string
+  onboardingCompleted: boolean
 }
 
 export interface RegisterRequest {

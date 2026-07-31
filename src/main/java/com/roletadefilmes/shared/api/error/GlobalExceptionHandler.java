@@ -2,6 +2,7 @@ package com.roletadefilmes.shared.api.error;
 
 import com.roletadefilmes.auth.domain.exception.InvalidCredentialsException;
 import com.roletadefilmes.movie.domain.exception.MovieNotFoundException;
+import com.roletadefilmes.onboarding.domain.exception.InvalidOnboardingSelectionException;
 import com.roletadefilmes.roulette.domain.exception.DailyLimitExceededException;
 import com.roletadefilmes.roulette.domain.exception.DuplicateSpinException;
 import com.roletadefilmes.roulette.domain.exception.EmptyProviderSelectionException;
@@ -143,6 +144,21 @@ public class GlobalExceptionHandler {
         return error(
                 HttpStatus.BAD_REQUEST,
                 "INVALID_STREAMING_PREFERENCE",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ExceptionHandler(InvalidOnboardingSelectionException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrorResponse handleInvalidOnboardingSelection(
+            InvalidOnboardingSelectionException exception,
+            HttpServletRequest request
+    ) {
+        return error(
+                HttpStatus.BAD_REQUEST,
+                "INVALID_ONBOARDING_SELECTION",
                 exception.getMessage(),
                 request,
                 List.of()

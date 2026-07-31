@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -52,6 +53,7 @@ class AuthServiceTest {
                 .thenReturn(Optional.of(user));
         when(user.getPasswordHash()).thenReturn("bcrypt-hash");
         when(user.getId()).thenReturn(userId);
+        when(user.getOnboardingCompletedAt()).thenReturn(Instant.now());
         when(passwordEncoder.matches("correct-password", "bcrypt-hash")).thenReturn(true);
         when(jwtService.generateToken(userId)).thenReturn("signed-token");
         when(jwtService.getExpirationSeconds()).thenReturn(7_200L);
@@ -61,6 +63,7 @@ class AuthServiceTest {
         assertThat(response.accessToken()).isEqualTo("signed-token");
         assertThat(response.tokenType()).isEqualTo("Bearer");
         assertThat(response.userId()).isEqualTo(userId);
+        assertThat(response.onboardingCompleted()).isTrue();
     }
 
     @Test

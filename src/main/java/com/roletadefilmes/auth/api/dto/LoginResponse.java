@@ -6,6 +6,7 @@ public record LoginResponse(
         String accessToken,
         String tokenType,
         long expiresInSeconds,
-        UUID userId
+        UUID userId,
+        boolean onboardingCompleted
 ) {
 }
