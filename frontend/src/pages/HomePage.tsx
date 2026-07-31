@@ -7,11 +7,16 @@ import { FilterPills, type PillOption } from '../components/roulette/FilterPills
 import { MovieCard } from '../components/roulette/MovieCard'
 import { SlotMachine } from '../components/roulette/SlotMachine'
 import { SpinLimitModal } from '../components/roulette/SpinLimitModal'
+import { StreamingPreferencesModal } from '../components/streaming/StreamingPreferencesModal'
 import { GENRE_OPTIONS } from '../config/rouletteFilters'
 import { useAuth } from '../hooks/useAuth'
 import { getProviders, getVibes } from '../services/catalogService'
 import { markMovieAsWatched } from '../services/historyService'
 import { getTodayUsage, spinRoulette } from '../services/rouletteService'
+import {
+  getStreamingPreferences,
+  updateStreamingPreferences,
+} from '../services/streamingPreferenceService'
 import type { CatalogItem } from '../types/catalog'
 import type { RouletteMovie, SpinQuota } from '../types/roulette'
 import { getApiErrorMessage } from '../utils/apiError'
@@ -40,11 +45,13 @@ async function waitForMinimumDuration(startedAt: number, minimumDuration: number
 export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
   const { user, logout } = useAuth()
   const quotaRequestSequence = useRef(0)
-  const [providerOptions, setProviderOptions] = useState<PillOption<string>[]>([])
+  const [providers, setProviders] = useState<CatalogItem[]>([])
   const [vibeOptions, setVibeOptions] = useState<PillOption<string>[]>([])
   const [catalogState, setCatalogState] = useState<CatalogState>('loading')
   const [catalogReloadKey, setCatalogReloadKey] = useState(0)
   const [selectedProviders, setSelectedProviders] = useState<string[]>([])
+  const [ownedProviderIds, setOwnedProviderIds] = useState<string[]>([])
+  const [showStreamingPreferences, setShowStreamingPreferences] = useState(false)
   const [selectedGenre, setSelectedGenre] = useState<number | null>(null)
   const [selectedVibe, setSelectedVibe] = useState<string | null>(null)
   const [rouletteState, setRouletteState] = useState<RouletteState>('idle')
@@ -55,6 +62,13 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
   const [failureKey, setFailureKey] = useState(0)
   const [showLimitModal, setShowLimitModal] = useState(false)
   const [toast, setToast] = useState<ToastMessage | null>(null)
+
+  const allProviderOptions = useMemo(() => toPillOptions(providers), [providers])
+  const providerOptions = useMemo(() => {
+    if (ownedProviderIds.length === 0) return allProviderOptions
+    const ownedIds = new Set(ownedProviderIds)
+    return allProviderOptions.filter((provider) => ownedIds.has(provider.value))
+  }, [allProviderOptions, ownedProviderIds])
 
   const synchronizeQuota = useCallback(async () => {
     const requestSequence = ++quotaRequestSequence.current
@@ -70,24 +84,43 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
 
   useEffect(() => {
     let cancelled = false
+    let preferencesFailed = false
 
-    Promise.all([getProviders(), getVibes()])
-      .then(([providers, vibes]) => {
+    Promise.all([
+      getProviders(),
+      getVibes(),
+      getStreamingPreferences().catch(() => {
+        preferencesFailed = true
+        return { providerIds: [] }
+      }),
+    ])
+      .then(([providerCatalog, vibes, preferences]) => {
         if (cancelled) return
-        const nextProviderOptions = toPillOptions(providers)
         const nextVibeOptions = toPillOptions(vibes)
-        const validProviderIds = new Set(providers.map((provider) => provider.id))
+        const validProviderIds = new Set(providerCatalog.map((provider) => provider.id))
         const validVibeIds = new Set(vibes.map((vibe) => vibe.id))
+        const validOwnedProviderIds = preferences.providerIds.filter((providerId) => validProviderIds.has(providerId))
+        const initialProviderId = validOwnedProviderIds[0] ?? providerCatalog[0]?.id
 
-        setProviderOptions(nextProviderOptions)
+        setProviders(providerCatalog)
         setVibeOptions(nextVibeOptions)
+        setOwnedProviderIds(validOwnedProviderIds)
         setSelectedProviders((current) => {
-          const validSelection = current.filter((providerId) => validProviderIds.has(providerId))
+          const selectableProviderIds = validOwnedProviderIds.length > 0
+            ? new Set(validOwnedProviderIds)
+            : validProviderIds
+          const validSelection = current.filter((providerId) => selectableProviderIds.has(providerId))
           if (validSelection.length > 0) return validSelection
-          return providers[0] ? [providers[0].id] : []
+          return initialProviderId ? [initialProviderId] : []
         })
         setSelectedVibe((current) => current && validVibeIds.has(current) ? current : null)
         setCatalogState('ready')
+        if (preferencesFailed) {
+          setToast({
+            id: Date.now(),
+            message: 'O catálogo carregou, mas não conseguimos recuperar seus streamings salvos.',
+          })
+        }
       })
       .catch(() => {
         if (!cancelled) setCatalogState('error')
@@ -200,6 +233,27 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
   function retryCatalog() {
     setCatalogState('loading')
     setCatalogReloadKey((key) => key + 1)
+  }
+
+  async function saveStreamingPreferences(providerIds: string[]) {
+    const savedPreferences = await updateStreamingPreferences({ providerIds })
+    setOwnedProviderIds(savedPreferences.providerIds)
+    setSelectedProviders((current) => {
+      const availableIds = savedPreferences.providerIds.length > 0
+        ? new Set(savedPreferences.providerIds)
+        : new Set(providers.map((provider) => provider.id))
+      const validSelection = current.filter((providerId) => availableIds.has(providerId))
+      if (validSelection.length > 0) return quota?.unlimited ? validSelection : [validSelection[0]]
+      const firstProviderId = savedPreferences.providerIds[0] ?? providers[0]?.id
+      return firstProviderId ? [firstProviderId] : []
+    })
+    setShowStreamingPreferences(false)
+    setToast({
+      id: Date.now(),
+      message: savedPreferences.providerIds.length > 0
+        ? 'Seus streamings foram salvos.'
+        : 'Preferências limpas. Todos os streamings voltaram a aparecer.',
+    })
   }
 
   async function handleWatchedAndSpinAgain() {
@@ -342,8 +396,23 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
           ) : null}
 
           <section className="mt-9 space-y-6 rounded-[1.75rem] border border-white/8 bg-white/[0.025] p-4 sm:p-6" aria-label="Filtros rápidos">
+            <div className="-mb-3 flex items-center justify-between gap-3 px-1">
+              <span className="text-[10px] font-bold text-white/30">
+                {ownedProviderIds.length > 0
+                  ? `${ownedProviderIds.length} streaming${ownedProviderIds.length === 1 ? '' : 's'} salvo${ownedProviderIds.length === 1 ? '' : 's'}`
+                  : 'Mostrando todos os streamings'}
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowStreamingPreferences(true)}
+                disabled={catalogLoading || isSpinning}
+                className="rounded-full border border-reel/25 bg-reel/8 px-3 py-1.5 text-[11px] font-black text-reel-bright transition hover:border-reel/45 hover:bg-reel/12 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {ownedProviderIds.length > 0 ? 'Gerenciar' : 'Escolher meus streamings'}
+              </button>
+            </div>
             <FilterPills
-              legend={quota?.unlimited ? 'Onde assistir · escolha vários' : 'Onde assistir · 1 por vez'}
+              legend={quota?.unlimited ? 'Usar neste giro · escolha vários' : 'Usar neste giro · 1 por vez'}
               options={providerOptions}
               selectedValues={selectedProviders}
               onToggle={toggleProvider}
@@ -370,6 +439,15 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
 
         <AnimatePresence>
           {showLimitModal ? <SpinLimitModal key="limit-modal" onClose={() => setShowLimitModal(false)} /> : null}
+          {showStreamingPreferences ? (
+            <StreamingPreferencesModal
+              key="streaming-preferences"
+              providers={providers}
+              selectedProviderIds={ownedProviderIds}
+              onClose={() => setShowStreamingPreferences(false)}
+              onSave={saveStreamingPreferences}
+            />
+          ) : null}
           {toast ? (
             <motion.div
               key={toast.id}

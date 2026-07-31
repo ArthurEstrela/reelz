@@ -13,6 +13,7 @@ import com.roletadefilmes.streaming.persistence.entity.MovieStreamingOfferEntity
 import com.roletadefilmes.streaming.persistence.entity.StreamingProviderEntity;
 import com.roletadefilmes.streaming.persistence.repository.MovieStreamingOfferRepository;
 import com.roletadefilmes.streaming.persistence.repository.StreamingProviderRepository;
+import com.roletadefilmes.streaming.persistence.repository.UserStreamingPreferenceRepository;
 import com.roletadefilmes.user.persistence.entity.UserAccountEntity;
 import com.roletadefilmes.user.persistence.repository.UserAccountRepository;
 import com.roletadefilmes.vibe.persistence.entity.VibeEntity;
@@ -44,6 +45,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -97,6 +99,9 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Autowired
     private MovieStreamingOfferRepository offerRepository;
+
+    @Autowired
+    private UserStreamingPreferenceRepository streamingPreferenceRepository;
 
     @Autowired
     private VibeRepository vibeRepository;
@@ -301,6 +306,61 @@ class UserExperienceEndpointsIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].id", hasItem(funny.getId().toString())))
                 .andExpect(jsonPath("$[*].id", not(hasItem(inactiveVibe.getId().toString()))));
+    }
+
+    @Test
+    void shouldReplaceAndReturnStreamingPreferencesWithoutApplyingTheFreeSpinLimit() throws Exception {
+        var user = userRepository.saveAndFlush(newUser("preferences-api@reelz.app"));
+        var netflix = new StreamingProviderEntity(8, "Netflix");
+        netflix.refreshCatalogData("Netflix", null, 0);
+        netflix = providerRepository.saveAndFlush(netflix);
+        var max = new StreamingProviderEntity(1899, "HBO Max");
+        max.refreshCatalogData("HBO Max", null, 1);
+        max = providerRepository.saveAndFlush(max);
+        var unavailableProvider = providerRepository.saveAndFlush(
+                new StreamingProviderEntity(9999, "Indisponível")
+        );
+        var movie = movieRepository.saveAndFlush(newMovie(
+                9100L,
+                "Filme compartilhado",
+                "/shared.jpg",
+                new BigDecimal("7.5")
+        ));
+        offerRepository.saveAllAndFlush(List.of(
+                new MovieStreamingOfferEntity(movie, netflix, "BR", MonetizationType.FLATRATE, Instant.now()),
+                new MovieStreamingOfferEntity(movie, max, "BR", MonetizationType.FLATRATE, Instant.now())
+        ));
+
+        mockMvc.perform(get("/api/v1/users/me/streaming-preferences")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.providerIds.length()").value(0));
+
+        mockMvc.perform(put("/api/v1/users/me/streaming-preferences")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"providerIds":["%s","%s"]}
+                                """.formatted(max.getId(), netflix.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.providerIds[0]").value(netflix.getId().toString()))
+                .andExpect(jsonPath("$.providerIds[1]").value(max.getId().toString()));
+
+        mockMvc.perform(get("/api/v1/users/me/streaming-preferences")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.providerIds.length()").value(2));
+        assertThat(streamingPreferenceRepository.findAllByUserId(user.getId())).hasSize(2);
+
+        mockMvc.perform(put("/api/v1/users/me/streaming-preferences")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"providerIds":["%s"]}
+                                """.formatted(unavailableProvider.getId())))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_STREAMING_PREFERENCE"));
+        assertThat(streamingPreferenceRepository.findAllByUserId(user.getId())).hasSize(2);
     }
 
     @Test

@@ -7,6 +7,7 @@ import com.roletadefilmes.roulette.domain.exception.DuplicateSpinException;
 import com.roletadefilmes.roulette.domain.exception.EmptyProviderSelectionException;
 import com.roletadefilmes.roulette.domain.exception.FreePlanProviderLimitException;
 import com.roletadefilmes.roulette.domain.exception.NoMoviesFoundException;
+import com.roletadefilmes.streaming.domain.exception.InvalidStreamingPreferenceException;
 import com.roletadefilmes.user.domain.exception.UserNotFoundException;
 import com.roletadefilmes.user.domain.exception.EmailAlreadyRegisteredException;
 import com.roletadefilmes.user.domain.exception.InvalidTimezoneException;
@@ -127,6 +128,21 @@ public class GlobalExceptionHandler {
         return error(
                 HttpStatus.BAD_REQUEST,
                 "INVALID_PROVIDER_SELECTION",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ExceptionHandler(InvalidStreamingPreferenceException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrorResponse handleInvalidStreamingPreference(
+            InvalidStreamingPreferenceException exception,
+            HttpServletRequest request
+    ) {
+        return error(
+                HttpStatus.BAD_REQUEST,
+                "INVALID_STREAMING_PREFERENCE",
                 exception.getMessage(),
                 request,
                 List.of()

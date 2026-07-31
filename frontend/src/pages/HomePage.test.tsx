@@ -1,5 +1,5 @@
 import { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -7,6 +7,10 @@ import { AuthContext, type AuthContextValue } from '../context/authContextDefini
 import { getProviders, getVibes } from '../services/catalogService'
 import { markMovieAsWatched } from '../services/historyService'
 import { getTodayUsage, spinRoulette } from '../services/rouletteService'
+import {
+  getStreamingPreferences,
+  updateStreamingPreferences,
+} from '../services/streamingPreferenceService'
 import type { ApiErrorResponse } from '../types/api'
 import type { CatalogItem } from '../types/catalog'
 import type { RouletteSpinResponse, SpinQuota } from '../types/roulette'
@@ -26,7 +30,13 @@ vi.mock('../services/rouletteService', () => ({
   spinRoulette: vi.fn(),
 }))
 
+vi.mock('../services/streamingPreferenceService', () => ({
+  getStreamingPreferences: vi.fn(),
+  updateStreamingPreferences: vi.fn(),
+}))
+
 const PROVIDER_ID = '0198f032-7370-7000-8000-000000000001'
+const MAX_PROVIDER_ID = '0198f032-7370-7000-8000-000000000003'
 const VIBE_ID = '0198f032-7370-7000-8000-000000000002'
 const providers: CatalogItem[] = [{ id: PROVIDER_ID, name: 'Netflix' }]
 const vibes: CatalogItem[] = [{ id: VIBE_ID, name: 'Para rir' }]
@@ -109,6 +119,8 @@ beforeEach(() => {
   vi.mocked(getProviders).mockResolvedValue(providers)
   vi.mocked(getVibes).mockResolvedValue(vibes)
   vi.mocked(getTodayUsage).mockResolvedValue(initialQuota)
+  vi.mocked(getStreamingPreferences).mockResolvedValue({ providerIds: [] })
+  vi.mocked(updateStreamingPreferences).mockImplementation(async (payload) => payload)
   vi.mocked(markMovieAsWatched).mockResolvedValue({
     id: 'history-id',
     movieId: 550,
@@ -124,13 +136,42 @@ describe('HomePage roulette', () => {
   it('loads the official catalogs and the current quota on mount', async () => {
     renderHome()
 
-    expect(screen.getByLabelText(/Carregando onde assistir/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Carregando usar neste giro/)).toBeInTheDocument()
     expect(await screen.findByRole('button', { name: 'Netflix' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Para rir' })).toBeInTheDocument()
     expect(await screen.findByLabelText('5 giros restantes hoje')).toBeInTheDocument()
     expect(getProviders).toHaveBeenCalledOnce()
     expect(getVibes).toHaveBeenCalledOnce()
+    expect(getStreamingPreferences).toHaveBeenCalledOnce()
     expect(getTodayUsage).toHaveBeenCalledOnce()
+  })
+
+  it('uses saved subscriptions and lets the user manage multiple owned streamings', async () => {
+    const providerCatalog: CatalogItem[] = [
+      ...providers,
+      { id: MAX_PROVIDER_ID, name: 'HBO Max' },
+    ]
+    vi.mocked(getProviders).mockResolvedValueOnce(providerCatalog)
+    vi.mocked(getStreamingPreferences).mockResolvedValueOnce({ providerIds: [PROVIDER_ID] })
+    vi.mocked(updateStreamingPreferences).mockResolvedValueOnce({
+      providerIds: [PROVIDER_ID, MAX_PROVIDER_ID],
+    })
+    const user = userEvent.setup()
+    renderHome()
+
+    expect(await screen.findByRole('button', { name: 'Netflix' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'HBO Max' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Gerenciar' }))
+
+    const dialog = screen.getByRole('dialog', { name: 'Meus streamings' })
+    await user.click(within(dialog).getByRole('button', { name: 'HBO Max' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar streamings' }))
+
+    await waitFor(() => expect(updateStreamingPreferences).toHaveBeenCalledWith({
+      providerIds: [PROVIDER_ID, MAX_PROVIDER_ID],
+    }))
+    expect(await screen.findByRole('button', { name: 'HBO Max' })).toBeInTheDocument()
+    expect(screen.getByText('2 streamings salvos')).toBeInTheDocument()
   })
 
   it('sends dynamic filters, reveals the movie and resynchronizes the quota', async () => {
@@ -247,7 +288,7 @@ describe('HomePage roulette', () => {
     vi.mocked(getVibes).mockReturnValueOnce(new Promise((resolve) => { resolveVibes = resolve }))
     renderHome()
 
-    expect(screen.getByLabelText(/Carregando onde assistir/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Carregando usar neste giro/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Carregando catálogo…' })).toBeDisabled()
 
     await act(async () => {
