@@ -25,7 +25,7 @@ O repositório está na nona etapa do produto:
 - front-end React com Vite e TypeScript;
 - interface dark, responsiva e mobile-first com Tailwind CSS;
 - autenticação JWT integrada via Axios e `sessionStorage`;
-- rotas públicas e privadas com React Router DOM v6;
+- rotas públicas e privadas com React Router v8;
 - testes de contexto, interceptors e navegação.
 - Home da roleta com filtros rápidos, animações de mola e slot machine;
 - integração do giro com estados de sucesso, catálogo vazio e limite diário;
@@ -42,6 +42,9 @@ O repositório está na nona etapa do produto:
 - Biblioteca mobile-first com contador de coleção e carregamento incremental;
 - navegação inferior entre Roleta e Biblioteca;
 - consistência read-after-write entre “Já vi” e o próximo giro.
+- sincronização incremental por provedor, com checkpoint, lease e auditoria operacional;
+- catálogo brasileiro de filmes e disponibilidade sincronizado pelo TMDB;
+- atribuição de disponibilidade JustWatch e catálogo filtrado por ofertas elegíveis.
 
 A Home privada contém a experiência funcional da roleta e consome os catálogos, a franquia diária e o histórico diretamente dos endpoints autenticados do backend.
 
@@ -59,7 +62,7 @@ A Home privada contém a experiência funcional da roleta e consome os catálogo
 - TypeScript
 - Vite
 - Tailwind CSS
-- React Router DOM
+- React Router
 - Framer Motion
 
 ## Executar os testes
@@ -87,4 +90,5 @@ npm run dev
 - [Serviço e API da roleta](docs/03-servico-api.md)
 - [Spring Security e JWT](docs/04-seguranca-jwt.md)
 - [Endpoints de experiência](docs/05-endpoints-experiencia.md)
+- [Catálogo TMDB](docs/06-catalogo-tmdb.md)
 - [Front-end React](frontend/README.md)

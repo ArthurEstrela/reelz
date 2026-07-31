@@ -34,14 +34,11 @@ public interface MovieCacheRepository extends JpaRepository<MovieCacheEntity, UU
                      WHERE h.user_id = CAST(:userId AS UUID)
                        AND h.movie_id = m.id
                        AND h.status = 'WATCHED'
-               )
+                )
                AND EXISTS (
                     SELECT 1
                       FROM movie_streaming_offer o
                       JOIN streaming_provider sp ON sp.id = o.provider_id
-                      JOIN user_streaming_preference usp
-                        ON usp.provider_id = o.provider_id
-                       AND usp.user_id = CAST(:userId AS UUID)
                      WHERE o.movie_id = m.id
                        AND o.provider_id IN (:providerIds)
                        AND o.country_code = :countryCode

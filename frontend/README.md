@@ -1,8 +1,10 @@
 # Reelz Web
 
-Front-end mobile-first do Reelz, construído com React, TypeScript, Vite, Tailwind CSS, React Router DOM v6 e Framer Motion.
+Front-end mobile-first do Reelz, construído com React, TypeScript, Vite, Tailwind CSS, React Router v8 e Framer Motion.
 
 ## Executar
+
+Use Node.js 22.22.0 ou superior.
 
 ```bash
 npm install
@@ -78,4 +80,4 @@ src/
 
 ## Dependência do React Router
 
-O projeto permanece na linha v6 por requisito desta etapa. O `npm audit` informa advisories moderados cuja correção oficial exige migração para v7. A navegação de retorno usada no login é sanitizada e o projeto é uma SPA sem hidratação SSR, reduzindo a exposição aos vetores reportados, mas a migração para v7 deve entrar no backlog técnico.
+O projeto usa `react-router` 8.3 ou superior. Essa linha contém as correções de segurança indisponíveis simultaneamente nas versões anteriores e exige Node.js 22.22.0+, React 19.2.7+ e Vite 7+.

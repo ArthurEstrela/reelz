@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { useState, type FormEvent } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { AuthLayout } from '../components/auth/AuthLayout'
 import { FormMessage } from '../components/feedback/FormMessage'
 import { FormField } from '../components/form/FormField'

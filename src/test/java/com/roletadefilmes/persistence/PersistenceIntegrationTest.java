@@ -176,7 +176,7 @@ class PersistenceIntegrationTest extends PostgresRepositoryIntegrationTest {
                 Instant.now(),
                 null
         ));
-        var funny = vibeRepository.save(new VibeEntity("para-rir", "Para rir", new Integer[]{35}));
+        var funny = vibeRepository.save(new VibeEntity("test-para-rir", "Para rir", new Integer[]{35}));
         entityManager.flush();
         entityManager.clear();
 

@@ -76,7 +76,7 @@ export function MovieCard({ movie, onWatchedAndSpinAgain, spinning = false }: Mo
             {offer.logoPath ? (
               <img src={`${TMDB_LOGO_BASE_URL}${offer.logoPath}`} alt="" className="size-6 rounded-md object-cover" />
             ) : null}
-            Assistir na {offer.providerName}
+            Ver onde assistir
           </motion.a>
         ) : (
           <button
@@ -85,9 +85,15 @@ export function MovieCard({ movie, onWatchedAndSpinAgain, spinning = false }: Mo
             title="O provedor não informou um link de reprodução."
             className="w-full cursor-not-allowed rounded-2xl bg-white/10 px-5 py-4 text-sm font-black text-white/45"
           >
-            {offer ? `Assistir na ${offer.providerName}` : 'Streaming indisponível'}
+            {offer ? `Disponível na ${offer.providerName}` : 'Streaming indisponível'}
           </button>
         )}
+
+        {offer ? (
+          <p className="mt-2 text-center text-[0.65rem] font-medium text-white/35">
+            Disponível na {offer.providerName}. Dados de disponibilidade fornecidos pelo JustWatch via TMDB.
+          </p>
+        ) : null}
 
         <motion.button
           type="button"

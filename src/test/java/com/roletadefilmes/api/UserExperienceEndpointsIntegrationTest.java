@@ -8,7 +8,10 @@ import com.roletadefilmes.movie.persistence.repository.MovieCacheRepository;
 import com.roletadefilmes.roulette.persistence.entity.RouletteDailyUsageEntity;
 import com.roletadefilmes.roulette.persistence.repository.RouletteDailyUsageRepository;
 import com.roletadefilmes.security.JwtService;
+import com.roletadefilmes.streaming.domain.MonetizationType;
+import com.roletadefilmes.streaming.persistence.entity.MovieStreamingOfferEntity;
 import com.roletadefilmes.streaming.persistence.entity.StreamingProviderEntity;
+import com.roletadefilmes.streaming.persistence.repository.MovieStreamingOfferRepository;
 import com.roletadefilmes.streaming.persistence.repository.StreamingProviderRepository;
 import com.roletadefilmes.user.persistence.entity.UserAccountEntity;
 import com.roletadefilmes.user.persistence.repository.UserAccountRepository;
@@ -35,6 +38,8 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -89,6 +94,9 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Autowired
     private StreamingProviderRepository providerRepository;
+
+    @Autowired
+    private MovieStreamingOfferRepository offerRepository;
 
     @Autowired
     private VibeRepository vibeRepository;
@@ -260,9 +268,22 @@ class UserExperienceEndpointsIntegrationTest {
         var inactiveProvider = new StreamingProviderEntity(9, "Provider inativo");
         inactiveProvider.deactivate();
         providerRepository.saveAndFlush(inactiveProvider);
+        var catalogMovie = movieRepository.saveAndFlush(newMovie(
+                9001L,
+                "Filme do catálogo",
+                "/catalog.jpg",
+                new BigDecimal("7.0")
+        ));
+        offerRepository.saveAndFlush(new MovieStreamingOfferEntity(
+                catalogMovie,
+                netflix,
+                "BR",
+                MonetizationType.FLATRATE,
+                Instant.now()
+        ));
 
         var funny = vibeRepository.saveAndFlush(
-                new VibeEntity("para-rir", "Para rir", new Integer[]{35})
+                new VibeEntity("catalog-test-para-rir", "Para rir", new Integer[]{35})
         );
         var inactiveVibe = new VibeEntity("arquivada", "Arquivada", new Integer[]{18});
         inactiveVibe.deactivate();
@@ -278,9 +299,8 @@ class UserExperienceEndpointsIntegrationTest {
         mockMvc.perform(get("/api/v1/catalog/vibes")
                         .header(HttpHeaders.AUTHORIZATION, bearerToken(user)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].id").value(funny.getId().toString()))
-                .andExpect(jsonPath("$[0].name").value("Para rir"));
+                .andExpect(jsonPath("$[*].id", hasItem(funny.getId().toString())))
+                .andExpect(jsonPath("$[*].id", not(hasItem(inactiveVibe.getId().toString()))));
     }
 
     @Test

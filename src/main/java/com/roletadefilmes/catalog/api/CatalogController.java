@@ -26,7 +26,7 @@ public class CatalogController {
     public ResponseEntity<List<ProviderCatalogResponse>> listProviders(
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser
     ) {
-        return ResponseEntity.ok(catalogService.listProviders());
+        return ResponseEntity.ok(catalogService.listProviders(authenticatedUser.userId()));
     }
 
     @GetMapping("/vibes")

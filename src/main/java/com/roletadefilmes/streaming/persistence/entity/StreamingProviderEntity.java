@@ -56,6 +56,9 @@ public class StreamingProviderEntity extends AuditableUuidEntity {
         this.name = name;
         this.logoPath = logoPath;
         this.displayPriority = displayPriority;
+    }
+
+    public void activate() {
         this.active = true;
     }
 

@@ -27,3 +27,19 @@ reelz:
   legal:
     terms-version: ${TERMS_VERSION:1.0}
     privacy-version: ${PRIVACY_VERSION:1.0}
+  tmdb:
+    read-access-token: ${TMDB_READ_ACCESS_TOKEN:}
+    language: ${TMDB_LANGUAGE:pt-BR}
+    region: ${TMDB_REGION:BR}
+    pages-per-provider: ${TMDB_PAGES_PER_PROVIDER:${TMDB_IMPORT_PAGES:3}}
+    max-providers: ${TMDB_MAX_PROVIDERS:10}
+    provider-ids: ${TMDB_PROVIDER_IDS:8,119,350,337,531,1899,307,283,11,300}
+    sync-on-startup: ${TMDB_SYNC_ON_STARTUP:false}
+    scheduled-sync-enabled: ${TMDB_SCHEDULED_SYNC_ENABLED:false}
+    sync-cron: ${TMDB_SYNC_CRON:0 0 4 * * *}
+    sync-zone: ${TMDB_SYNC_ZONE:America/Sao_Paulo}
+    lease-duration: ${TMDB_SYNC_LEASE_DURATION:PT30M}
+    max-attempts: ${TMDB_MAX_ATTEMPTS:3}
+    retry-base-delay: ${TMDB_RETRY_BASE_DELAY:PT0.25S}
+    connect-timeout: ${TMDB_CONNECT_TIMEOUT:PT5S}
+    read-timeout: ${TMDB_READ_TIMEOUT:PT15S}

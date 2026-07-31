@@ -1,7 +1,7 @@
 import { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AuthContext, type AuthContextValue } from '../context/authContextDefinition'
 import { getProviders, getVibes } from '../services/catalogService'
@@ -147,7 +147,7 @@ describe('HomePage roulette', () => {
     await user.click(screen.getByRole('button', { name: 'Girar Roleta' }))
 
     expect(await screen.findByRole('heading', { name: 'Clube da Luta' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Assistir na Netflix' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Ver onde assistir' })).toHaveAttribute(
       'href',
       'https://www.netflix.com/title/example',
     )
