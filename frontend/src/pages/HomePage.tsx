@@ -11,7 +11,10 @@ import { StreamingPreferencesModal } from '../components/streaming/StreamingPref
 import { GENRE_OPTIONS } from '../config/rouletteFilters'
 import { useAuth } from '../hooks/useAuth'
 import { getProviders, getVibes } from '../services/catalogService'
-import { markMovieAsWatched } from '../services/historyService'
+import {
+  markMovieAsWatched,
+  saveMovieToWatchlist,
+} from '../services/historyService'
 import { getTodayUsage, spinRoulette } from '../services/rouletteService'
 import {
   getStreamingPreferences,
@@ -280,6 +283,25 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
     void executeSpin(animationStartedAt)
   }
 
+  async function handleSaveToWatchlist(): Promise<boolean> {
+    if (!movie || isSpinning) return false
+    const movieToSave = movie
+
+    try {
+      await saveMovieToWatchlist(movieToSave.tmdbId)
+      return true
+    } catch (error) {
+      setToast({
+        id: Date.now(),
+        message: getApiErrorMessage(
+          error,
+          `Não conseguimos salvar “${movieToSave.title}” na lista Quero Ver.`,
+        ),
+      })
+      return false
+    }
+  }
+
   return (
     <MotionConfig reducedMotion="user">
       <main className="relative min-h-svh overflow-hidden bg-canvas px-4 pt-5 pb-28 text-white sm:px-8 sm:pt-6 sm:pb-28">
@@ -345,6 +367,7 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
                   key={movie.id}
                   movie={movie}
                   onWatchedAndSpinAgain={handleWatchedAndSpinAgain}
+                  onSaveToWatchlist={handleSaveToWatchlist}
                   spinning={isSpinning}
                 />
               ) : null}

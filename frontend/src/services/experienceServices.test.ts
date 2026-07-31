@@ -1,13 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { api } from './api'
 import { getProviders, getVibes } from './catalogService'
-import { getWatchedHistory, markMovieAsWatched } from './historyService'
+import {
+  getWatchedHistory,
+  getWatchlist,
+  markMovieAsWatched,
+  removeMovieFromWatchlist,
+  saveMovieToWatchlist,
+} from './historyService'
 import { getTodayUsage } from './rouletteService'
 
 vi.mock('./api', () => ({
   api: {
     get: vi.fn(),
     post: vi.fn(),
+    delete: vi.fn(),
   },
 }))
 
@@ -59,7 +66,28 @@ describe('experience API services', () => {
     await getWatchedHistory(2, 24)
 
     expect(api.get).toHaveBeenCalledWith('/api/v1/history', {
-      params: { page: 2, size: 24 },
+      params: { status: 'WATCHED', page: 2, size: 24 },
     })
+  })
+
+  it('saves, lists and removes watchlist movies with the expected contracts', async () => {
+    vi.mocked(api.post).mockResolvedValueOnce({ data: { id: 'watchlist-id' } })
+    vi.mocked(api.get).mockResolvedValueOnce({
+      data: { content: [], page: { number: 0, size: 24, totalElements: 0, totalPages: 0 } },
+    })
+    vi.mocked(api.delete).mockResolvedValueOnce({ data: undefined })
+
+    await saveMovieToWatchlist(603)
+    await getWatchlist(0, 24)
+    await removeMovieFromWatchlist(603)
+
+    expect(api.post).toHaveBeenCalledWith('/api/v1/history', {
+      movieId: 603,
+      status: 'WATCHLIST',
+    })
+    expect(api.get).toHaveBeenCalledWith('/api/v1/history', {
+      params: { status: 'WATCHLIST', page: 0, size: 24 },
+    })
+    expect(api.delete).toHaveBeenCalledWith('/api/v1/history/watchlist/603')
   })
 })

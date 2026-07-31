@@ -45,6 +45,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -210,6 +211,62 @@ class UserExperienceEndpointsIntegrationTest {
                 .andExpect(jsonPath("$.content[0].movieId").value(100))
                 .andExpect(jsonPath("$.content[0].title").value("Filme antigo"))
                 .andExpect(jsonPath("$.page.number").value(1));
+    }
+
+    @Test
+    void shouldListAndRemoveWatchlistItemsWithoutDeletingWatchedHistory() throws Exception {
+        var user = userRepository.saveAndFlush(newUser("watchlist-api@reelz.app"));
+        var savedForLater = movieRepository.saveAndFlush(newMovie(
+                401L,
+                "Para ver depois",
+                "/later.jpg",
+                new BigDecimal("7.8")
+        ));
+        var alreadyWatched = movieRepository.saveAndFlush(newMovie(
+                402L,
+                "Já assistido",
+                "/watched.jpg",
+                new BigDecimal("8.1")
+        ));
+        historyRepository.saveAllAndFlush(List.of(
+                new UserMovieHistoryEntity(
+                        user,
+                        savedForLater,
+                        UserMovieStatus.WATCHLIST,
+                        null,
+                        null
+                ),
+                new UserMovieHistoryEntity(
+                        user,
+                        alreadyWatched,
+                        UserMovieStatus.WATCHED,
+                        Instant.now(),
+                        null
+                )
+        ));
+
+        mockMvc.perform(get("/api/v1/history?status=WATCHLIST&page=0&size=24")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].movieId").value(401))
+                .andExpect(jsonPath("$.content[0].status").value("WATCHLIST"))
+                .andExpect(jsonPath("$.content[0].watchedAt").value(nullValue()));
+
+        mockMvc.perform(delete("/api/v1/history/watchlist/{movieId}", 401L)
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user)))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/v1/history/watchlist/{movieId}", 402L)
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user)))
+                .andExpect(status().isNoContent());
+
+        assertThat(historyRepository.findByUserIdAndMovieId(user.getId(), savedForLater.getId()))
+                .isEmpty();
+        assertThat(historyRepository.findByUserIdAndMovieId(user.getId(), alreadyWatched.getId()))
+                .isPresent()
+                .get()
+                .extracting(UserMovieHistoryEntity::getStatus)
+                .isEqualTo(UserMovieStatus.WATCHED);
     }
 
     @Test

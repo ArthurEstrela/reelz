@@ -79,25 +79,43 @@ public class HistoryService {
     }
 
     @Transactional(readOnly = true)
-    public Page<UserMovieHistoryResponse> listWatched(UUID userId, Pageable pageable) {
+    public Page<UserMovieHistoryResponse> list(
+            UUID userId,
+            UserMovieStatus status,
+            Pageable pageable
+    ) {
         if (!userRepository.existsById(userId)) {
             throw new UserNotFoundException(userId);
         }
 
+        var primarySortProperty = status == UserMovieStatus.WATCHED
+                ? "watchedAt"
+                : "updatedAt";
         var safePageable = PageRequest.of(
                 pageable.getPageNumber(),
                 Math.min(pageable.getPageSize(), MAX_PAGE_SIZE),
                 Sort.by(
-                        Sort.Order.desc("watchedAt").nullsLast(),
+                        Sort.Order.desc(primarySortProperty).nullsLast(),
                         Sort.Order.desc("id")
                 )
         );
         return historyRepository.findPageByUserAndStatus(
                         userId,
-                        UserMovieStatus.WATCHED,
+                        status,
                         safePageable
                 )
                 .map(this::toListResponse);
+    }
+
+    @Transactional
+    public void removeFromWatchlist(UUID userId, Long tmdbMovieId) {
+        if (!userRepository.existsById(userId)) {
+            throw new UserNotFoundException(userId);
+        }
+
+        historyRepository.findByUser_IdAndMovie_TmdbId(userId, tmdbMovieId)
+                .filter(history -> history.getStatus() == UserMovieStatus.WATCHLIST)
+                .ifPresent(historyRepository::delete);
     }
 
     private UserMovieHistoryResponse toListResponse(UserMovieHistoryEntity history) {

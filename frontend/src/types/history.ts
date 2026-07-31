@@ -15,13 +15,16 @@ export interface HistoryResponse {
   updatedAt: string
 }
 
-export interface WatchedMovie {
+export interface LibraryMovie {
   id: string
   movieId: number
   title: string
   posterPath: string | null
   tmdbRating: number | null
-  status: 'WATCHED'
+  status: UserMovieStatus
   watchedAt: string | null
   rating: number | null
 }
+
+export type WatchedMovie = LibraryMovie & { status: 'WATCHED' }
+export type WatchlistMovie = LibraryMovie & { status: 'WATCHLIST' }

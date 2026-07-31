@@ -48,6 +48,8 @@ O repositório está na nona etapa do produto:
 - atribuição de disponibilidade JustWatch e catálogo filtrado por ofertas elegíveis;
 - onboarding Tinder-style com filmes populares e disponíveis no país do usuário;
 - histórico inicial persistido em lote e bloqueio de rotas até a conclusão.
+- Watchlist integrada ao resultado da roleta e à Biblioteca;
+- atualização otimista para remover ou marcar itens da Watchlist como assistidos.
 
 A Home privada contém a experiência funcional da roleta e consome os catálogos, a franquia diária e o histórico diretamente dos endpoints autenticados do backend.
 
@@ -96,4 +98,5 @@ npm run dev
 - [Catálogo TMDB](docs/06-catalogo-tmdb.md)
 - [Preferências de streaming](docs/07-preferencias-streaming.md)
 - [Onboarding de filmes](docs/08-onboarding-filmes.md)
+- [Watchlist](docs/09-watchlist.md)
 - [Front-end React](frontend/README.md)

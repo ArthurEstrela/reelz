@@ -5,7 +5,10 @@ import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AuthContext, type AuthContextValue } from '../context/authContextDefinition'
 import { getProviders, getVibes } from '../services/catalogService'
-import { markMovieAsWatched } from '../services/historyService'
+import {
+  markMovieAsWatched,
+  saveMovieToWatchlist,
+} from '../services/historyService'
 import { getTodayUsage, spinRoulette } from '../services/rouletteService'
 import {
   getStreamingPreferences,
@@ -23,6 +26,7 @@ vi.mock('../services/catalogService', () => ({
 
 vi.mock('../services/historyService', () => ({
   markMovieAsWatched: vi.fn(),
+  saveMovieToWatchlist: vi.fn(),
 }))
 
 vi.mock('../services/rouletteService', () => ({
@@ -135,6 +139,15 @@ beforeEach(() => {
     createdAt: '2026-07-30T12:00:00Z',
     updatedAt: '2026-07-30T12:00:00Z',
   })
+  vi.mocked(saveMovieToWatchlist).mockResolvedValue({
+    id: 'watchlist-id',
+    movieId: 550,
+    status: 'WATCHLIST',
+    watchedAt: null,
+    rating: null,
+    createdAt: '2026-07-30T12:00:00Z',
+    updatedAt: '2026-07-30T12:00:00Z',
+  })
 })
 
 describe('HomePage roulette', () => {
@@ -205,6 +218,21 @@ describe('HomePage roulette', () => {
       vibeId: VIBE_ID,
     })
     await waitFor(() => expect(getTodayUsage).toHaveBeenCalledTimes(2))
+  })
+
+  it('saves a roulette result to the watchlist without closing the movie', async () => {
+    vi.mocked(spinRoulette).mockResolvedValueOnce(successfulSpin)
+    const user = userEvent.setup()
+    renderHome()
+
+    await screen.findByRole('button', { name: 'Netflix' })
+    await user.click(screen.getByRole('button', { name: 'Girar Roleta' }))
+    await screen.findByRole('heading', { name: 'Clube da Luta' })
+    await user.click(screen.getByRole('button', { name: 'Quero ver depois' }))
+
+    expect(saveMovieToWatchlist).toHaveBeenCalledWith(550)
+    expect(await screen.findByRole('button', { name: 'Salvo em Quero Ver' })).toBeDisabled()
+    expect(screen.getByRole('heading', { name: 'Clube da Luta' })).toBeInTheDocument()
   })
 
   it('shows a playful filter hint when the spin returns 404', async () => {

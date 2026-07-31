@@ -17,6 +17,8 @@ public interface UserMovieHistoryRepository extends JpaRepository<UserMovieHisto
 
     Optional<UserMovieHistoryEntity> findByUserIdAndMovieId(UUID userId, UUID movieId);
 
+    Optional<UserMovieHistoryEntity> findByUser_IdAndMovie_TmdbId(UUID userId, Long tmdbId);
+
     List<UserMovieHistoryEntity> findAllByUserIdAndMovieIdIn(
             UUID userId,
             Collection<UUID> movieIds

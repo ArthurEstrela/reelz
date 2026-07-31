@@ -8,12 +8,20 @@ const TMDB_LOGO_BASE_URL = 'https://image.tmdb.org/t/p/original'
 interface MovieCardProps {
   movie: RouletteMovie
   onWatchedAndSpinAgain: () => void
+  onSaveToWatchlist: () => Promise<boolean>
   spinning?: boolean
 }
 
-export function MovieCard({ movie, onWatchedAndSpinAgain, spinning = false }: MovieCardProps) {
+export function MovieCard({
+  movie,
+  onWatchedAndSpinAgain,
+  onSaveToWatchlist,
+  spinning = false,
+}: MovieCardProps) {
   const [imageFailed, setImageFailed] = useState(false)
   const [markingWatched, setMarkingWatched] = useState(false)
+  const [savingToWatchlist, setSavingToWatchlist] = useState(false)
+  const [savedToWatchlist, setSavedToWatchlist] = useState(false)
   const offer = movie.streamingAvailability[0]
   const posterUrl = movie.posterPath && !imageFailed ? `${TMDB_IMAGE_BASE_URL}${movie.posterPath}` : null
   const releaseYear = movie.releaseDate?.slice(0, 4)
@@ -23,6 +31,14 @@ export function MovieCard({ movie, onWatchedAndSpinAgain, spinning = false }: Mo
     if (markingWatched || spinning) return
     setMarkingWatched(true)
     onWatchedAndSpinAgain()
+  }
+
+  async function handleWatchlistClick() {
+    if (savingToWatchlist || savedToWatchlist || spinning) return
+    setSavingToWatchlist(true)
+    const saved = await onSaveToWatchlist()
+    setSavingToWatchlist(false)
+    if (saved) setSavedToWatchlist(true)
   }
 
   return (
@@ -94,6 +110,21 @@ export function MovieCard({ movie, onWatchedAndSpinAgain, spinning = false }: Mo
             Disponível na {offer.providerName}. Dados de disponibilidade fornecidos pelo JustWatch via TMDB.
           </p>
         ) : null}
+
+        <motion.button
+          type="button"
+          onClick={() => void handleWatchlistClick()}
+          disabled={spinning || savingToWatchlist || savedToWatchlist}
+          whileTap={{ scale: 0.96 }}
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-300/20 bg-amber-300/[0.06] px-5 py-3.5 text-sm font-black text-amber-200 transition hover:border-amber-300/35 hover:bg-amber-300/10 disabled:cursor-default disabled:opacity-65 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+        >
+          <span aria-hidden="true">{savedToWatchlist ? '✓' : '+'}</span>
+          {savedToWatchlist
+            ? 'Salvo em Quero Ver'
+            : savingToWatchlist
+              ? 'Salvando…'
+              : 'Quero ver depois'}
+        </motion.button>
 
         <motion.button
           type="button"
