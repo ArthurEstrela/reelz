@@ -14,7 +14,7 @@ RUN --mount=type=cache,target=/root/.m2 \
     mvn -B -ntp clean package -DskipTests
 
 # A imagem final contém somente o JRE e o artefato executável.
-FROM eclipse-temurin:21-jre-alpine AS runtime
+FROM eclipse-temurin:25-jre-alpine AS runtime
 WORKDIR /app
 
 # Aplica correções de segurança da distribuição antes de remover o root.
