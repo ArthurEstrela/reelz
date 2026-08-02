@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.3</version>
+        <version>3.5.16</version>
         <relativePath/>
     </parent>
 
@@ -20,6 +20,9 @@
     <properties>
         <java.version>21</java.version>
         <jjwt.version>0.13.0</jjwt.version>
+        <!-- Patches de segurança posteriores ao último BOM do Spring Boot 3.5.x. -->
+        <jackson-bom.version>2.21.5</jackson-bom.version>
+        <postgresql.version>42.7.12</postgresql.version>
         <!-- 1.21.4 adds compatibility with Docker Engine 29 while preserving the 1.x API. -->
         <testcontainers.version>1.21.4</testcontainers.version>
     </properties>

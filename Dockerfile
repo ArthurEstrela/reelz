@@ -17,8 +17,10 @@ RUN --mount=type=cache,target=/root/.m2 \
 FROM eclipse-temurin:21-jre-alpine AS runtime
 WORKDIR /app
 
-# O processo da aplicação não precisa executar como root.
-RUN addgroup -S reelz && adduser -S reelz -G reelz
+# Aplica correções de segurança da distribuição antes de remover o root.
+RUN apk upgrade --no-cache \
+    && addgroup -S reelz \
+    && adduser -S reelz -G reelz
 COPY --from=build --chown=reelz:reelz /workspace/target/*.jar /app/reelz.jar
 
 USER reelz
