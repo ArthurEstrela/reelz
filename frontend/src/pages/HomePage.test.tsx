@@ -221,7 +221,9 @@ describe('HomePage roulette', () => {
   })
 
   it('saves a roulette result to the watchlist without closing the movie', async () => {
-    vi.mocked(spinRoulette).mockResolvedValueOnce(successfulSpin)
+    vi.mocked(spinRoulette)
+      .mockResolvedValueOnce(successfulSpin)
+      .mockImplementationOnce(() => new Promise(() => undefined))
     const user = userEvent.setup()
     renderHome()
 
@@ -233,6 +235,12 @@ describe('HomePage roulette', () => {
     expect(saveMovieToWatchlist).toHaveBeenCalledWith(550)
     expect(await screen.findByRole('button', { name: 'Salvo em Quero Ver' })).toBeDisabled()
     expect(screen.getByRole('heading', { name: 'Clube da Luta' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Girar novamente' }))
+
+    expect(spinRoulette).toHaveBeenCalledTimes(2)
+    expect(markMovieAsWatched).not.toHaveBeenCalled()
+    expect(await screen.findByText('Procurando a sessão perfeita…')).toBeInTheDocument()
   })
 
   it('shows a playful filter hint when the spin returns 404', async () => {
@@ -269,7 +277,7 @@ describe('HomePage roulette', () => {
     await screen.findByRole('button', { name: 'Netflix' })
     await user.click(screen.getByRole('button', { name: 'Girar Roleta' }))
     await screen.findByRole('heading', { name: 'Clube da Luta' })
-    await user.click(screen.getByRole('button', { name: 'Já vi / Girar de novo' }))
+    await user.click(screen.getByRole('button', { name: 'Já assisti · marcar e girar' }))
 
     expect(markMovieAsWatched).toHaveBeenCalledWith(550)
     expect(spinRoulette).toHaveBeenCalledTimes(2)
@@ -302,7 +310,7 @@ describe('HomePage roulette', () => {
     await screen.findByRole('button', { name: 'Netflix' })
     await user.click(screen.getByRole('button', { name: 'Girar Roleta' }))
     await screen.findByRole('heading', { name: 'Clube da Luta' })
-    await user.click(screen.getByRole('button', { name: 'Já vi / Girar de novo' }))
+    await user.click(screen.getByRole('button', { name: 'Já assisti · marcar e girar' }))
 
     expect(await screen.findByText('Procurando a sessão perfeita…')).toBeInTheDocument()
     expect(markMovieAsWatched).toHaveBeenCalledWith(550)

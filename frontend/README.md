@@ -67,7 +67,9 @@ src/
 - A franquia é sincronizada na montagem e depois de cada sucesso por `/api/v1/roulette/usage/today`.
 - Respostas 404 exibem uma falha animada e sugerem novos filtros; 403/429 abrem o modal de limite.
 - Usuários Free escolhem um provedor por vez. Quando a resposta informa cota ilimitada, múltiplos provedores são liberados.
-- O botão “Já vi / Girar de novo” inicia a animação e registra o filme em `/api/v1/history`.
+- “Girar novamente” troca o resultado sem alterar o histórico e sempre exige uma ação explícita, preservando a franquia Free.
+- “Quero ver depois” salva o filme sem fechar o card; o usuário pode então girar novamente.
+- “Já assisti · marcar e girar” inicia a animação e registra o filme em `/api/v1/history`.
 - A nova busca aguarda o histórico terminar, garantindo consistência read-after-write sem congelar a interface.
 - Falhas no histórico são isoladas em um toast e não impedem a continuação do giro.
 

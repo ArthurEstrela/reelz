@@ -302,6 +302,11 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
     }
   }
 
+  function handleSpinAgain() {
+    if (isSpinning) return
+    void executeSpin()
+  }
+
   return (
     <MotionConfig reducedMotion="user">
       <main className="relative min-h-svh overflow-hidden bg-canvas px-4 pt-5 pb-28 text-white sm:px-8 sm:pt-6 sm:pb-28">
@@ -368,6 +373,7 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
                   movie={movie}
                   onWatchedAndSpinAgain={handleWatchedAndSpinAgain}
                   onSaveToWatchlist={handleSaveToWatchlist}
+                  onSpinAgain={handleSpinAgain}
                   spinning={isSpinning}
                 />
               ) : null}
