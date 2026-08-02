@@ -5,6 +5,7 @@ import com.roletadefilmes.history.persistence.entity.UserMovieHistoryEntity;
 import com.roletadefilmes.history.persistence.repository.UserMovieHistoryRepository;
 import com.roletadefilmes.movie.persistence.entity.MovieCacheEntity;
 import com.roletadefilmes.movie.persistence.repository.MovieCacheRepository;
+import com.roletadefilmes.observability.ReelzMetrics;
 import com.roletadefilmes.onboarding.api.dto.CompleteOnboardingRequest;
 import com.roletadefilmes.onboarding.api.dto.CompleteOnboardingResponse;
 import com.roletadefilmes.onboarding.api.dto.OnboardingMovieResponse;
@@ -30,17 +31,20 @@ public class OnboardingService {
     private final MovieCacheRepository movieRepository;
     private final UserMovieHistoryRepository historyRepository;
     private final Clock clock;
+    private final ReelzMetrics metrics;
 
     public OnboardingService(
             UserAccountRepository userRepository,
             MovieCacheRepository movieRepository,
             UserMovieHistoryRepository historyRepository,
-            Clock clock
+            Clock clock,
+            ReelzMetrics metrics
     ) {
         this.userRepository = userRepository;
         this.movieRepository = movieRepository;
         this.historyRepository = historyRepository;
         this.clock = clock;
+        this.metrics = metrics;
     }
 
     @Transactional(readOnly = true)
@@ -74,6 +78,7 @@ public class OnboardingService {
 
         var user = userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
+        var firstCompletion = user.getOnboardingCompletedAt() == null;
         var movies = movieRepository.findAllByTmdbIdIn(request.presentedMovieIds());
         if (movies.size() != request.presentedMovieIds().size()) {
             throw new InvalidOnboardingSelectionException(
@@ -119,6 +124,9 @@ public class OnboardingService {
 
         historyRepository.saveAll(historiesToSave);
         user.completeOnboarding(now);
+        if (firstCompletion) {
+            metrics.recordOnboardingCompletionAfterCommit(watchedMoviesAdded);
+        }
 
         return new CompleteOnboardingResponse(true, watchedMoviesAdded);
     }

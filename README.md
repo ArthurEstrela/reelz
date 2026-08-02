@@ -4,7 +4,7 @@ Reelz é uma roleta de filmes gamificada para reduzir o tempo de escolha do que 
 
 ## Estado atual
 
-O repositório está na nona etapa do produto:
+O MVP inclui:
 
 - modelagem inicial do domínio e do PostgreSQL;
 - DTOs de cadastro de usuário;
@@ -52,6 +52,11 @@ O repositório está na nona etapa do produto:
 - atualização otimista para remover ou marcar itens da Watchlist como assistidos.
 - PWA instalável com manifest, ícones, atalhos e shell offline;
 - atualização segura do app sem armazenar respostas autenticadas no cache.
+- CI com testes Java/Testcontainers, lint, testes e build do front-end;
+- build e auditoria das imagens Docker, `npm audit` e revisão de dependências;
+- CodeQL para Java e TypeScript e atualizações semanais via Dependabot;
+- publicação versionada das imagens no GHCR por tags `v*.*.*`;
+- health/readiness, métricas Prometheus do funil e correlação por `X-Request-Id`.
 
 A Home privada contém a experiência funcional da roleta e consome os catálogos, a franquia diária e o histórico diretamente dos endpoints autenticados do backend.
 
@@ -90,6 +95,22 @@ npm install
 npm run dev
 ```
 
+## Observabilidade
+
+- Health: `GET http://localhost:8080/actuator/health`
+- Readiness: `GET http://localhost:8080/actuator/health/readiness`
+- Prometheus: `GET http://localhost:8080/actuator/prometheus`
+
+Para iniciar também o coletor Prometheus local, com retenção de 15 dias:
+
+```bash
+docker compose --profile observability up -d
+```
+
+A interface de consultas fica em `http://localhost:9090` e também é vinculada apenas a `127.0.0.1`.
+
+No Docker Compose, a porta do backend fica vinculada somente a `127.0.0.1`. Em produção, o proxy público deve continuar encaminhando apenas `/api`, mantendo `/actuator` restrito à rede operacional.
+
 ## Documentação
 
 - [Modelagem inicial](docs/01-modelagem-inicial.md)
@@ -102,4 +123,5 @@ npm run dev
 - [Onboarding de filmes](docs/08-onboarding-filmes.md)
 - [Watchlist](docs/09-watchlist.md)
 - [Progressive Web App](docs/10-pwa.md)
+- [CI/CD e observabilidade](docs/11-ci-observabilidade.md)
 - [Front-end React](frontend/README.md)

@@ -26,7 +26,7 @@ EXPOSE 8080
 
 # O Actuator já expõe esse endpoint publicamente para a orquestração.
 HEALTHCHECK --interval=10s --timeout=3s --start-period=20s --retries=5 \
-  CMD wget -q -T 2 -O /dev/null http://127.0.0.1:8080/actuator/health || exit 1
+  CMD wget -q -T 2 -O /dev/null http://127.0.0.1:8080/actuator/health/readiness || exit 1
 
 # MaxRAMPercentage faz a JVM respeitar melhor o limite de memória do contêiner.
 ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/reelz.jar"]

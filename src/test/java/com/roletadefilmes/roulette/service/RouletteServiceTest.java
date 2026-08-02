@@ -2,6 +2,8 @@ package com.roletadefilmes.roulette.service;
 
 import com.roletadefilmes.movie.persistence.entity.MovieCacheEntity;
 import com.roletadefilmes.movie.persistence.repository.MovieCacheRepository;
+import com.roletadefilmes.observability.ReelzMetrics;
+import com.roletadefilmes.observability.ReelzMetrics.RouletteSpinOutcome;
 import com.roletadefilmes.roulette.api.dto.RouletteSpinRequest;
 import com.roletadefilmes.roulette.domain.RouletteSpinStatus;
 import com.roletadefilmes.roulette.domain.exception.DailyLimitExceededException;
@@ -20,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import io.micrometer.core.instrument.Timer;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -60,17 +63,25 @@ class RouletteServiceTest {
     @Mock
     private MovieStreamingOfferRepository offerRepository;
 
+    @Mock
+    private ReelzMetrics metrics;
+
+    @Mock
+    private Timer.Sample spinSample;
+
     private RouletteService service;
 
     @BeforeEach
     void setUp() {
+        when(metrics.startRouletteSpin()).thenReturn(spinSample);
         service = new RouletteService(
                 userRepository,
                 dailyUsageRepository,
                 movieRepository,
                 spinRepository,
                 offerRepository,
-                Clock.fixed(NOW, ZoneOffset.UTC)
+                Clock.fixed(NOW, ZoneOffset.UTC),
+                metrics
         );
     }
 
@@ -92,6 +103,11 @@ class RouletteServiceTest {
         verifyNoInteractions(movieRepository);
         verify(dailyUsageRepository, never()).save(any());
         verify(spinRepository, never()).save(any());
+        verify(metrics).recordRouletteSpin(
+                spinSample,
+                RouletteSpinOutcome.LIMIT_EXCEEDED,
+                "free"
+        );
     }
 
     @Test
@@ -115,6 +131,11 @@ class RouletteServiceTest {
         assertThat(usage.getBaseSpinsUsed()).isZero();
         verify(dailyUsageRepository, never()).save(any());
         verify(spinRepository, never()).save(any());
+        verify(metrics).recordRouletteSpin(
+                spinSample,
+                RouletteSpinOutcome.NO_MOVIES,
+                "free"
+        );
     }
 
     @Test
@@ -146,6 +167,11 @@ class RouletteServiceTest {
         verify(spinRepository).save(spinCaptor.capture());
         assertThat(spinCaptor.getValue().getStatus()).isEqualTo(RouletteSpinStatus.SUCCEEDED);
         assertThat(spinCaptor.getValue().getMovie()).isSameAs(movie);
+        verify(metrics).recordRouletteSpinAfterCommit(
+                spinSample,
+                RouletteSpinOutcome.SUCCESS,
+                "free"
+        );
     }
 
     @Test

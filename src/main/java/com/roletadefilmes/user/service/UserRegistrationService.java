@@ -3,6 +3,7 @@ package com.roletadefilmes.user.service;
 import com.roletadefilmes.legal.domain.LegalDocumentType;
 import com.roletadefilmes.legal.persistence.entity.UserLegalAcceptanceEntity;
 import com.roletadefilmes.legal.persistence.repository.UserLegalAcceptanceRepository;
+import com.roletadefilmes.observability.ReelzMetrics;
 import com.roletadefilmes.user.api.dto.RegisterUserRequest;
 import com.roletadefilmes.user.api.dto.UserResponse;
 import com.roletadefilmes.user.domain.exception.EmailAlreadyRegisteredException;
@@ -29,19 +30,22 @@ public class UserRegistrationService {
     private final PasswordEncoder passwordEncoder;
     private final String termsVersion;
     private final String privacyVersion;
+    private final ReelzMetrics metrics;
 
     public UserRegistrationService(
             UserAccountRepository userRepository,
             UserLegalAcceptanceRepository legalAcceptanceRepository,
             PasswordEncoder passwordEncoder,
             @Value("${reelz.legal.terms-version}") String termsVersion,
-            @Value("${reelz.legal.privacy-version}") String privacyVersion
+            @Value("${reelz.legal.privacy-version}") String privacyVersion,
+            ReelzMetrics metrics
     ) {
         this.userRepository = userRepository;
         this.legalAcceptanceRepository = legalAcceptanceRepository;
         this.passwordEncoder = passwordEncoder;
         this.termsVersion = termsVersion;
         this.privacyVersion = privacyVersion;
+        this.metrics = metrics;
     }
 
     @Transactional
@@ -70,6 +74,7 @@ public class UserRegistrationService {
                 acceptance(user, LegalDocumentType.TERMS_OF_USE, termsVersion),
                 acceptance(user, LegalDocumentType.PRIVACY_POLICY, privacyVersion)
         ));
+        metrics.recordUserRegistrationAfterCommit();
 
         return new UserResponse(
                 user.getId(),

@@ -2,6 +2,7 @@ package com.roletadefilmes.user.service;
 
 import com.roletadefilmes.legal.persistence.entity.UserLegalAcceptanceEntity;
 import com.roletadefilmes.legal.persistence.repository.UserLegalAcceptanceRepository;
+import com.roletadefilmes.observability.ReelzMetrics;
 import com.roletadefilmes.user.api.dto.RegisterUserRequest;
 import com.roletadefilmes.user.persistence.entity.UserAccountEntity;
 import com.roletadefilmes.user.persistence.repository.UserAccountRepository;
@@ -29,6 +30,9 @@ class UserRegistrationServiceTest {
     @Mock
     private UserLegalAcceptanceRepository legalAcceptanceRepository;
 
+    @Mock
+    private ReelzMetrics metrics;
+
     private UserRegistrationService service;
 
     @BeforeEach
@@ -38,7 +42,8 @@ class UserRegistrationServiceTest {
                 legalAcceptanceRepository,
                 new BCryptPasswordEncoder(4),
                 "terms-1.0",
-                "privacy-1.0"
+                "privacy-1.0",
+                metrics
         );
     }
 

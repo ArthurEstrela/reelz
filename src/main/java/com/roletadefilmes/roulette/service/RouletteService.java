@@ -2,6 +2,8 @@ package com.roletadefilmes.roulette.service;
 
 import com.roletadefilmes.movie.persistence.entity.MovieCacheEntity;
 import com.roletadefilmes.movie.persistence.repository.MovieCacheRepository;
+import com.roletadefilmes.observability.ReelzMetrics;
+import com.roletadefilmes.observability.ReelzMetrics.RouletteSpinOutcome;
 import com.roletadefilmes.roulette.api.dto.RouletteMovieResponse;
 import com.roletadefilmes.roulette.api.dto.RouletteSpinRequest;
 import com.roletadefilmes.roulette.api.dto.RouletteSpinResponse;
@@ -54,6 +56,7 @@ public class RouletteService {
     private final RouletteSpinRepository spinRepository;
     private final MovieStreamingOfferRepository offerRepository;
     private final Clock clock;
+    private final ReelzMetrics metrics;
 
     public RouletteService(
             UserAccountRepository userRepository,
@@ -61,7 +64,8 @@ public class RouletteService {
             MovieCacheRepository movieRepository,
             RouletteSpinRepository spinRepository,
             MovieStreamingOfferRepository offerRepository,
-            Clock clock
+            Clock clock,
+            ReelzMetrics metrics
     ) {
         this.userRepository = userRepository;
         this.dailyUsageRepository = dailyUsageRepository;
@@ -69,59 +73,91 @@ public class RouletteService {
         this.spinRepository = spinRepository;
         this.offerRepository = offerRepository;
         this.clock = clock;
+        this.metrics = metrics;
     }
 
     @Transactional
     public RouletteSpinResponse spin(UUID userId, RouletteSpinRequest request) {
-        var providerIds = validateAndSortProviderIds(request.providerIds());
-        var now = Instant.now(clock);
-        var user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
-        var premium = user.isPremiumAt(now);
+        var sample = metrics.startRouletteSpin();
+        var plan = "unknown";
 
-        validatePlanProviderLimit(premium, providerIds);
+        try {
+            var providerIds = validateAndSortProviderIds(request.providerIds());
+            var now = Instant.now(clock);
+            var user = userRepository.findById(userId)
+                    .orElseThrow(() -> new UserNotFoundException(userId));
+            var premium = user.isPremiumAt(now);
+            plan = premium ? "premium" : "free";
 
-        var usageDate = currentDateFor(user);
-        var usage = getOrCreateDailyUsage(userId, user, usageDate);
-        var auditFilters = buildAuditFilters(request, providerIds, user.getCountryCode());
+            validatePlanProviderLimit(premium, providerIds);
 
-        var existingSpin = spinRepository.findByUserIdAndIdempotencyKey(
-                userId,
-                request.idempotencyKey().toString()
-        );
-        if (existingSpin.isPresent()) {
-            return replaySuccessfulSpinOrFail(
-                    existingSpin.orElseThrow(),
+            var usageDate = currentDateFor(user);
+            var usage = getOrCreateDailyUsage(userId, user, usageDate);
+            var auditFilters = buildAuditFilters(request, providerIds, user.getCountryCode());
+
+            var existingSpin = spinRepository.findByUserIdAndIdempotencyKey(
+                    userId,
+                    request.idempotencyKey().toString()
+            );
+            if (existingSpin.isPresent()) {
+                var response = replaySuccessfulSpinOrFail(
+                        existingSpin.orElseThrow(),
+                        usage,
+                        premium,
+                        providerIds,
+                        auditFilters
+                );
+                metrics.recordRouletteSpinAfterCommit(sample, RouletteSpinOutcome.REPLAYED, plan);
+                return response;
+            }
+
+            ensureSpinIsAvailable(usage, premium);
+
+            var movie = movieRepository.findRandomAvailableMovie(
+                            userId,
+                            providerIds,
+                            user.getCountryCode(),
+                            request.genreId(),
+                            request.vibeId()
+                    )
+                    .orElseThrow(NoMoviesFoundException::new);
+
+            consumeSpin(usage, premium);
+            dailyUsageRepository.save(usage);
+
+            var spin = new RouletteSpinEntity(
+                    user,
+                    request.idempotencyKey().toString(),
+                    auditFilters
+            );
+            spin.succeedWith(movie, now);
+            spinRepository.save(spin);
+
+            var response = buildResponse(
+                    movie,
                     usage,
                     premium,
                     providerIds,
-                    auditFilters
+                    user.getCountryCode(),
+                    now
             );
+            metrics.recordRouletteSpinAfterCommit(sample, RouletteSpinOutcome.SUCCESS, plan);
+            return response;
+        } catch (DailyLimitExceededException exception) {
+            metrics.recordRouletteSpin(sample, RouletteSpinOutcome.LIMIT_EXCEEDED, plan);
+            throw exception;
+        } catch (NoMoviesFoundException exception) {
+            metrics.recordRouletteSpin(sample, RouletteSpinOutcome.NO_MOVIES, plan);
+            throw exception;
+        } catch (EmptyProviderSelectionException
+                 | FreePlanProviderLimitException
+                 | DuplicateSpinException exception) {
+            metrics.recordRouletteSpin(sample, RouletteSpinOutcome.INVALID_REQUEST, plan);
+            throw exception;
+        } catch (RuntimeException exception) {
+            metrics.recordRouletteSpin(sample, RouletteSpinOutcome.ERROR, plan);
+            throw exception;
         }
-
-        ensureSpinIsAvailable(usage, premium);
-
-        var movie = movieRepository.findRandomAvailableMovie(
-                        userId,
-                        providerIds,
-                        user.getCountryCode(),
-                        request.genreId(),
-                        request.vibeId()
-                )
-                .orElseThrow(NoMoviesFoundException::new);
-
-        consumeSpin(usage, premium);
-        dailyUsageRepository.save(usage);
-
-        var spin = new RouletteSpinEntity(
-                user,
-                request.idempotencyKey().toString(),
-                auditFilters
-        );
-        spin.succeedWith(movie, now);
-        spinRepository.save(spin);
-
-        return buildResponse(movie, usage, premium, providerIds, user.getCountryCode(), now);
     }
 
     private List<UUID> validateAndSortProviderIds(Set<UUID> providerIds) {
