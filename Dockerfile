@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 # Maven e JDK existem apenas no estágio de compilação.
-FROM maven:3.9.11-eclipse-temurin-21-alpine AS build
+FROM maven:3.9.15-eclipse-temurin-26-alpine AS build
 WORKDIR /workspace
 
 # O POM separado torna mudanças de dependências explícitas no cache do build.
