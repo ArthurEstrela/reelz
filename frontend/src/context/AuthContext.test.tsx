@@ -55,6 +55,7 @@ describe('AuthProvider', () => {
       expiresInSeconds: 7_200,
       userId: 'user-id',
       onboardingCompleted: false,
+      role: 'USER',
     })
     const user = userEvent.setup()
     render(<AuthProvider><AuthProbe /></AuthProvider>)
@@ -76,6 +77,7 @@ describe('AuthProvider', () => {
       displayName: 'Person',
       email: 'person@reelz.app',
       plan: 'FREE',
+      role: 'USER',
       timezone: 'America/Sao_Paulo',
       countryCode: 'BR',
       onboardingCompleted: false,

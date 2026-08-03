@@ -108,8 +108,8 @@ export function RegisterPage() {
             className="mt-0.5 size-4 shrink-0 accent-reel"
           />
           <span className="text-xs leading-5 text-white/48">
-            Li e aceito os <span className="font-semibold text-white/72 underline decoration-white/20 underline-offset-2">Termos de Uso</span> e a{' '}
-            <span className="font-semibold text-white/72 underline decoration-white/20 underline-offset-2">Política de Privacidade</span>.
+            Li e aceito os <Link to="/terms" target="_blank" className="font-semibold text-white/72 underline decoration-white/20 underline-offset-2">Termos de Uso</Link> e a{' '}
+            <Link to="/privacy" target="_blank" className="font-semibold text-white/72 underline decoration-white/20 underline-offset-2">Política de Privacidade</Link>.
           </span>
         </label>
 

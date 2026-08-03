@@ -9,6 +9,7 @@ import com.roletadefilmes.shared.config.TimeConfiguration;
 import com.roletadefilmes.support.security.WithMockReelzUser;
 import com.roletadefilmes.user.api.UserController;
 import com.roletadefilmes.user.service.UserRegistrationService;
+import com.roletadefilmes.user.domain.UserRole;
 import io.jsonwebtoken.MalformedJwtException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +83,7 @@ class SecurityIntegrationTest {
     void shouldAuthenticateAValidBearerTokenAndUseItsSubject() throws Exception {
         var userId = UUID.randomUUID();
         when(jwtService.extractUserId("valid-token")).thenReturn(userId);
+        when(jwtService.extractRole("valid-token")).thenReturn(UserRole.USER);
 
         mockMvc.perform(post("/api/v1/roulette/spin")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer valid-token")
@@ -119,7 +121,7 @@ class SecurityIntegrationTest {
     @Test
     void shouldAllowLoginWithoutAuthentication() throws Exception {
         when(authService.login(any())).thenReturn(
-                new LoginResponse("token", "Bearer", 7_200, UUID.randomUUID(), false)
+                new LoginResponse("token", "Bearer", 7_200, UUID.randomUUID(), false, UserRole.USER)
         );
 
         mockMvc.perform(post("/api/v1/auth/login")

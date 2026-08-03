@@ -24,6 +24,7 @@ export interface LoginResponse {
   expiresInSeconds: number
   userId: string
   onboardingCompleted: boolean
+  role: 'USER' | 'ADMIN'
 }
 
 export interface RegisterRequest {
@@ -40,6 +41,7 @@ export interface UserResponse {
   displayName: string
   email: string
   plan: 'FREE' | 'PREMIUM'
+  role: 'USER' | 'ADMIN'
   timezone: string
   countryCode: string
   onboardingCompleted: boolean

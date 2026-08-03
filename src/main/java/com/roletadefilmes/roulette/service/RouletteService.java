@@ -253,6 +253,9 @@ public class RouletteService {
         if (request.vibeId() != null) {
             filters.put("vibeId", request.vibeId().toString());
         }
+        if (request.sessionId() != null) {
+            filters.put("sessionId", request.sessionId().toString());
+        }
         return filters;
     }
 

@@ -19,6 +19,17 @@ public record RouletteSpinRequest(
         @Positive(message = "O gênero deve possuir um ID positivo")
         Integer genreId,
 
-        UUID vibeId
+        UUID vibeId,
+
+        UUID sessionId
 ) {
+
+    public RouletteSpinRequest(
+            UUID idempotencyKey,
+            Set<UUID> providerIds,
+            Integer genreId,
+            UUID vibeId
+    ) {
+        this(idempotencyKey, providerIds, genreId, vibeId, null);
+    }
 }

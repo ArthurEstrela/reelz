@@ -1,5 +1,6 @@
 package com.roletadefilmes.security;
 
+import com.roletadefilmes.user.domain.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -46,10 +47,15 @@ public class JwtService {
     }
 
     public String generateToken(UUID userId) {
+        return generateToken(userId, UserRole.USER);
+    }
+
+    public String generateToken(UUID userId, UserRole role) {
         var issuedAt = Instant.now(clock);
         return Jwts.builder()
                 .subject(userId.toString())
                 .issuer(issuer)
+                .claim("role", role.name())
                 .issuedAt(Date.from(issuedAt))
                 .expiration(Date.from(issuedAt.plus(expiration)))
                 .signWith(signingKey)
@@ -57,12 +63,24 @@ public class JwtService {
     }
 
     public UUID extractUserId(String token) {
-        Claims claims = parser.parseSignedClaims(token).getPayload();
+        Claims claims = extractClaims(token);
         var subject = claims.getSubject();
         if (subject == null || subject.isBlank()) {
             throw new MalformedJwtException("JWT subject is required");
         }
         return UUID.fromString(subject);
+    }
+
+    public UserRole extractRole(String token) {
+        var role = extractClaims(token).get("role", String.class);
+        if (role == null || role.isBlank()) {
+            return UserRole.USER;
+        }
+        return UserRole.valueOf(role);
+    }
+
+    private Claims extractClaims(String token) {
+        return parser.parseSignedClaims(token).getPayload();
     }
 
     public long getExpirationSeconds() {

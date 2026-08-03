@@ -3,9 +3,10 @@ import { useAuth } from '../hooks/useAuth'
 
 interface PrivateRouteProps {
   mode?: 'completed' | 'onboarding'
+  requiredRole?: 'ADMIN'
 }
 
-export function PrivateRoute({ mode = 'completed' }: PrivateRouteProps) {
+export function PrivateRoute({ mode = 'completed', requiredRole }: PrivateRouteProps) {
   const { isAuthenticated, user } = useAuth()
   const location = useLocation()
 
@@ -18,6 +19,10 @@ export function PrivateRoute({ mode = 'completed' }: PrivateRouteProps) {
   }
 
   if (mode === 'onboarding' && user?.onboardingCompleted) {
+    return <Navigate to="/" replace />
+  }
+
+  if (requiredRole && user?.role !== requiredRole) {
     return <Navigate to="/" replace />
   }
 

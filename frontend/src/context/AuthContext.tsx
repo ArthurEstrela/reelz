@@ -33,6 +33,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         id: response.userId,
         email: email.trim().toLowerCase(),
         onboardingCompleted: response.onboardingCompleted,
+        role: response.role,
       },
     }
     saveAuthSession(nextSession)

@@ -42,6 +42,8 @@ public class SecurityConfig {
                                 "/actuator/prometheus"
                         )
                         .permitAll()
+                        .requestMatchers("/api/v1/admin/**")
+                        .hasRole("ADMIN")
                         .anyRequest()
                         .authenticated())
                 .addFilterBefore(

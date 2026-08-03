@@ -1,5 +1,6 @@
 package com.roletadefilmes.user.service;
 
+import com.roletadefilmes.admin.config.AdminProperties;
 import com.roletadefilmes.legal.domain.LegalDocumentType;
 import com.roletadefilmes.legal.persistence.entity.UserLegalAcceptanceEntity;
 import com.roletadefilmes.legal.persistence.repository.UserLegalAcceptanceRepository;
@@ -31,6 +32,7 @@ public class UserRegistrationService {
     private final String termsVersion;
     private final String privacyVersion;
     private final ReelzMetrics metrics;
+    private final AdminProperties adminProperties;
 
     public UserRegistrationService(
             UserAccountRepository userRepository,
@@ -38,7 +40,8 @@ public class UserRegistrationService {
             PasswordEncoder passwordEncoder,
             @Value("${reelz.legal.terms-version}") String termsVersion,
             @Value("${reelz.legal.privacy-version}") String privacyVersion,
-            ReelzMetrics metrics
+            ReelzMetrics metrics,
+            AdminProperties adminProperties
     ) {
         this.userRepository = userRepository;
         this.legalAcceptanceRepository = legalAcceptanceRepository;
@@ -46,6 +49,7 @@ public class UserRegistrationService {
         this.termsVersion = termsVersion;
         this.privacyVersion = privacyVersion;
         this.metrics = metrics;
+        this.adminProperties = adminProperties;
     }
 
     @Transactional
@@ -63,6 +67,9 @@ public class UserRegistrationService {
                 request.timezone(),
                 request.countryCode()
         );
+        if (adminProperties.contains(normalizedEmail)) {
+            user.promoteToAdmin();
+        }
 
         try {
             userRepository.saveAndFlush(user);
@@ -81,6 +88,7 @@ public class UserRegistrationService {
                 user.getDisplayName(),
                 user.getEmail(),
                 user.getPlan(),
+                user.getRole(),
                 user.getTimezone(),
                 user.getCountryCode(),
                 user.getOnboardingCompletedAt() != null,

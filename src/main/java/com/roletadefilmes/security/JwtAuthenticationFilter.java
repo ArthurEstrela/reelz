@@ -1,6 +1,7 @@
 package com.roletadefilmes.security;
 
 import io.jsonwebtoken.JwtException;
+import com.roletadefilmes.user.domain.UserRole;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,11 +46,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private void authenticate(String token, HttpServletRequest request) {
         try {
             var userId = jwtService.extractUserId(token);
-            var principal = new AuthenticatedUser(userId);
+            var role = jwtService.extractRole(token);
+            if (role == null) {
+                role = UserRole.USER;
+            }
+            var principal = new AuthenticatedUser(userId, role);
             var authentication = UsernamePasswordAuthenticationToken.authenticated(
                     principal,
                     null,
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                    List.of(new SimpleGrantedAuthority("ROLE_" + role.name()))
             );
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 

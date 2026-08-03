@@ -1,5 +1,6 @@
 package com.roletadefilmes.security;
 
+import com.roletadefilmes.user.domain.UserRole;
 import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.Test;
 
@@ -25,9 +26,10 @@ class JwtServiceTest {
         var service = service(SECRET, NOW, Duration.ofHours(2));
         var userId = UUID.randomUUID();
 
-        var token = service.generateToken(userId);
+        var token = service.generateToken(userId, UserRole.ADMIN);
 
         assertThat(service.extractUserId(token)).isEqualTo(userId);
+        assertThat(service.extractRole(token)).isEqualTo(UserRole.ADMIN);
         assertThat(service.getExpirationSeconds()).isEqualTo(7_200);
     }
 

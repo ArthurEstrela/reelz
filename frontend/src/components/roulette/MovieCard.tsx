@@ -10,6 +10,7 @@ interface MovieCardProps {
   onWatchedAndSpinAgain: () => void
   onSaveToWatchlist: () => Promise<boolean>
   onSpinAgain: () => void
+  onWatchProvider: () => void
   spinning?: boolean
 }
 
@@ -18,6 +19,7 @@ export function MovieCard({
   onWatchedAndSpinAgain,
   onSaveToWatchlist,
   onSpinAgain,
+  onWatchProvider,
   spinning = false,
 }: MovieCardProps) {
   const [imageFailed, setImageFailed] = useState(false)
@@ -88,6 +90,7 @@ export function MovieCard({
             href={offer.attributionUrl}
             target="_blank"
             rel="noreferrer"
+            onClick={onWatchProvider}
             whileTap={{ scale: 0.97 }}
             className="flex w-full items-center justify-center gap-2 rounded-2xl bg-reel px-5 py-4 text-sm font-black text-white shadow-[0_12px_35px_rgba(255,60,72,.28)] transition hover:bg-reel-bright focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reel"
           >

@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AuthContext, type AuthContextValue } from '../context/authContextDefinition'
 import { getProviders, getVibes } from '../services/catalogService'
+import { trackProductEventInBackground } from '../services/analyticsService'
 import {
   markMovieAsWatched,
   saveMovieToWatchlist,
@@ -22,6 +23,10 @@ import { HomePage } from './HomePage'
 vi.mock('../services/catalogService', () => ({
   getProviders: vi.fn(),
   getVibes: vi.fn(),
+}))
+
+vi.mock('../services/analyticsService', () => ({
+  trackProductEventInBackground: vi.fn(),
 }))
 
 vi.mock('../services/historyService', () => ({
@@ -85,6 +90,7 @@ const context: AuthContextValue = {
     id: '0198f032-7370-7000-8000-000000000020',
     email: 'moviegoer@reelz.app',
     onboardingCompleted: true,
+    role: 'USER',
   },
   isAuthenticated: true,
   login: vi.fn(),
@@ -216,8 +222,21 @@ describe('HomePage roulette', () => {
       providerIds: [PROVIDER_ID],
       genreId: 35,
       vibeId: VIBE_ID,
+      sessionId: expect.any(String),
     })
     await waitFor(() => expect(getTodayUsage).toHaveBeenCalledTimes(2))
+  })
+
+  it('records transparent interest in couple mode without blocking the roulette', async () => {
+    const user = userEvent.setup()
+    renderHome()
+
+    await screen.findByRole('button', { name: 'Netflix' })
+    await user.click(screen.getByRole('button', { name: '💞 Modo casal' }))
+
+    expect(trackProductEventInBackground).toHaveBeenCalledWith('COUPLE_MODE_INTERESTED')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Modo casal anotado')
+    expect(screen.getByRole('button', { name: 'Girar Roleta' })).toBeEnabled()
   })
 
   it('saves a roulette result to the watchlist without closing the movie', async () => {

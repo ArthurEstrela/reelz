@@ -20,6 +20,7 @@ const context: AuthContextValue = {
     id: 'user-id',
     email: 'new@reelz.app',
     onboardingCompleted: false,
+    role: 'USER',
   },
   isAuthenticated: true,
   login: vi.fn(),

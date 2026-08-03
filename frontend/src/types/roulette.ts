@@ -3,6 +3,7 @@ export interface RouletteSpinRequest {
   providerIds: string[]
   genreId: number | null
   vibeId: string | null
+  sessionId: string
 }
 
 export interface StreamingAvailability {

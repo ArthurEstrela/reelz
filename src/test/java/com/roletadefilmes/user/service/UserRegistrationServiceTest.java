@@ -1,5 +1,6 @@
 package com.roletadefilmes.user.service;
 
+import com.roletadefilmes.admin.config.AdminProperties;
 import com.roletadefilmes.legal.persistence.entity.UserLegalAcceptanceEntity;
 import com.roletadefilmes.legal.persistence.repository.UserLegalAcceptanceRepository;
 import com.roletadefilmes.observability.ReelzMetrics;
@@ -43,7 +44,8 @@ class UserRegistrationServiceTest {
                 new BCryptPasswordEncoder(4),
                 "terms-1.0",
                 "privacy-1.0",
-                metrics
+                metrics,
+                new AdminProperties()
         );
     }
 

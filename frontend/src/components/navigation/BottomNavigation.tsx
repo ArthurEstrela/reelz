@@ -1,4 +1,7 @@
+import { useState } from 'react'
 import { NavLink } from 'react-router'
+import { FeedbackDialog } from '../feedback/FeedbackDialog'
+import { useAuth } from '../../hooks/useAuth'
 
 const items = [
   {
@@ -20,13 +23,30 @@ const items = [
 ] as const
 
 export function BottomNavigation() {
+  const { user } = useAuth()
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const navigationItems = user?.role === 'ADMIN'
+    ? [
+        ...items,
+        {
+          to: '/admin/analytics',
+          label: 'Analytics',
+          end: false,
+          icon: (
+            <path fill="currentColor" d="M4 19V9h3v10H4Zm6 0V4h3v15h-3Zm6 0v-7h3v7h-3Z" />
+          ),
+        },
+      ]
+    : items
+
   return (
-    <nav
-      aria-label="Navegação principal"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-canvas/90 px-4 pt-2 pb-[calc(.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl"
-    >
-      <div className="mx-auto grid max-w-sm grid-cols-2 gap-2">
-        {items.map((item) => (
+    <>
+      <nav
+        aria-label="Navegação principal"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-canvas/90 px-4 pt-2 pb-[calc(.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl"
+      >
+        <div className={`mx-auto grid max-w-md gap-1 ${navigationItems.length === 3 ? 'grid-cols-4' : 'grid-cols-3'}`}>
+        {navigationItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -41,7 +61,19 @@ export function BottomNavigation() {
             {item.label}
           </NavLink>
         ))}
-      </div>
-    </nav>
+        <button
+          type="button"
+          onClick={() => setFeedbackOpen(true)}
+          className="flex flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-extrabold text-white/35 transition hover:bg-white/[0.04] hover:text-white/70"
+        >
+          <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
+            <path fill="currentColor" d="M4 4h16v12H8l-4 4V4Zm4 4v2h8V8H8Zm0 4v2h5v-2H8Z" />
+          </svg>
+          Feedback
+        </button>
+        </div>
+      </nav>
+      <FeedbackDialog open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+    </>
   )
 }

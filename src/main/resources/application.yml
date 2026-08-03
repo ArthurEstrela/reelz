@@ -27,6 +27,11 @@ logging:
     console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] [requestId:%X{requestId:-}] %logger{36} - %msg%n"
 
 reelz:
+  admin:
+    emails: ${ADMIN_EMAILS:}
+  analytics:
+    retention-days: ${ANALYTICS_RETENTION_DAYS:180}
+    cleanup-cron: ${ANALYTICS_CLEANUP_CRON:0 30 3 * * *}
   security:
     jwt:
       secret: ${JWT_SECRET}

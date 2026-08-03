@@ -1,5 +1,7 @@
 package com.roletadefilmes.auth.api.dto;
 
+import com.roletadefilmes.user.domain.UserRole;
+
 import java.util.UUID;
 
 public record LoginResponse(
@@ -7,6 +9,7 @@ public record LoginResponse(
         String tokenType,
         long expiresInSeconds,
         UUID userId,
-        boolean onboardingCompleted
+        boolean onboardingCompleted,
+        UserRole role
 ) {
 }

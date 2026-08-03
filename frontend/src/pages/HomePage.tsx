@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
+import { Link } from 'react-router'
+import { getProductSessionId } from '../analytics/productSession'
 import { ReelzLogo } from '../components/brand/ReelzLogo'
 import { BottomNavigation } from '../components/navigation/BottomNavigation'
 import { FilterPills, type PillOption } from '../components/roulette/FilterPills'
@@ -10,6 +12,7 @@ import { SpinLimitModal } from '../components/roulette/SpinLimitModal'
 import { StreamingPreferencesModal } from '../components/streaming/StreamingPreferencesModal'
 import { GENRE_OPTIONS } from '../config/rouletteFilters'
 import { useAuth } from '../hooks/useAuth'
+import { trackProductEventInBackground } from '../services/analyticsService'
 import { getProviders, getVibes } from '../services/catalogService'
 import {
   markMovieAsWatched,
@@ -34,6 +37,7 @@ interface HomePageProps {
 interface ToastMessage {
   id: number
   message: string
+  tone?: 'error' | 'success' | 'info'
 }
 
 function toPillOptions(items: CatalogItem[]): PillOption<string>[] {
@@ -47,6 +51,7 @@ async function waitForMinimumDuration(startedAt: number, minimumDuration: number
 
 export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
   const { user, logout } = useAuth()
+  const productSessionId = useMemo(() => getProductSessionId(), [])
   const quotaRequestSequence = useRef(0)
   const [providers, setProviders] = useState<CatalogItem[]>([])
   const [vibeOptions, setVibeOptions] = useState<PillOption<string>[]>([])
@@ -140,6 +145,10 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
   }, [synchronizeQuota])
 
   useEffect(() => {
+    trackProductEventInBackground('HOME_VIEWED')
+  }, [])
+
+  useEffect(() => {
     if (!toast) return
     const timeout = window.setTimeout(() => setToast(null), 4_500)
     return () => window.clearTimeout(timeout)
@@ -193,6 +202,7 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
         providerIds: selectedProviders,
         genreId: selectedGenre,
         vibeId: selectedVibe,
+        sessionId: productSessionId,
       })
       setQuota(response.quota)
       void synchronizeQuota()
@@ -256,6 +266,7 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
       message: savedPreferences.providerIds.length > 0
         ? 'Seus streamings foram salvos.'
         : 'Preferências limpas. Todos os streamings voltaram a aparecer.',
+      tone: 'success',
     })
   }
 
@@ -305,6 +316,27 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
   function handleSpinAgain() {
     if (isSpinning) return
     void executeSpin()
+  }
+
+  function handleWatchProvider() {
+    if (!movie?.streamingAvailability[0]) return
+    trackProductEventInBackground('WATCH_PROVIDER_CLICKED', {
+      movieId: movie.tmdbId,
+      providerId: movie.streamingAvailability[0].providerId,
+    })
+  }
+
+  function handleModeInterest(mode: 'couple' | 'group') {
+    trackProductEventInBackground(
+      mode === 'couple' ? 'COUPLE_MODE_INTERESTED' : 'GROUP_MODE_INTERESTED',
+    )
+    setToast({
+      id: Date.now(),
+      message: mode === 'couple'
+        ? 'Modo casal anotado! Estamos medindo o interesse para priorizar o beta.'
+        : 'Modo grupo anotado! Você ajudou a escolher a próxima evolução do Reelz.',
+      tone: 'info',
+    })
   }
 
   return (
@@ -374,6 +406,7 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
                   onWatchedAndSpinAgain={handleWatchedAndSpinAgain}
                   onSaveToWatchlist={handleSaveToWatchlist}
                   onSpinAgain={handleSpinAgain}
+                  onWatchProvider={handleWatchProvider}
                   spinning={isSpinning}
                 />
               ) : null}
@@ -464,6 +497,39 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
               disabled={isSpinning}
             />
           </section>
+
+          <section className="mt-5 rounded-[1.75rem] border border-violet-300/10 bg-violet-300/[0.035] p-4 sm:p-6">
+            <p className="text-[10px] font-black tracking-[.18em] text-violet-200/55 uppercase">
+              Ajude a construir o beta
+            </p>
+            <h2 className="mt-2 text-lg font-black text-white">Com quem você escolhe filmes?</h2>
+            <p className="mt-1 text-xs leading-5 text-white/40">
+              Estes modos ainda estão em pesquisa. Seu clique mostra qual devemos criar primeiro.
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.96 }}
+                onClick={() => handleModeInterest('couple')}
+                className="rounded-2xl border border-pink-300/15 bg-pink-300/[0.06] px-3 py-4 text-sm font-black text-pink-100 transition hover:bg-pink-300/10"
+              >
+                💞 Modo casal
+              </motion.button>
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.96 }}
+                onClick={() => handleModeInterest('group')}
+                className="rounded-2xl border border-violet-300/15 bg-violet-300/[0.06] px-3 py-4 text-sm font-black text-violet-100 transition hover:bg-violet-300/10"
+              >
+                🍿 Modo grupo
+              </motion.button>
+            </div>
+          </section>
+          <footer className="mt-7 flex justify-center gap-5 text-[11px] font-bold text-white/25">
+            <Link to="/about" className="transition hover:text-white/60">Sobre e créditos</Link>
+            <Link to="/privacy" className="transition hover:text-white/60">Privacidade</Link>
+            <Link to="/terms" className="transition hover:text-white/60">Termos</Link>
+          </footer>
         </div>
 
         <AnimatePresence>
@@ -485,7 +551,13 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 18, scale: 0.94 }}
               transition={{ type: 'spring', stiffness: 420, damping: 28 }}
-              className="fixed inset-x-4 bottom-24 z-50 mx-auto max-w-md rounded-2xl border border-red-300/15 bg-[#241114]/95 px-4 py-3 text-sm font-bold text-red-100 shadow-2xl backdrop-blur"
+              className={`fixed inset-x-4 bottom-24 z-50 mx-auto max-w-md rounded-2xl border px-4 py-3 text-sm font-bold shadow-2xl backdrop-blur ${
+                toast.tone === 'success'
+                  ? 'border-emerald-300/15 bg-[#10231b]/95 text-emerald-100'
+                  : toast.tone === 'info'
+                    ? 'border-violet-300/15 bg-[#181328]/95 text-violet-100'
+                    : 'border-red-300/15 bg-[#241114]/95 text-red-100'
+              }`}
             >
               {toast.message}
             </motion.div>

@@ -1,5 +1,7 @@
 package com.roletadefilmes.api;
 
+import com.roletadefilmes.analytics.persistence.repository.ProductEventRepository;
+import com.roletadefilmes.feedback.persistence.repository.BetaFeedbackRepository;
 import com.roletadefilmes.history.domain.UserMovieStatus;
 import com.roletadefilmes.history.persistence.entity.UserMovieHistoryEntity;
 import com.roletadefilmes.history.persistence.repository.UserMovieHistoryRepository;
@@ -16,6 +18,7 @@ import com.roletadefilmes.streaming.persistence.repository.StreamingProviderRepo
 import com.roletadefilmes.streaming.persistence.repository.UserStreamingPreferenceRepository;
 import com.roletadefilmes.user.persistence.entity.UserAccountEntity;
 import com.roletadefilmes.user.persistence.repository.UserAccountRepository;
+import com.roletadefilmes.user.domain.UserRole;
 import com.roletadefilmes.vibe.persistence.entity.VibeEntity;
 import com.roletadefilmes.vibe.persistence.repository.VibeRepository;
 import org.junit.jupiter.api.Test;
@@ -38,6 +41,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.Matchers.hasItem;
@@ -110,6 +114,78 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Autowired
     private VibeRepository vibeRepository;
+
+    @Autowired
+    private ProductEventRepository productEventRepository;
+
+    @Autowired
+    private BetaFeedbackRepository feedbackRepository;
+
+    @Test
+    void shouldTrackIdempotentProductEventsAndExposeOnlyAggregatesToAdmins() throws Exception {
+        var user = userRepository.saveAndFlush(newUser("analytics-user@reelz.app"));
+        var admin = newUser("analytics-admin@reelz.app");
+        admin.promoteToAdmin();
+        userRepository.saveAndFlush(admin);
+        var eventId = UUID.randomUUID();
+        var sessionId = UUID.randomUUID();
+        var eventBody = """
+                {
+                  "eventId":"%s",
+                  "sessionId":"%s",
+                  "eventType":"COUPLE_MODE_INTERESTED"
+                }
+                """.formatted(eventId, sessionId);
+
+        mockMvc.perform(post("/api/v1/analytics/events")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventBody))
+                .andExpect(status().isAccepted());
+        mockMvc.perform(post("/api/v1/analytics/events")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventBody))
+                .andExpect(status().isAccepted());
+
+        assertThat(productEventRepository.count()).isEqualTo(1);
+
+        mockMvc.perform(post("/api/v1/feedback")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"score":5,"message":"Decidi muito mais rápido."}
+                                """))
+                .andExpect(status().isAccepted());
+
+        assertThat(feedbackRepository.count()).isEqualTo(1);
+
+        mockMvc.perform(post("/api/v1/feedback")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"score":6,"message":"fora da escala"}
+                                """))
+                .andExpect(status().isBadRequest());
+
+        assertThat(feedbackRepository.count()).isEqualTo(1);
+
+        mockMvc.perform(get("/api/v1/admin/analytics/overview")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user)))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/api/v1/admin/analytics/overview")
+                        .param("days", "30")
+                        .header(HttpHeaders.AUTHORIZATION, adminBearerToken(admin)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalUsers").value(2))
+                .andExpect(jsonPath("$.coupleModeInterestedUsers").value(1))
+                .andExpect(jsonPath("$.feedbackCount").value(1))
+                .andExpect(jsonPath("$.averageFeedbackScore").value(5.0))
+                .andExpect(jsonPath("$.recentFeedback[0].message")
+                        .value("Decidi muito mais rápido."))
+                .andExpect(jsonPath("$.daily").isArray());
+    }
 
     @Test
     void shouldCreateAndThenUpdateTheHistoryUsingTheTmdbMovieId() throws Exception {
@@ -536,5 +612,9 @@ class UserExperienceEndpointsIntegrationTest {
 
     private String bearerToken(UserAccountEntity user) {
         return "Bearer " + jwtService.generateToken(user.getId());
+    }
+
+    private String adminBearerToken(UserAccountEntity user) {
+        return "Bearer " + jwtService.generateToken(user.getId(), UserRole.ADMIN);
     }
 }

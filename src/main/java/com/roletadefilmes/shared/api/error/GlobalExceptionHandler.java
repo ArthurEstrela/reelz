@@ -1,5 +1,6 @@
 package com.roletadefilmes.shared.api.error;
 
+import com.roletadefilmes.analytics.domain.exception.InvalidProductEventException;
 import com.roletadefilmes.auth.domain.exception.InvalidCredentialsException;
 import com.roletadefilmes.movie.domain.exception.MovieNotFoundException;
 import com.roletadefilmes.onboarding.domain.exception.InvalidOnboardingSelectionException;
@@ -159,6 +160,21 @@ public class GlobalExceptionHandler {
         return error(
                 HttpStatus.BAD_REQUEST,
                 "INVALID_ONBOARDING_SELECTION",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ExceptionHandler(InvalidProductEventException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrorResponse handleInvalidProductEvent(
+            InvalidProductEventException exception,
+            HttpServletRequest request
+    ) {
+        return error(
+                HttpStatus.BAD_REQUEST,
+                "INVALID_PRODUCT_EVENT",
                 exception.getMessage(),
                 request,
                 List.of()

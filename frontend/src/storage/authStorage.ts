@@ -14,7 +14,8 @@ function isAuthSession(value: unknown): value is AuthSession {
     typeof session.expiresAt === 'number' &&
     typeof session.user?.id === 'string' &&
     typeof session.user.email === 'string' &&
-    typeof session.user.onboardingCompleted === 'boolean'
+    typeof session.user.onboardingCompleted === 'boolean' &&
+    (session.user.role === 'USER' || session.user.role === 'ADMIN')
   )
 }
 

@@ -4,6 +4,7 @@ import com.roletadefilmes.auth.api.dto.LoginRequest;
 import com.roletadefilmes.auth.domain.exception.InvalidCredentialsException;
 import com.roletadefilmes.security.JwtService;
 import com.roletadefilmes.user.persistence.entity.UserAccountEntity;
+import com.roletadefilmes.user.domain.UserRole;
 import com.roletadefilmes.user.persistence.repository.UserAccountRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,8 +55,9 @@ class AuthServiceTest {
         when(user.getPasswordHash()).thenReturn("bcrypt-hash");
         when(user.getId()).thenReturn(userId);
         when(user.getOnboardingCompletedAt()).thenReturn(Instant.now());
+        when(user.getRole()).thenReturn(UserRole.USER);
         when(passwordEncoder.matches("correct-password", "bcrypt-hash")).thenReturn(true);
-        when(jwtService.generateToken(userId)).thenReturn("signed-token");
+        when(jwtService.generateToken(userId, UserRole.USER)).thenReturn("signed-token");
         when(jwtService.getExpirationSeconds()).thenReturn(7_200L);
 
         var response = service.login(request);
@@ -64,6 +66,7 @@ class AuthServiceTest {
         assertThat(response.tokenType()).isEqualTo("Bearer");
         assertThat(response.userId()).isEqualTo(userId);
         assertThat(response.onboardingCompleted()).isTrue();
+        assertThat(response.role()).isEqualTo(UserRole.USER);
     }
 
     @Test
@@ -76,7 +79,10 @@ class AuthServiceTest {
                 .isInstanceOf(InvalidCredentialsException.class)
                 .hasMessage("E-mail ou senha inválidos.");
 
-        verify(jwtService, never()).generateToken(org.mockito.ArgumentMatchers.any());
+        verify(jwtService, never()).generateToken(
+                org.mockito.ArgumentMatchers.any(UUID.class),
+                org.mockito.ArgumentMatchers.any(UserRole.class)
+        );
         verify(passwordEncoder).matches("some-password", "dummy-bcrypt-hash");
     }
 
@@ -92,6 +98,9 @@ class AuthServiceTest {
                 .isInstanceOf(InvalidCredentialsException.class)
                 .hasMessage("E-mail ou senha inválidos.");
 
-        verify(jwtService, never()).generateToken(org.mockito.ArgumentMatchers.any());
+        verify(jwtService, never()).generateToken(
+                org.mockito.ArgumentMatchers.any(UUID.class),
+                org.mockito.ArgumentMatchers.any(UserRole.class)
+        );
     }
 }

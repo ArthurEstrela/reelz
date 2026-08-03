@@ -57,6 +57,10 @@ O MVP inclui:
 - CodeQL para Java e TypeScript e atualizações semanais via Dependabot;
 - publicação versionada das imagens no GHCR por tags `v*.*.*`;
 - health/readiness, métricas Prometheus do funil e correlação por `X-Request-Id`.
+- analytics de produto pseudonimizados, dashboard administrativo por role e experimentos de interesse para casal/grupo;
+- páginas públicas de Termos, Privacidade e atribuição ao TMDB;
+- retenção automática de eventos e proteção de login/cadastro por rate limit no Nginx.
+- feedback qualitativo dentro do app, agregado no cockpit administrativo, e tela de recuperação para erros fatais do front-end.
 
 A Home privada contém a experiência funcional da roleta e consome os catálogos, a franquia diária e o histórico diretamente dos endpoints autenticados do backend.
 
@@ -124,4 +128,5 @@ No Docker Compose, a porta do backend fica vinculada somente a `127.0.0.1`. Em p
 - [Watchlist](docs/09-watchlist.md)
 - [Progressive Web App](docs/10-pwa.md)
 - [CI/CD e observabilidade](docs/11-ci-observabilidade.md)
+- [Runbook do beta fechado](docs/12-beta-fechado.md)
 - [Front-end React](frontend/README.md)

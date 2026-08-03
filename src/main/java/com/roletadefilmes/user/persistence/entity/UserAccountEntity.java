@@ -2,6 +2,7 @@ package com.roletadefilmes.user.persistence.entity;
 
 import com.roletadefilmes.shared.persistence.AuditableUuidEntity;
 import com.roletadefilmes.user.domain.PlanType;
+import com.roletadefilmes.user.domain.UserRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -28,6 +29,10 @@ public class UserAccountEntity extends AuditableUuidEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "plan", nullable = false, length = 20)
     private PlanType plan = PlanType.FREE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 20)
+    private UserRole role = UserRole.USER;
 
     @Column(name = "premium_until")
     private Instant premiumUntil;
@@ -84,6 +89,10 @@ public class UserAccountEntity extends AuditableUuidEntity {
         return plan;
     }
 
+    public UserRole getRole() {
+        return role;
+    }
+
     public Instant getPremiumUntil() {
         return premiumUntil;
     }
@@ -128,5 +137,9 @@ public class UserAccountEntity extends AuditableUuidEntity {
     public void activatePremium(Instant validUntil) {
         this.plan = PlanType.PREMIUM;
         this.premiumUntil = validUntil;
+    }
+
+    public void promoteToAdmin() {
+        this.role = UserRole.ADMIN;
     }
 }

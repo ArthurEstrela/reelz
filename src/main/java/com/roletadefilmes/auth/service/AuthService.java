@@ -45,11 +45,12 @@ public class AuthService {
         var user = userCandidate.orElseThrow();
 
         return new LoginResponse(
-                jwtService.generateToken(user.getId()),
+                jwtService.generateToken(user.getId(), user.getRole()),
                 "Bearer",
                 jwtService.getExpirationSeconds(),
                 user.getId(),
-                user.getOnboardingCompletedAt() != null
+                user.getOnboardingCompletedAt() != null,
+                user.getRole()
         );
     }
 }
