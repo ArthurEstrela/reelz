@@ -5,7 +5,7 @@ interface ReelzLogoProps {
 export function ReelzLogo({ compact = false }: ReelzLogoProps) {
   return (
     <div className="inline-flex items-center gap-3" aria-label="Reelz">
-      <span className="grid size-10 place-items-center rounded-xl bg-reel shadow-[0_10px_30px_rgba(255,60,72,0.28)]">
+      <span className="grid size-10 place-items-center rounded-lg bg-reel shadow-[0_10px_28px_rgba(233,54,69,0.22)]">
         <svg viewBox="0 0 24 24" className="size-5 text-white" aria-hidden="true">
           <path
             fill="currentColor"
@@ -14,7 +14,7 @@ export function ReelzLogo({ compact = false }: ReelzLogoProps) {
         </svg>
       </span>
       {!compact && (
-        <span className="text-xl font-black tracking-[-0.04em] text-white">reelz</span>
+        <span className="text-xl font-extrabold tracking-[-0.045em] text-paper">reelz</span>
       )}
     </div>
   )

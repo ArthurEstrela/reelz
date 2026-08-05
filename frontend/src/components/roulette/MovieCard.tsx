@@ -52,10 +52,10 @@ export function MovieCard({
       animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
       exit={{ opacity: 0, scale: 0.82, y: -30 }}
       transition={{ type: 'spring', bounce: 0.48, duration: 0.86 }}
-      className="mx-auto w-full max-w-lg overflow-hidden rounded-[2rem] border border-white/10 bg-surface shadow-[0_30px_100px_rgba(0,0,0,.55)]"
+      className="mx-auto w-full max-w-xl overflow-hidden rounded-2xl border border-white/12 bg-surface shadow-[0_30px_90px_rgba(0,0,0,.48)]"
     >
-      <div className="grid grid-cols-[8.5rem_1fr] gap-4 p-4 sm:grid-cols-[11rem_1fr] sm:gap-6 sm:p-6">
-        <div className="aspect-[2/3] overflow-hidden rounded-2xl bg-white/[0.05] shadow-xl">
+      <div className="grid grid-cols-[8.25rem_1fr] gap-4 p-3 sm:grid-cols-[11.5rem_1fr] sm:gap-6 sm:p-5">
+        <div className="aspect-[2/3] overflow-hidden rounded-xl bg-white/[0.05] shadow-xl">
           {posterUrl ? (
             <img
               src={posterUrl}
@@ -64,27 +64,27 @@ export function MovieCard({
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="grid h-full place-items-center px-4 text-center text-xs font-bold text-white/30">
+            <div className="grid h-full place-items-center px-4 text-center text-xs font-semibold text-white/55">
               Pôster indisponível
             </div>
           )}
         </div>
 
         <div className="flex min-w-0 flex-col text-left">
-          <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
+          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
             {formattedRating ? (
-              <span className="rounded-full bg-amber-400/15 px-2.5 py-1 text-amber-300">★ {formattedRating}</span>
+              <span className="rounded-lg bg-gold/12 px-2.5 py-1 text-gold">★ {formattedRating}</span>
             ) : null}
-            {releaseYear ? <span className="text-white/35">{releaseYear}</span> : null}
+            {releaseYear ? <span className="text-white/55">{releaseYear}</span> : null}
           </div>
-          <h2 className="mt-3 text-2xl font-black leading-tight tracking-[-0.04em] sm:text-3xl">{movie.title}</h2>
-          <p className="mt-3 line-clamp-6 text-xs leading-5 text-white/50 sm:text-sm sm:leading-6">
+          <h2 className="mt-3 text-2xl font-extrabold leading-tight tracking-[-0.035em] text-paper sm:text-3xl">{movie.title}</h2>
+          <p className="mt-3 line-clamp-6 text-xs leading-5 text-white/60 sm:text-sm sm:leading-6">
             {movie.overview || 'A sinopse ainda não chegou à cabine de projeção.'}
           </p>
         </div>
       </div>
 
-      <div className="border-t border-white/8 p-4 sm:p-6">
+      <div className="border-t border-white/8 p-3 sm:p-5">
         {offer?.attributionUrl ? (
           <motion.a
             href={offer.attributionUrl}
@@ -92,61 +92,64 @@ export function MovieCard({
             rel="noreferrer"
             onClick={onWatchProvider}
             whileTap={{ scale: 0.97 }}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-reel px-5 py-4 text-sm font-black text-white shadow-[0_12px_35px_rgba(255,60,72,.28)] transition hover:bg-reel-bright focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reel"
+            aria-label="Ver onde assistir"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-reel px-5 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(233,54,69,.22)] transition hover:bg-reel-bright focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reel"
           >
             {offer.logoPath ? (
               <img src={`${TMDB_LOGO_BASE_URL}${offer.logoPath}`} alt="" className="size-6 rounded-md object-cover" />
             ) : null}
-            Ver onde assistir
+            Assistir na {offer.providerName}
           </motion.a>
         ) : (
           <button
             type="button"
             disabled
             title="O provedor não informou um link de reprodução."
-            className="w-full cursor-not-allowed rounded-2xl bg-white/10 px-5 py-4 text-sm font-black text-white/45"
+            className="w-full cursor-not-allowed rounded-xl bg-white/[0.07] px-5 py-3.5 text-sm font-semibold text-white/50"
           >
             {offer ? `Disponível na ${offer.providerName}` : 'Streaming indisponível'}
           </button>
         )}
 
         {offer ? (
-          <p className="mt-2 text-center text-[0.65rem] font-medium text-white/35">
-            Disponível na {offer.providerName}. Dados de disponibilidade fornecidos pelo JustWatch via TMDB.
+          <p className="mt-2 text-center text-[0.68rem] font-medium text-white/50">
+            Disponibilidade fornecida pelo JustWatch via TMDB.
           </p>
         ) : null}
 
-        <motion.button
-          type="button"
-          onClick={() => void handleWatchlistClick()}
-          disabled={spinning || savingToWatchlist || savedToWatchlist}
-          whileTap={{ scale: 0.96 }}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-300/20 bg-amber-300/[0.06] px-5 py-3.5 text-sm font-black text-amber-200 transition hover:border-amber-300/35 hover:bg-amber-300/10 disabled:cursor-default disabled:opacity-65 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
-        >
-          <span aria-hidden="true">{savedToWatchlist ? '✓' : '+'}</span>
-          {savedToWatchlist
-            ? 'Salvo em Quero Ver'
-            : savingToWatchlist
-              ? 'Salvando…'
-              : 'Quero ver depois'}
-        </motion.button>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <motion.button
+            type="button"
+            onClick={() => void handleWatchlistClick()}
+            disabled={spinning || savingToWatchlist || savedToWatchlist}
+            whileTap={{ scale: 0.96 }}
+            className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/12 px-3 text-sm font-semibold text-white/75 transition hover:border-white/25 hover:bg-white/[0.05] hover:text-white disabled:cursor-default disabled:opacity-55 focus-visible:outline-2 focus-visible:outline-offset-2"
+          >
+            <span aria-hidden="true">{savedToWatchlist ? '✓' : '+'}</span>
+            {savedToWatchlist
+              ? 'Salvo em Quero Ver'
+              : savingToWatchlist
+                ? 'Salvando…'
+                : 'Quero ver depois'}
+          </motion.button>
 
-        <motion.button
-          type="button"
-          onClick={onSpinAgain}
-          disabled={spinning || markingWatched || savingToWatchlist}
-          whileTap={{ scale: 0.96 }}
-          className="mt-3 w-full rounded-2xl bg-white px-5 py-3.5 text-sm font-black text-black transition hover:bg-white/90 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-        >
-          Girar novamente
-        </motion.button>
+          <motion.button
+            type="button"
+            onClick={onSpinAgain}
+            disabled={spinning || markingWatched || savingToWatchlist}
+            whileTap={{ scale: 0.96 }}
+            className="min-h-12 rounded-xl bg-paper px-3 text-sm font-bold text-canvas transition hover:bg-white disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            Girar novamente
+          </motion.button>
+        </div>
 
         <motion.button
           type="button"
           onClick={handleWatchedClick}
           disabled={spinning || markingWatched}
           whileTap={{ scale: 0.96 }}
-          className="mt-3 w-full rounded-2xl border border-white/10 px-5 py-3.5 text-sm font-bold text-white/60 transition hover:border-white/20 hover:bg-white/[0.04] hover:text-white disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reel"
+          className="mt-3 w-full px-4 py-2.5 text-sm font-medium text-white/60 underline decoration-white/20 underline-offset-4 transition hover:text-white disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reel"
         >
           {markingWatched ? 'Marcando como visto…' : 'Já assisti · marcar e girar'}
         </motion.button>

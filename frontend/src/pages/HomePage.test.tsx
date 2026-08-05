@@ -166,7 +166,7 @@ describe('HomePage roulette', () => {
   it('loads the official catalogs and the current quota on mount', async () => {
     renderHome()
 
-    expect(screen.getByLabelText(/Carregando usar neste giro/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Carregando streaming/)).toBeInTheDocument()
     expect(await screen.findByRole('button', { name: 'Netflix' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Para rir' })).toBeInTheDocument()
     expect(await screen.findByLabelText('5 giros restantes hoje')).toBeInTheDocument()
@@ -233,15 +233,15 @@ describe('HomePage roulette', () => {
     await waitFor(() => expect(getTodayUsage).toHaveBeenCalledTimes(2))
   })
 
-  it('records couple mode interest and opens the social lobby', async () => {
+  it('records social mode interest and opens the social lobby', async () => {
     const user = userEvent.setup()
     renderHome()
 
     await screen.findByRole('button', { name: 'Netflix' })
-    await user.click(screen.getByRole('button', { name: '💞 Modo casal' }))
+    await user.click(screen.getByRole('link', { name: 'Escolhendo com alguém?' }))
 
-    expect(trackProductEventInBackground).toHaveBeenCalledWith('COUPLE_MODE_INTERESTED')
-    expect(screen.getByTestId('location')).toHaveTextContent('/social?mode=COUPLE')
+    expect(trackProductEventInBackground).toHaveBeenCalledWith('GROUP_MODE_INTERESTED')
+    expect(screen.getByTestId('location')).toHaveTextContent('/social')
   })
 
   it('saves a roulette result to the watchlist without closing the movie', async () => {
@@ -353,7 +353,7 @@ describe('HomePage roulette', () => {
     vi.mocked(getVibes).mockReturnValueOnce(new Promise((resolve) => { resolveVibes = resolve }))
     renderHome()
 
-    expect(screen.getByLabelText(/Carregando usar neste giro/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Carregando streaming/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Carregando catálogo…' })).toBeDisabled()
 
     await act(async () => {

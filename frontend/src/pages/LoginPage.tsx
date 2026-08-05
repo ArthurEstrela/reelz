@@ -57,8 +57,8 @@ export function LoginPage() {
   return (
     <AuthLayout
       eyebrow="Bem-vindo de volta"
-      title="Entre para girar."
-      description="Sua próxima grande história está a poucos segundos de distância."
+      title="Bom te ver de novo."
+      description="Entre para continuar de onde parou."
       footer={
         <>
           Ainda não tem uma conta?{' '}

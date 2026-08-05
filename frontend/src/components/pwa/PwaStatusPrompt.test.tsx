@@ -5,7 +5,7 @@ import {
   activateWaitingServiceWorker,
   PWA_UPDATE_AVAILABLE_EVENT,
 } from '../../pwa/registerServiceWorker'
-import { PwaStatusPrompt } from './PwaStatusPrompt'
+import { PWA_ENGAGEMENT_EVENT, PwaStatusPrompt } from './PwaStatusPrompt'
 
 vi.mock('../../pwa/registerServiceWorker', () => ({
   PWA_UPDATE_AVAILABLE_EVENT: 'reelz:pwa-update-available',
@@ -44,6 +44,12 @@ describe('PwaStatusPrompt', () => {
 
     act(() => {
       window.dispatchEvent(installEvent)
+    })
+
+    expect(screen.queryByText('Instale o Reelz')).not.toBeInTheDocument()
+    act(() => {
+      window.dispatchEvent(new Event(PWA_ENGAGEMENT_EVENT))
+      window.dispatchEvent(new Event(PWA_ENGAGEMENT_EVENT))
     })
 
     expect(screen.getByText('Instale o Reelz')).toBeInTheDocument()

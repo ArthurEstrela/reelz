@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate, useSearchParams } from 'react-router'
-import { ReelzLogo } from '../components/brand/ReelzLogo'
+import { AppHeader } from '../components/navigation/AppHeader'
 import { BottomNavigation } from '../components/navigation/BottomNavigation'
 import { createSocialRoom, joinSocialRoom, listSocialRooms } from '../services/socialService'
 import type { SocialRoomSummary, SocialRoomType } from '../types/social'
@@ -69,22 +69,17 @@ export function SocialLobbyPage() {
   }
 
   return (
-    <main className="min-h-svh bg-canvas px-4 pt-5 pb-28 text-white sm:px-8">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_10%,rgba(139,92,246,.17),transparent_34%)]" />
-      <header className="relative mx-auto flex max-w-4xl items-center justify-between">
-        <ReelzLogo />
-        <span className="rounded-full border border-violet-300/15 bg-violet-300/[0.06] px-3 py-2 text-[10px] font-black tracking-wider text-violet-100 uppercase">
-          Juntos
-        </span>
-      </header>
+    <main className="min-h-svh bg-canvas px-4 pt-5 pb-28 text-paper sm:px-8 lg:pb-12">
+      <div className="pointer-events-none fixed inset-x-0 top-0 h-[32rem] bg-[radial-gradient(circle_at_50%_5%,rgba(233,54,69,.12),transparent_40%)]" />
+      <AppHeader />
 
       <div className="relative mx-auto max-w-4xl pt-10">
-        <p className="text-xs font-black tracking-[.2em] text-violet-300 uppercase">Decisão compartilhada</p>
-        <h1 className="mt-2 max-w-2xl text-4xl font-black tracking-[-.05em] sm:text-5xl">
-          Uma roleta para todo mundo.
+        <p className="reelz-kicker">Decisão compartilhada</p>
+        <h1 className="mt-2 max-w-2xl text-4xl font-extrabold tracking-[-.045em] sm:text-5xl">
+          Todo mundo dá o pitaco.
         </h1>
-        <p className="mt-4 max-w-xl leading-7 text-white/50">
-          O Reelz cruza os streamings em comum e remove os filmes que qualquer participante já viu.
+        <p className="mt-4 max-w-xl leading-7 text-white/60">
+          Cada pessoa escolhe o que topa. O Reelz encontra um filme disponível para o grupo inteiro.
         </p>
 
         {error ? (
@@ -108,20 +103,22 @@ export function SocialLobbyPage() {
                 whileTap={{ scale: 0.97 }}
                 onClick={() => void handleCreate(type)}
                 disabled={pendingAction !== null}
-                className={`rounded-[1.75rem] border p-6 text-left transition disabled:opacity-50 ${
+                className={`rounded-2xl border p-6 text-left transition disabled:opacity-50 ${
                   selected
-                    ? 'border-violet-300/30 bg-violet-300/[0.1] shadow-[0_20px_70px_rgba(139,92,246,.12)]'
-                    : 'border-white/10 bg-white/[0.035] hover:border-white/20'
+                    ? 'border-reel/45 bg-reel/[0.08] shadow-[0_20px_60px_rgba(233,54,69,.1)]'
+                    : 'border-white/10 bg-white/[0.025] hover:border-white/25'
                 }`}
               >
-                <span className="text-3xl" aria-hidden="true">{type === 'COUPLE' ? '💞' : '🍿'}</span>
-                <span className="mt-5 block text-xl font-black">Modo {roomLabel(type).toLowerCase()}</span>
-                <span className="mt-2 block text-sm leading-6 text-white/45">
+                <svg viewBox="0 0 24 24" className="size-8 text-reel-bright" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+                  {type === 'COUPLE' ? <><circle cx="8" cy="9" r="3" /><circle cx="16" cy="9" r="3" /><path d="M3.5 19c.4-3.6 1.9-5.3 4.5-5.3s4.1 1.7 4.5 5.3M11.5 19c.4-3.6 1.9-5.3 4.5-5.3s4.1 1.7 4.5 5.3" /></> : <><circle cx="12" cy="7" r="2.5" /><circle cx="6" cy="10" r="2" /><circle cx="18" cy="10" r="2" /><path d="M7 19c.3-4 2-6 5-6s4.7 2 5 6M2.5 19c.2-2.7 1.4-4.3 3.5-4.3M21.5 19c-.2-2.7-1.4-4.3-3.5-4.3" /></>}
+                </svg>
+                <span className="mt-5 block text-xl font-bold">Modo {roomLabel(type).toLowerCase()}</span>
+                <span className="mt-2 block text-sm leading-6 text-white/60">
                   {type === 'COUPLE'
                     ? 'Você e mais uma pessoa, sem perder tempo comparando catálogos.'
                     : 'Até 8 participantes na mesma escolha de filme.'}
                 </span>
-                <span className="mt-5 block text-xs font-black text-violet-200">
+                <span className="mt-5 block text-xs font-semibold text-reel-bright">
                   {pendingAction === type ? 'Criando…' : 'Criar sala →'}
                 </span>
               </motion.button>
@@ -129,7 +126,7 @@ export function SocialLobbyPage() {
           })}
         </section>
 
-        <form onSubmit={handleJoin} className="mt-5 flex gap-2 rounded-[1.5rem] border border-white/10 bg-white/[0.025] p-3">
+        <form onSubmit={handleJoin} className="mt-5 flex gap-2 rounded-xl border border-white/10 bg-white/[0.025] p-2 focus-within:border-reel/55 focus-within:ring-4 focus-within:ring-reel/8">
           <label htmlFor="invite-code" className="sr-only">Código do convite</label>
           <input
             id="invite-code"
@@ -137,22 +134,22 @@ export function SocialLobbyPage() {
             onChange={(event) => setInviteCode(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8))}
             placeholder="CÓDIGO DO CONVITE"
             autoComplete="off"
-            className="min-w-0 flex-1 bg-transparent px-3 text-sm font-black tracking-[.14em] outline-none placeholder:text-white/25"
+            className="min-w-0 flex-1 bg-transparent px-3 text-sm font-semibold tracking-[.12em] outline-none placeholder:text-white/45"
           />
           <button
             type="submit"
             disabled={pendingAction !== null}
-            className="rounded-xl bg-white px-4 py-3 text-xs font-black text-canvas transition hover:bg-violet-100 disabled:opacity-50"
+            className="rounded-lg bg-paper px-4 py-3 text-xs font-bold text-canvas transition hover:bg-white disabled:opacity-50"
           >
             {pendingAction === 'JOIN' ? 'Entrando…' : 'Entrar'}
           </button>
         </form>
 
         <section className="mt-10">
-          <h2 className="text-sm font-black text-white/75">Suas salas</h2>
+          <h2 className="text-sm font-semibold text-white/80">Suas salas</h2>
           {loading ? <div className="mt-4 h-24 animate-pulse rounded-3xl bg-white/[0.04]" /> : null}
           {!loading && rooms.length === 0 ? (
-            <p className="mt-3 text-sm text-white/35">Você ainda não participou de nenhuma sala.</p>
+            <p className="mt-3 text-sm text-white/55">Você ainda não participou de nenhuma sala.</p>
           ) : null}
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {rooms.map((room) => (
@@ -160,15 +157,15 @@ export function SocialLobbyPage() {
                 key={room.id}
                 type="button"
                 onClick={() => navigate(`/social/rooms/${room.id}`)}
-                className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.025] p-4 text-left transition hover:border-violet-300/25"
+                className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.025] p-4 text-left transition hover:border-reel/35"
               >
                 <span>
-                  <span className="block text-sm font-black">{roomLabel(room.type)}</span>
-                  <span className="mt-1 block text-xs text-white/35">
+                  <span className="block text-sm font-semibold">{roomLabel(room.type)}</span>
+                  <span className="mt-1 block text-xs text-white/55">
                     {room.memberCount}/{room.capacity} pessoas · {room.lastSpinNumber} giros
                   </span>
                 </span>
-                <span className={room.status === 'OPEN' ? 'text-emerald-300' : 'text-white/25'}>
+                <span className={room.status === 'OPEN' ? 'text-emerald-300' : 'text-white/50'}>
                   {room.status === 'OPEN' ? 'Aberta →' : 'Encerrada'}
                 </span>
               </button>

@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
-import { Link, useNavigate } from 'react-router'
+import { Link } from 'react-router'
 import { getProductSessionId } from '../analytics/productSession'
-import { ReelzLogo } from '../components/brand/ReelzLogo'
+import { AppHeader } from '../components/navigation/AppHeader'
 import { BottomNavigation } from '../components/navigation/BottomNavigation'
 import { FilterPills, type PillOption } from '../components/roulette/FilterPills'
 import { MovieCard } from '../components/roulette/MovieCard'
 import { SlotMachine } from '../components/roulette/SlotMachine'
 import { SpinLimitModal } from '../components/roulette/SpinLimitModal'
+import { PWA_ENGAGEMENT_EVENT } from '../components/pwa/PwaStatusPrompt'
 import { StreamingPreferencesModal } from '../components/streaming/StreamingPreferencesModal'
 import { GENRE_OPTIONS } from '../config/rouletteFilters'
-import { useAuth } from '../hooks/useAuth'
 import { trackProductEventInBackground } from '../services/analyticsService'
 import { getProviders, getVibes } from '../services/catalogService'
 import {
@@ -50,8 +50,6 @@ async function waitForMinimumDuration(startedAt: number, minimumDuration: number
 }
 
 export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
-  const navigate = useNavigate()
-  const { user, logout } = useAuth()
   const productSessionId = useMemo(() => getProductSessionId(), [])
   const quotaRequestSequence = useRef(0)
   const [providers, setProviders] = useState<CatalogItem[]>([])
@@ -210,6 +208,7 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
       await waitForMinimumDuration(startedAt, minimumSpinDuration)
       setMovie(response.movie)
       setRouletteState('result')
+      window.dispatchEvent(new Event(PWA_ENGAGEMENT_EVENT))
     } catch (error) {
       await waitForMinimumDuration(startedAt, minimumSpinDuration)
       const status = axios.isAxiosError(error) ? error.response?.status : undefined
@@ -327,43 +326,28 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
     })
   }
 
-  function handleModeInterest(mode: 'couple' | 'group') {
-    trackProductEventInBackground(
-      mode === 'couple' ? 'COUPLE_MODE_INTERESTED' : 'GROUP_MODE_INTERESTED',
-    )
-    navigate(`/social?mode=${mode === 'couple' ? 'COUPLE' : 'GROUP'}`)
-  }
-
   return (
     <MotionConfig reducedMotion="user">
-      <main className="relative min-h-svh overflow-hidden bg-canvas px-4 pt-5 pb-28 text-white sm:px-8 sm:pt-6 sm:pb-28">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,rgba(255,60,72,.16),transparent_30%)]" />
+      <main className="relative min-h-svh overflow-hidden bg-canvas px-4 pt-5 pb-28 text-paper sm:px-8 sm:pt-6 lg:pb-12">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[34rem] bg-[radial-gradient(circle_at_35%_24%,rgba(233,54,69,.13),transparent_38%)]" />
 
-        <header className="relative mx-auto flex max-w-5xl items-center justify-between gap-3">
-          <ReelzLogo />
-          <div className="flex items-center gap-2">
+        <AppHeader
+          accessory={
             <div
               className="rounded-full border border-white/10 bg-white/[0.045] px-3 py-2 text-right"
               title={quotaSyncFailed ? 'Não foi possível atualizar a franquia.' : undefined}
             >
-              <span className="block text-[9px] font-extrabold uppercase tracking-[0.14em] text-white/35">Giros hoje</span>
-              <span className="block text-sm font-black leading-none text-white" aria-label={quotaAriaLabel}>
+              <span className="block text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-white/55">Giros hoje</span>
+              <span className="block text-sm font-bold leading-none text-paper" aria-label={quotaAriaLabel}>
                 {remainingSpins}
               </span>
             </div>
-            <button
-              type="button"
-              onClick={logout}
-              title={user?.email ? `Sair de ${user.email}` : 'Sair'}
-              className="rounded-xl border border-white/10 px-3 py-2.5 text-xs font-bold text-white/50 transition hover:border-white/20 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reel"
-            >
-              Sair
-            </button>
-          </div>
-        </header>
+          }
+        />
 
-        <div className="relative mx-auto flex w-full max-w-3xl flex-col pb-12 pt-8 sm:pt-12">
-          <section className="flex min-h-[22rem] items-center justify-center text-center sm:min-h-[27rem]" aria-label="Roleta de filmes">
+        <div className="relative mx-auto grid w-full max-w-6xl grid-cols-[minmax(0,1fr)] gap-8 pb-12 pt-9 lg:grid-cols-[minmax(0,1fr)_25rem] lg:items-start lg:gap-12 lg:pt-16">
+          <div className="min-w-0">
+          <section className="flex min-h-[20rem] items-center justify-center text-center lg:min-h-[30rem]" aria-label="Roleta de filmes">
             <AnimatePresence mode="wait">
               {rouletteState === 'idle' ? (
                 <motion.div
@@ -372,23 +356,34 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.75, rotate: 8 }}
                   transition={{ type: 'spring', bounce: 0.44, duration: 0.72 }}
-                  className="flex flex-col items-center"
+                  className="flex w-full flex-col items-center"
                 >
-                  <motion.div
-                    animate={{ y: [0, -8, 0], rotate: [0, -2, 2, 0] }}
-                    transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
-                    className="relative grid size-40 place-items-center sm:size-48"
-                    aria-hidden="true"
+                  <p className="reelz-kicker">Sua próxima sessão</p>
+                  <h1 className="mt-2 text-4xl font-extrabold tracking-[-0.045em] text-paper sm:text-5xl lg:text-6xl">
+                    Hoje vai de quê?
+                  </h1>
+                  <p className="mt-3 max-w-md text-sm leading-6 text-white/55">
+                    Um giro, um filme disponível nos streamings que você já tem.
+                  </p>
+                  <motion.button
+                    type="button"
+                    onClick={handleSpin}
+                    disabled={catalogLoading || !hasProviders}
+                    aria-label={catalogLoading ? 'Carregando catálogo…' : 'Girar Roleta'}
+                    whileTap={{ scale: 0.94 }}
+                    whileHover={{ scale: 1.025 }}
+                    animate={{ y: [0, -5, 0] }}
+                    transition={{ y: { duration: 3.2, repeat: Infinity, ease: 'easeInOut' }, scale: { type: 'spring', stiffness: 360, damping: 22 } }}
+                    className="group relative mt-8 grid size-36 place-items-center rounded-full disabled:cursor-not-allowed disabled:opacity-45 sm:size-40"
                   >
-                    <div className="absolute inset-0 rounded-full border border-dashed border-white/15" />
-                    <div className="absolute inset-5 rounded-full border border-white/10 bg-white/[0.025] shadow-[0_25px_90px_rgba(255,60,72,.22)]" />
-                    <div className="absolute inset-10 rounded-full bg-gradient-to-br from-reel-bright to-red-800" />
-                    <svg viewBox="0 0 24 24" className="relative ml-1 size-10 text-white">
+                    <span className="absolute inset-0 rounded-full border border-dashed border-white/20 transition-transform duration-500 group-hover:rotate-12" />
+                    <span className="absolute inset-3 rounded-full border border-white/12 bg-surface shadow-[0_20px_70px_rgba(233,54,69,.2)]" />
+                    <span className="absolute inset-7 rounded-full bg-reel transition-colors group-hover:bg-reel-bright" />
+                    <svg viewBox="0 0 24 24" className="relative ml-1 size-9 text-white" aria-hidden="true">
                       <path fill="currentColor" d="M8 6.7c0-1.2 1.3-1.9 2.3-1.3l7 4.1a1.7 1.7 0 0 1 0 2.9l-7 4.2A1.5 1.5 0 0 1 8 15.3V6.7Z" />
                     </svg>
-                  </motion.div>
-                  <p className="mt-7 text-xs font-black uppercase tracking-[0.24em] text-reel">Sua próxima sessão</p>
-                  <h1 className="mt-2 text-4xl font-black tracking-[-0.055em] sm:text-5xl">A um giro de distância</h1>
+                    <span className="absolute -bottom-7 whitespace-nowrap text-sm font-bold text-paper">Girar roleta</span>
+                  </motion.button>
                 </motion.div>
               ) : null}
 
@@ -413,117 +408,91 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
                   animate={{ opacity: 1, scale: 1, x: [0, -15, 13, -10, 7, 0] }}
                   exit={{ opacity: 0, scale: 0.85 }}
                   transition={{ type: 'spring', stiffness: 430, damping: 20 }}
-                  className="max-w-sm rounded-[2rem] border border-amber-300/15 bg-amber-300/[0.06] p-7"
+                  className="max-w-sm rounded-2xl border border-gold/20 bg-gold/[0.06] p-7"
                   role="alert"
                 >
-                  <span className="text-4xl" aria-hidden="true">🫨</span>
-                  <p className="mt-4 text-base font-bold leading-7 text-white/75">{message}</p>
+                  <svg viewBox="0 0 24 24" className="mx-auto size-10 text-gold" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" /><path d="M8.5 9h.01M15.5 9h.01M8.5 16c1.6-2 5.4-2 7 0" />
+                  </svg>
+                  <p className="mt-4 text-base font-semibold leading-7 text-white/80">{message}</p>
                 </motion.div>
               ) : null}
             </AnimatePresence>
           </section>
 
-          {rouletteState !== 'result' ? (
-            <motion.button
-              type="button"
-              onClick={handleSpin}
-              disabled={isSpinning || catalogLoading || !hasProviders}
-              whileTap={{ scale: 0.95 }}
-              whileHover={isSpinning ? undefined : { scale: 1.015 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 22 }}
-              className="mx-auto w-full max-w-md rounded-[1.4rem] bg-reel px-7 py-5 text-lg font-black text-white shadow-[0_18px_55px_rgba(255,60,72,.3)] transition-colors hover:bg-reel-bright disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/30 disabled:shadow-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-reel"
-            >
-              {isSpinning ? 'Girando…' : catalogLoading ? 'Carregando catálogo…' : 'Girar Roleta'}
-            </motion.button>
+          {rouletteState === 'spinning' ? (
+            <p className="mt-2 text-center text-xs font-medium text-white/50">Isso leva só alguns segundos.</p>
           ) : null}
 
-          {catalogState === 'error' ? (
-            <div className="mx-auto mt-3 flex max-w-md items-center gap-2 text-center text-xs text-amber-200/70" role="alert">
-              <span>Não foi possível carregar os filtros.</span>
-              <button type="button" onClick={retryCatalog} className="font-black underline underline-offset-2">
-                Tentar novamente
-              </button>
-            </div>
-          ) : null}
+          </div>
 
-          {catalogState === 'ready' && !hasProviders ? (
-            <p className="mx-auto mt-3 max-w-md text-center text-xs leading-5 text-amber-200/65">
-              Nenhum streaming está ativo no catálogo no momento.
-            </p>
-          ) : null}
-
-          <section className="mt-9 space-y-6 rounded-[1.75rem] border border-white/8 bg-white/[0.025] p-4 sm:p-6" aria-label="Filtros rápidos">
-            <div className="-mb-3 flex items-center justify-between gap-3 px-1">
-              <span className="text-[10px] font-bold text-white/30">
-                {ownedProviderIds.length > 0
-                  ? `${ownedProviderIds.length} streaming${ownedProviderIds.length === 1 ? '' : 's'} salvo${ownedProviderIds.length === 1 ? '' : 's'}`
-                  : 'Mostrando todos os streamings'}
-              </span>
+          <aside className="reelz-surface min-w-0 overflow-hidden rounded-2xl p-4 sm:p-5 lg:sticky lg:top-24" aria-label="Filtros rápidos">
+            <div className="flex items-start justify-between gap-3 border-b border-white/8 pb-4">
+              <div>
+                <p className="text-sm font-semibold text-paper">Ajuste o giro</p>
+                <span className="mt-1 block text-xs text-white/50">
+                  {ownedProviderIds.length > 0
+                    ? `${ownedProviderIds.length} streaming${ownedProviderIds.length === 1 ? '' : 's'} salvo${ownedProviderIds.length === 1 ? '' : 's'}`
+                    : 'Mostrando todos os streamings'}
+                </span>
+              </div>
               <button
                 type="button"
                 onClick={() => setShowStreamingPreferences(true)}
                 disabled={catalogLoading || isSpinning}
-                className="rounded-full border border-reel/25 bg-reel/8 px-3 py-1.5 text-[11px] font-black text-reel-bright transition hover:border-reel/45 hover:bg-reel/12 disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-xl border border-white/12 px-3 py-2 text-xs font-semibold text-white/70 transition hover:border-white/25 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {ownedProviderIds.length > 0 ? 'Gerenciar' : 'Escolher meus streamings'}
+                {ownedProviderIds.length > 0 ? 'Gerenciar' : 'Meus streamings'}
               </button>
             </div>
-            <FilterPills
-              legend={quota?.unlimited ? 'Usar neste giro · escolha vários' : 'Usar neste giro · 1 por vez'}
-              options={providerOptions}
-              selectedValues={selectedProviders}
-              onToggle={toggleProvider}
-              loading={catalogLoading}
-              disabled={isSpinning}
-            />
-            <FilterPills
-              legend="Gênero · opcional"
-              options={GENRE_OPTIONS}
-              selectedValues={selectedGenre === null ? [] : [selectedGenre]}
-              onToggle={toggleGenre}
-              disabled={isSpinning}
-            />
-            <FilterPills
-              legend="Vibe · opcional"
-              options={vibeOptions}
-              selectedValues={selectedVibe === null ? [] : [selectedVibe]}
-              onToggle={toggleVibe}
-              loading={catalogLoading}
-              disabled={isSpinning}
-            />
-          </section>
-
-          <section className="mt-5 rounded-[1.75rem] border border-violet-300/10 bg-violet-300/[0.035] p-4 sm:p-6">
-            <p className="text-[10px] font-black tracking-[.18em] text-violet-200/55 uppercase">
-              Escolha em companhia
-            </p>
-            <h2 className="mt-2 text-lg font-black text-white">Com quem você escolhe filmes?</h2>
-            <p className="mt-1 text-xs leading-5 text-white/40">
-              Crie uma sala, compartilhe o convite e sorteie apenas o que funciona para todos.
-            </p>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.96 }}
-                onClick={() => handleModeInterest('couple')}
-                className="rounded-2xl border border-pink-300/15 bg-pink-300/[0.06] px-3 py-4 text-sm font-black text-pink-100 transition hover:bg-pink-300/10"
-              >
-                💞 Modo casal
-              </motion.button>
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.96 }}
-                onClick={() => handleModeInterest('group')}
-                className="rounded-2xl border border-violet-300/15 bg-violet-300/[0.06] px-3 py-4 text-sm font-black text-violet-100 transition hover:bg-violet-300/10"
-              >
-                🍿 Modo grupo
-              </motion.button>
+            <div className="mt-5 space-y-5">
+              <FilterPills
+                legend={quota?.unlimited ? 'Streamings · escolha vários' : 'Streaming · 1 por giro'}
+                options={providerOptions}
+                selectedValues={selectedProviders}
+                onToggle={toggleProvider}
+                loading={catalogLoading}
+                disabled={isSpinning}
+              />
+              <FilterPills
+                legend="Gênero · opcional"
+                options={GENRE_OPTIONS}
+                selectedValues={selectedGenre === null ? [] : [selectedGenre]}
+                onToggle={toggleGenre}
+                disabled={isSpinning}
+              />
+              <FilterPills
+                legend="Clima · opcional"
+                options={vibeOptions}
+                selectedValues={selectedVibe === null ? [] : [selectedVibe]}
+                onToggle={toggleVibe}
+                loading={catalogLoading}
+                disabled={isSpinning}
+              />
             </div>
-          </section>
-          <footer className="mt-7 flex justify-center gap-5 text-[11px] font-bold text-white/25">
-            <Link to="/about" className="transition hover:text-white/60">Sobre e créditos</Link>
-            <Link to="/privacy" className="transition hover:text-white/60">Privacidade</Link>
-            <Link to="/terms" className="transition hover:text-white/60">Termos</Link>
+            {catalogState === 'error' ? (
+              <div className="mt-4 flex items-center gap-2 text-xs text-gold" role="alert">
+                <span>Não foi possível carregar os filtros.</span>
+                <button type="button" onClick={retryCatalog} className="font-semibold underline underline-offset-2">Tentar novamente</button>
+              </div>
+            ) : null}
+            {catalogState === 'ready' && !hasProviders ? (
+              <p className="mt-4 text-xs leading-5 text-gold">Nenhum streaming está ativo no catálogo no momento.</p>
+            ) : null}
+            <Link
+              to="/social"
+              onClick={() => trackProductEventInBackground('GROUP_MODE_INTERESTED')}
+              className="mt-5 flex items-center justify-between border-t border-white/8 pt-4 text-sm font-semibold text-white/65 transition hover:text-paper"
+            >
+              Escolhendo com alguém?
+              <span aria-hidden="true">Abrir Juntos →</span>
+            </Link>
+          </aside>
+
+          <footer className="flex justify-center gap-5 text-[11px] font-medium text-white/50 lg:col-span-2">
+            <Link to="/about" className="transition hover:text-white">Sobre e créditos</Link>
+            <Link to="/privacy" className="transition hover:text-white">Privacidade</Link>
+            <Link to="/terms" className="transition hover:text-white">Termos</Link>
           </footer>
         </div>
 
@@ -546,11 +515,11 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 18, scale: 0.94 }}
               transition={{ type: 'spring', stiffness: 420, damping: 28 }}
-              className={`fixed inset-x-4 bottom-24 z-50 mx-auto max-w-md rounded-2xl border px-4 py-3 text-sm font-bold shadow-2xl backdrop-blur ${
+              className={`fixed inset-x-4 bottom-24 z-50 mx-auto max-w-md rounded-xl border px-4 py-3 text-sm font-semibold shadow-2xl backdrop-blur lg:bottom-6 ${
                 toast.tone === 'success'
                   ? 'border-emerald-300/15 bg-[#10231b]/95 text-emerald-100'
                   : toast.tone === 'info'
-                    ? 'border-violet-300/15 bg-[#181328]/95 text-violet-100'
+                    ? 'border-white/10 bg-surface-raised/95 text-paper'
                     : 'border-red-300/15 bg-[#241114]/95 text-red-100'
               }`}
             >

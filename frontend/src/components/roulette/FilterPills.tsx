@@ -26,7 +26,7 @@ export function FilterPills<T extends string | number>({
 }: FilterPillsProps<T>) {
   return (
     <fieldset className="min-w-0">
-      <legend className="mb-3 px-1 text-xs font-extrabold uppercase tracking-[0.18em] text-white/45">
+      <legend className="mb-2.5 px-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-white/60">
         {legend}
       </legend>
 
@@ -48,7 +48,7 @@ export function FilterPills<T extends string | number>({
         ) : null}
 
         {!loading && options.length === 0 ? (
-          <p className="px-1 py-2 text-sm text-white/35">Nenhuma opção disponível.</p>
+          <p className="px-1 py-2 text-sm text-white/55">Nenhuma opção disponível.</p>
         ) : null}
 
         {!loading ? options.map((option) => {
@@ -66,10 +66,10 @@ export function FilterPills<T extends string | number>({
               whileTap={disabled || option.disabled ? undefined : { scale: 0.94 }}
               animate={selected ? { scale: 1.03, y: -1 } : { scale: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 420, damping: 28 }}
-              className={`shrink-0 snap-start rounded-full border px-4 py-2.5 text-sm font-bold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-reel focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:cursor-not-allowed disabled:opacity-35 ${
+              className={`shrink-0 snap-start rounded-xl border px-3.5 py-2.5 text-sm font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-reel focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:cursor-not-allowed disabled:opacity-40 ${
                 selected
-                  ? 'border-reel bg-reel text-white shadow-[0_8px_28px_rgba(255,60,72,.26)]'
-                  : 'border-white/10 bg-white/[0.045] text-white/65 hover:border-white/20 hover:bg-white/[0.075] hover:text-white'
+                  ? 'border-reel bg-reel text-white shadow-[0_8px_24px_rgba(233,54,69,.2)]'
+                  : 'border-white/12 bg-transparent text-white/65 hover:border-white/25 hover:bg-white/[0.05] hover:text-white'
               }`}
             >
               {option.emoji ? <span className="mr-1.5" aria-hidden="true">{option.emoji}</span> : null}

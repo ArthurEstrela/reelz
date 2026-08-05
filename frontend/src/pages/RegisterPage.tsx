@@ -51,8 +51,8 @@ export function RegisterPage() {
   return (
     <AuthLayout
       eyebrow="Sua primeira sessão"
-      title="Crie sua conta."
-      description="Leva menos de um minuto. Escolher seu próximo filme vai levar ainda menos."
+      title="Bora começar?"
+      description="Crie sua conta e deixe o catálogo trabalhar por você."
       footer={
         <>
           Já tem uma conta?{' '}

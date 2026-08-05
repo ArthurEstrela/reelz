@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigate, useParams } from 'react-router'
 import { getProductSessionId } from '../analytics/productSession'
-import { ReelzLogo } from '../components/brand/ReelzLogo'
+import { AppHeader } from '../components/navigation/AppHeader'
 import { BottomNavigation } from '../components/navigation/BottomNavigation'
 import { FilterPills, type PillOption } from '../components/roulette/FilterPills'
 import { SlotMachine } from '../components/roulette/SlotMachine'
@@ -217,7 +217,7 @@ export function SocialRoomPage() {
   if (loading) {
     return (
       <main className="grid min-h-svh place-items-center bg-canvas text-white">
-        <div className="size-12 animate-spin rounded-full border-4 border-white/10 border-t-violet-400" aria-label="Carregando sala" />
+        <div className="size-12 animate-spin rounded-full border-4 border-white/10 border-t-reel" aria-label="Carregando sala" />
       </main>
     )
   }
@@ -227,7 +227,7 @@ export function SocialRoomPage() {
       <main className="grid min-h-svh place-items-center bg-canvas px-5 text-center text-white">
         <div>
           <p className="font-bold text-red-100">{error || 'Sala não encontrada.'}</p>
-          <button type="button" onClick={() => navigate('/social')} className="mt-5 font-black text-violet-300">Voltar</button>
+          <button type="button" onClick={() => navigate('/social')} className="mt-5 font-semibold text-reel-bright">Voltar</button>
         </div>
       </main>
     )
@@ -244,54 +244,55 @@ export function SocialRoomPage() {
   const genreLabels = new Map(GENRE_OPTIONS.map((genre) => [genre.value, genre.label]))
 
   return (
-    <main className="min-h-svh bg-canvas px-4 pt-5 pb-28 text-white sm:px-8">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(139,92,246,.18),transparent_32%)]" />
-      <header className="relative mx-auto flex max-w-5xl items-center justify-between gap-3">
-        <ReelzLogo />
-        <button
-          type="button"
-          onClick={() => void handleLeave()}
-          disabled={leaving}
-          className="rounded-xl border border-white/10 px-3 py-2 text-xs font-bold text-white/45"
-        >
-          {leaving ? 'Saindo…' : room.currentUserHost ? 'Encerrar' : 'Sair'}
-        </button>
-      </header>
+    <main className="min-h-svh bg-canvas px-4 pt-5 pb-28 text-paper sm:px-8 lg:pb-12">
+      <div className="pointer-events-none fixed inset-x-0 top-0 h-[34rem] bg-[radial-gradient(circle_at_50%_12%,rgba(233,54,69,.12),transparent_38%)]" />
+      <AppHeader
+        accessory={
+          <button
+            type="button"
+            onClick={() => void handleLeave()}
+            disabled={leaving}
+            className="rounded-xl border border-white/12 px-3 py-2 text-xs font-medium text-white/65 transition hover:border-white/25 hover:text-white"
+          >
+            {leaving ? 'Saindo…' : room.currentUserHost ? 'Encerrar sala' : 'Sair da sala'}
+          </button>
+        }
+      />
 
       <div className="relative mx-auto max-w-3xl pt-7">
-        <section className="rounded-[1.75rem] border border-violet-300/15 bg-violet-300/[0.055] p-5">
+        <section className="rounded-2xl border border-reel/20 bg-reel/[0.045] p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-[10px] font-black tracking-[.18em] text-violet-300 uppercase">
+              <p className="reelz-kicker">
                 {room.type === 'COUPLE' ? 'Modo casal' : 'Modo grupo'}
               </p>
-              <h1 className="mt-1 text-2xl font-black">Sala de {room.hostDisplayName}</h1>
-              <p className="mt-1 text-xs text-white/40">{room.members.length}/{room.capacity} participantes</p>
+              <h1 className="mt-1 text-2xl font-bold">Sala de {room.hostDisplayName}</h1>
+              <p className="mt-1 text-xs text-white/55">{room.members.length}/{room.capacity} participantes</p>
             </div>
             <button
               type="button"
               onClick={() => void handleCopyInvite()}
-              className="rounded-xl bg-white px-3 py-2 text-xs font-black text-canvas"
+              className="rounded-lg bg-paper px-3 py-2 text-xs font-bold text-canvas"
             >
               Convidar
             </button>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             {room.members.map((member) => (
-              <span key={member.userId} className={`rounded-full border px-3 py-1.5 text-xs font-bold ${member.ready ? 'border-emerald-300/20 bg-emerald-300/[0.08] text-emerald-100' : 'border-white/10 bg-black/15 text-white/55'}`}>
-                {member.ready ? '✓ ' : '○ '}{member.host ? '⭐ ' : ''}{member.displayName}
+              <span key={member.userId} className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${member.ready ? 'border-emerald-300/25 bg-emerald-300/[0.08] text-emerald-100' : 'border-white/10 bg-black/15 text-white/60'}`}>
+                {member.ready ? '✓ ' : ''}{member.host ? 'Anfitrião · ' : ''}{member.displayName}
               </span>
             ))}
           </div>
-          <p className="mt-4 text-xs text-white/35">Convite: <strong className="tracking-[.15em] text-white/70">{room.inviteCode}</strong></p>
+          <p className="mt-4 text-xs text-white/55">Convite: <strong className="tracking-[.14em] text-white/80">{room.inviteCode}</strong></p>
         </section>
 
         {error ? <p role="alert" className="mt-4 rounded-2xl border border-red-300/15 bg-red-300/[0.06] p-4 text-sm font-bold text-red-100">{error}</p> : null}
 
-        <section className="mt-4 rounded-[1.75rem] border border-white/8 bg-white/[0.025] p-4 sm:p-5" aria-label="Palpites dos participantes">
+        <section className="mt-4 rounded-2xl border border-white/10 bg-white/[0.025] p-4 sm:p-5" aria-label="Palpites dos participantes">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-sm font-black">Palpites da sala</h2>
-            <span className="text-[10px] font-black text-white/35">{room.members.filter((member) => member.ready).length}/{room.members.length} prontos</span>
+            <h2 className="text-sm font-semibold">Palpites da sala</h2>
+            <span className="text-[10px] font-semibold text-white/55">{room.members.filter((member) => member.ready).length}/{room.members.length} prontos</span>
           </div>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {room.members.map((member) => {
@@ -300,14 +301,14 @@ export function SocialRoomPage() {
                 ...(member.selectedVibeName ? [member.selectedVibeName] : []),
               ]
               return (
-                <div key={member.userId} className="rounded-2xl border border-white/8 bg-black/10 p-3">
+                <div key={member.userId} className="rounded-xl border border-white/10 bg-black/10 p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-black text-white/75">{member.displayName}</span>
-                    <span className={`text-[10px] font-black ${member.ready ? 'text-emerald-300' : 'text-amber-200/65'}`}>
+                    <span className="text-xs font-semibold text-white/80">{member.displayName}</span>
+                    <span className={`text-[10px] font-semibold ${member.ready ? 'text-emerald-300' : 'text-gold/80'}`}>
                       {member.ready ? 'PRONTO' : 'ESCOLHENDO'}
                     </span>
                   </div>
-                  <p className="mt-2 text-xs leading-5 text-white/35">
+                  <p className="mt-2 text-xs leading-5 text-white/55">
                     {choices.length > 0 ? choices.join(' · ') : 'Ainda não deu seu pitaco.'}
                   </p>
                 </div>
@@ -326,15 +327,15 @@ export function SocialRoomPage() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ type: 'spring', bounce: 0.48, duration: 0.85 }}
-                className="grid w-full max-w-xl grid-cols-[8.5rem_1fr] gap-4 rounded-[2rem] border border-white/10 bg-surface p-4 text-left shadow-2xl sm:grid-cols-[11rem_1fr] sm:p-6"
+                className="grid w-full max-w-xl grid-cols-[8.5rem_1fr] gap-4 rounded-2xl border border-white/10 bg-surface p-4 text-left shadow-2xl sm:grid-cols-[11rem_1fr] sm:p-6"
               >
                 <div className="aspect-[2/3] overflow-hidden rounded-2xl bg-white/5">
                   {movie.posterPath ? <img src={`${TMDB_IMAGE_BASE_URL}${movie.posterPath}`} alt={`Pôster de ${movie.title}`} className="h-full w-full object-cover" /> : null}
                 </div>
                 <div className="flex min-w-0 flex-col">
-                  <p className="text-xs font-black text-amber-300">{movie.tmdbRating ? `★ ${Number(movie.tmdbRating).toFixed(1)}` : 'Match do grupo'}</p>
-                  <h2 className="mt-2 text-2xl font-black leading-tight">{movie.title}</h2>
-                  <p className="mt-3 line-clamp-5 text-xs leading-5 text-white/45">{movie.overview || 'Sinopse indisponível.'}</p>
+                  <p className="text-xs font-semibold text-gold">{movie.tmdbRating ? `★ ${Number(movie.tmdbRating).toFixed(1)}` : 'Escolha do grupo'}</p>
+                  <h2 className="mt-2 text-2xl font-bold leading-tight">{movie.title}</h2>
+                  <p className="mt-3 line-clamp-5 text-xs leading-5 text-white/60">{movie.overview || 'Sinopse indisponível.'}</p>
                   {movie.streamingAvailability[0]?.attributionUrl ? (
                     <a
                       href={movie.streamingAvailability[0].attributionUrl ?? undefined}
@@ -344,7 +345,7 @@ export function SocialRoomPage() {
                         movieId: movie.tmdbId,
                         providerId: movie.streamingAvailability[0].providerId,
                       })}
-                      className="mt-auto rounded-xl bg-violet-500 px-3 py-2.5 text-center text-xs font-black text-white"
+                      className="mt-auto rounded-lg bg-reel px-3 py-2.5 text-center text-xs font-bold text-white"
                     >
                       Assistir na {movie.streamingAvailability[0].providerName}
                     </a>
@@ -353,7 +354,7 @@ export function SocialRoomPage() {
                       Disponível na {movie.streamingAvailability[0].providerName}
                     </p>
                   ) : null}
-                  <button type="button" onClick={() => void handleWatched()} className="pt-3 text-left text-xs font-black text-violet-300">
+                  <button type="button" onClick={() => void handleWatched()} className="pt-3 text-left text-xs font-semibold text-reel-bright">
                     Já vi · adicionar à coleção
                   </button>
                 </div>
@@ -361,11 +362,11 @@ export function SocialRoomPage() {
             ) : null}
             {!spinning && !movie ? (
               <motion.div key="social-idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-md">
-                <span className="text-6xl" aria-hidden="true">🎬</span>
-                <h2 className="mt-5 text-3xl font-black tracking-[-.04em]">
+                <svg viewBox="0 0 24 24" className="mx-auto size-12 text-reel-bright" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m10 8.8 5 3.2-5 3.2V8.8Z" /></svg>
+                <h2 className="mt-5 text-3xl font-bold tracking-[-.035em]">
                   {waitingForMembers ? 'Esperando companhia' : noCommonProviders ? 'Falta um streaming em comum' : 'Todo mundo pronto?'}
                 </h2>
-                <p className="mt-3 text-sm leading-6 text-white/40">
+                <p className="mt-3 text-sm leading-6 text-white/60">
                   {waitingForMembers
                     ? 'Compartilhe o convite. A sala começa com pelo menos duas pessoas.'
                     : noCommonProviders
@@ -380,9 +381,9 @@ export function SocialRoomPage() {
         </section>
 
         {currentMember && room.status === 'OPEN' ? (
-          <section className="rounded-[1.75rem] border border-white/8 bg-white/[0.025] p-4 sm:p-6">
-            <p className="text-[10px] font-black tracking-[.18em] text-violet-300 uppercase">Seu pitaco</p>
-            <h2 className="mt-1 text-xl font-black">
+          <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-4 sm:p-6">
+            <p className="reelz-kicker">Seu pitaco</p>
+            <h2 className="mt-1 text-xl font-bold">
               {currentMember.ready ? 'Você está pronto' : 'O que você topa assistir?'}
             </h2>
             {currentMember.ready ? (
@@ -392,7 +393,7 @@ export function SocialRoomPage() {
                   type="button"
                   onClick={() => void savePreference(false)}
                   disabled={savingPreference || spinning}
-                  className="text-xs font-black text-white/55 underline underline-offset-4 disabled:opacity-40"
+                  className="text-xs font-semibold text-white/65 underline underline-offset-4 disabled:opacity-40"
                 >
                   Alterar
                 </button>
@@ -422,7 +423,7 @@ export function SocialRoomPage() {
                   whileTap={{ scale: 0.97 }}
                   onClick={() => void savePreference(true)}
                   disabled={savingPreference || spinning || (selectedGenres.length === 0 && selectedVibe === null)}
-                  className="mt-6 w-full rounded-2xl bg-emerald-500 px-5 py-4 text-sm font-black text-white disabled:bg-white/10 disabled:text-white/25"
+                  className="mt-6 w-full rounded-xl bg-reel px-5 py-4 text-sm font-bold text-white disabled:bg-white/10 disabled:text-white/40"
                 >
                   {savingPreference ? 'Salvando…' : 'Confirmar meu palpite'}
                 </motion.button>
@@ -432,8 +433,8 @@ export function SocialRoomPage() {
         ) : null}
 
         {room.currentUserHost && room.status === 'OPEN' ? (
-          <section className="mt-4 rounded-[1.75rem] border border-violet-300/12 bg-violet-300/[0.04] p-4 sm:p-6">
-            <p className="text-[10px] font-black tracking-[.18em] text-violet-300 uppercase">Controle do anfitrião</p>
+          <section className="mt-4 rounded-2xl border border-white/10 bg-white/[0.025] p-4 sm:p-6">
+            <p className="reelz-kicker">Controle do anfitrião</p>
             <div className="mt-5">
               <FilterPills
                 legend={quota?.unlimited ? 'Streamings em comum · escolha vários' : 'Streaming em comum · 1 por giro'}
@@ -448,7 +449,7 @@ export function SocialRoomPage() {
               whileTap={{ scale: 0.96 }}
               onClick={() => void handleSpin()}
               disabled={spinning || waitingForMembers || noCommonProviders || !allReady || selectedProviders.length === 0}
-              className="mt-6 w-full rounded-2xl bg-violet-500 px-5 py-4 text-base font-black shadow-[0_18px_50px_rgba(139,92,246,.25)] disabled:bg-white/10 disabled:text-white/25 disabled:shadow-none"
+              className="mt-6 w-full rounded-xl bg-reel px-5 py-4 text-base font-bold shadow-[0_16px_40px_rgba(233,54,69,.2)] disabled:bg-white/10 disabled:text-white/40 disabled:shadow-none"
             >
               {spinning
                 ? 'Girando para todos…'
@@ -462,7 +463,7 @@ export function SocialRoomPage() {
 
       <AnimatePresence>
         {toast ? (
-          <motion.div initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} role="status" className="fixed inset-x-4 bottom-24 z-50 mx-auto max-w-md rounded-2xl border border-violet-300/15 bg-[#181328]/95 px-4 py-3 text-sm font-bold text-violet-100 shadow-2xl">
+          <motion.div initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} role="status" className="fixed inset-x-4 bottom-24 z-50 mx-auto max-w-md rounded-xl border border-white/12 bg-surface-raised/95 px-4 py-3 text-sm font-semibold text-paper shadow-2xl lg:bottom-6">
             {toast}
           </motion.div>
         ) : null}

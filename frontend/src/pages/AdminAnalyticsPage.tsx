@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router'
-import { ReelzLogo } from '../components/brand/ReelzLogo'
+import { AppHeader } from '../components/navigation/AppHeader'
 import { BottomNavigation } from '../components/navigation/BottomNavigation'
 import { getAnalyticsOverview } from '../services/analyticsService'
 import type { AnalyticsOverview } from '../types/analytics'
@@ -17,9 +16,9 @@ interface MetricCardProps {
 function MetricCard({ label, value, detail }: MetricCardProps) {
   return (
     <article className="rounded-2xl border border-white/8 bg-white/[0.035] p-4">
-      <p className="text-[10px] font-black tracking-[.14em] text-white/35 uppercase">{label}</p>
-      <p className="mt-2 text-3xl font-black tracking-tight text-white">{value}</p>
-      <p className="mt-1 text-xs leading-5 text-white/40">{detail}</p>
+      <p className="text-[10px] font-semibold tracking-[.12em] text-white/55 uppercase">{label}</p>
+      <p className="mt-2 text-3xl font-bold tracking-tight text-paper">{value}</p>
+      <p className="mt-1 text-xs leading-5 text-white/60">{detail}</p>
     </article>
   )
 }
@@ -78,23 +77,15 @@ export function AdminAnalyticsPage() {
   }, [overview])
 
   return (
-    <main className="min-h-svh bg-canvas px-4 pt-5 pb-28 text-white sm:px-8">
-      <header className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-        <ReelzLogo />
-        <Link
-          to="/"
-          className="rounded-xl border border-white/10 px-3 py-2 text-xs font-black text-white/55 transition hover:text-white"
-        >
-          Voltar à roleta
-        </Link>
-      </header>
+    <main className="min-h-svh bg-canvas px-4 pt-5 pb-28 text-paper sm:px-8 lg:pb-12">
+      <AppHeader />
 
       <div className="mx-auto mt-9 max-w-6xl">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p className="text-xs font-black tracking-[.18em] text-reel uppercase">Beta cockpit</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Saúde do produto</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/45">
+            <p className="reelz-kicker">Beta cockpit</p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Saúde do produto</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/60">
               Métricas agregadas e pseudonimizadas. Nenhum e-mail aparece neste painel.
             </p>
           </div>
@@ -104,8 +95,8 @@ export function AdminAnalyticsPage() {
                 key={period}
                 type="button"
                 onClick={() => changePeriod(period)}
-                className={`rounded-lg px-4 py-2 text-xs font-black transition ${
-                  days === period ? 'bg-white text-black' : 'text-white/40 hover:text-white'
+                className={`rounded-lg px-4 py-2 text-xs font-bold transition ${
+                  days === period ? 'bg-paper text-canvas' : 'text-white/60 hover:text-white'
                 }`}
               >
                 {period} dias
@@ -128,7 +119,7 @@ export function AdminAnalyticsPage() {
             <button
               type="button"
               onClick={reload}
-              className="mt-3 text-xs font-black text-white underline underline-offset-4"
+              className="mt-3 text-xs font-bold text-white underline underline-offset-4"
             >
               Tentar novamente
             </button>
@@ -149,13 +140,13 @@ export function AdminAnalyticsPage() {
             </section>
 
             <section className="mt-6 grid gap-4 lg:grid-cols-[1.35fr_.65fr]">
-              <article className="rounded-[1.75rem] border border-white/8 bg-white/[0.025] p-5">
+              <article className="rounded-2xl border border-white/8 bg-white/[0.025] p-5">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <h2 className="font-black">Movimento diário</h2>
-                    <p className="mt-1 text-xs text-white/35">Cadastro, giro e decisão em UTC.</p>
+                    <h2 className="font-bold">Movimento diário</h2>
+                    <p className="mt-1 text-xs text-white/60">Cadastro, giro e decisão em UTC.</p>
                   </div>
-                  <div className="flex gap-3 text-[10px] font-bold text-white/45">
+                  <div className="flex gap-3 text-[10px] font-semibold text-white/60">
                     <span className="text-sky-300">● cadastro</span>
                     <span className="text-reel">● giro</span>
                     <span className="text-emerald-300">● decisão</span>
@@ -172,28 +163,28 @@ export function AdminAnalyticsPage() {
                 </div>
               </article>
 
-              <article className="rounded-[1.75rem] border border-violet-300/10 bg-violet-300/[0.035] p-5">
-                <p className="text-[10px] font-black tracking-[.16em] text-violet-200/55 uppercase">Uso social</p>
-                <h2 className="mt-2 text-xl font-black">Casal e grupo</h2>
+              <article className="rounded-2xl border border-reel/15 bg-reel/[0.035] p-5">
+                <p className="text-[10px] font-semibold tracking-[.14em] text-reel-bright uppercase">Uso social</p>
+                <h2 className="mt-2 text-xl font-bold">Casal e grupo</h2>
                 <div className="mt-5 grid grid-cols-2 gap-3">
-                  <div className="rounded-2xl bg-pink-300/[0.07] p-4">
-                    <span className="text-2xl font-black text-pink-100">{overview.socialRoomsCreated}</span>
-                    <p className="text-xs text-white/40">salas criadas</p>
+                  <div className="rounded-xl bg-reel/[0.08] p-4">
+                    <span className="text-2xl font-bold text-paper">{overview.socialRoomsCreated}</span>
+                    <p className="text-xs text-white/60">salas criadas</p>
                   </div>
-                  <div className="rounded-2xl bg-violet-300/[0.07] p-4">
-                    <span className="text-2xl font-black text-violet-100">{overview.socialRoomsWithSpin}</span>
-                    <p className="text-xs text-white/40">salas que giraram</p>
+                  <div className="rounded-xl bg-white/[0.05] p-4">
+                    <span className="text-2xl font-bold text-paper">{overview.socialRoomsWithSpin}</span>
+                    <p className="text-xs text-white/60">salas que giraram</p>
                   </div>
-                  <div className="rounded-2xl bg-white/[0.04] p-4">
-                    <span className="text-2xl font-black text-white">{overview.socialSpins}</span>
-                    <p className="text-xs text-white/40">giros sociais</p>
+                  <div className="rounded-xl bg-white/[0.04] p-4">
+                    <span className="text-2xl font-bold text-paper">{overview.socialSpins}</span>
+                    <p className="text-xs text-white/60">giros sociais</p>
                   </div>
-                  <div className="rounded-2xl bg-white/[0.04] p-4">
-                    <span className="text-2xl font-black text-white">{overview.socialParticipants}</span>
-                    <p className="text-xs text-white/40">participantes únicos</p>
+                  <div className="rounded-xl bg-white/[0.04] p-4">
+                    <span className="text-2xl font-bold text-paper">{overview.socialParticipants}</span>
+                    <p className="text-xs text-white/60">participantes únicos</p>
                   </div>
                 </div>
-                <p className="mt-5 text-xs leading-5 text-white/35">
+                <p className="mt-5 text-xs leading-5 text-white/60">
                   Interesse pré-lançamento: {overview.coupleModeInterestedUsers} casal · {overview.groupModeInterestedUsers} grupo.
                 </p>
               </article>
@@ -206,21 +197,21 @@ export function AdminAnalyticsPage() {
               <MetricCard label="Decisões" value={overview.decidedSessions} detail="Sessões que abriram onde assistir" />
             </section>
 
-            <section className="mt-6 rounded-[1.75rem] border border-white/8 bg-white/[0.025] p-5">
+            <section className="mt-6 rounded-2xl border border-white/8 bg-white/[0.025] p-5">
               <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
                 <div>
-                  <p className="text-[10px] font-black tracking-[.16em] text-amber-200/55 uppercase">Voz dos testadores</p>
-                  <h2 className="mt-1 text-xl font-black">Feedback do beta</h2>
-                  <p className="mt-1 text-xs text-white/35">Sem e-mail ou identificação individual no painel.</p>
+                  <p className="text-[10px] font-semibold tracking-[.14em] text-gold uppercase">Voz dos testadores</p>
+                  <h2 className="mt-1 text-xl font-bold">Feedback do beta</h2>
+                  <p className="mt-1 text-xs text-white/60">Sem e-mail ou identificação individual no painel.</p>
                 </div>
                 <div className="flex gap-3">
                   <div className="rounded-xl bg-white/5 px-4 py-2 text-center">
-                    <p className="text-xl font-black">{overview.averageFeedbackScore || '—'}</p>
-                    <p className="text-[10px] text-white/35">média / 5</p>
+                    <p className="text-xl font-bold">{overview.averageFeedbackScore || '—'}</p>
+                    <p className="text-[10px] text-white/60">média / 5</p>
                   </div>
                   <div className="rounded-xl bg-white/5 px-4 py-2 text-center">
-                    <p className="text-xl font-black">{overview.feedbackCount}</p>
-                    <p className="text-[10px] text-white/35">respostas</p>
+                    <p className="text-xl font-bold">{overview.feedbackCount}</p>
+                    <p className="text-[10px] text-white/60">respostas</p>
                   </div>
                 </div>
               </div>
@@ -228,21 +219,21 @@ export function AdminAnalyticsPage() {
               {overview.recentFeedback.length ? (
                 <div className="mt-5 grid gap-3 md:grid-cols-2">
                   {overview.recentFeedback.map((feedback, index) => (
-                    <article key={`${feedback.createdAt}-${index}`} className="rounded-2xl border border-white/6 bg-black/15 p-4">
+                    <article key={`${feedback.createdAt}-${index}`} className="rounded-xl border border-white/6 bg-black/15 p-4">
                       <div className="flex items-center justify-between gap-3">
-                        <span className="font-black text-amber-200">{'★'.repeat(feedback.score)}<span className="text-white/10">{'★'.repeat(5 - feedback.score)}</span></span>
-                        <time className="text-[10px] text-white/25" dateTime={feedback.createdAt}>
+                        <span className="font-bold text-gold">{'★'.repeat(feedback.score)}<span className="text-white/20">{'★'.repeat(5 - feedback.score)}</span></span>
+                        <time className="text-[10px] text-white/50" dateTime={feedback.createdAt}>
                           {new Date(feedback.createdAt).toLocaleDateString('pt-BR')}
                         </time>
                       </div>
-                      <p className="mt-2 text-sm leading-6 text-white/55">
+                      <p className="mt-2 text-sm leading-6 text-white/70">
                         {feedback.message || 'A pessoa enviou apenas a nota.'}
                       </p>
                     </article>
                   ))}
                 </div>
               ) : (
-                <p className="mt-5 rounded-2xl bg-white/[0.025] p-4 text-sm text-white/35">
+                <p className="mt-5 rounded-xl bg-white/[0.025] p-4 text-sm text-white/60">
                   Nenhum feedback neste período ainda.
                 </p>
               )}

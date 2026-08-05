@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ReelzLogo } from '../components/brand/ReelzLogo'
+import { AppHeader } from '../components/navigation/AppHeader'
 import { BottomNavigation } from '../components/navigation/BottomNavigation'
-import { useAuth } from '../hooks/useAuth'
 import {
   getWatchedHistory,
   getWatchlist,
@@ -53,7 +52,7 @@ function LibraryPoster({
       animate={{ opacity: pending ? 0.45 : 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.72, y: -18 }}
       transition={{ type: 'spring', bounce: 0.32, delay: Math.min(index, 10) * 0.035 }}
-      className="group relative aspect-[2/3] overflow-hidden rounded-2xl border border-white/8 bg-surface shadow-xl"
+      className="group relative aspect-[2/3] overflow-hidden rounded-lg border border-white/10 bg-surface shadow-xl"
       title={watchedDate ? `${movie.title} · assistido em ${watchedDate}` : movie.title}
     >
       {posterUrl ? (
@@ -65,7 +64,7 @@ function LibraryPoster({
           className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
         />
       ) : (
-        <div className="grid h-full place-items-center px-3 text-center text-xs font-bold text-white/35">
+        <div className="grid h-full place-items-center px-3 text-center text-xs font-semibold text-white/55">
           {movie.title}
         </div>
       )}
@@ -79,7 +78,7 @@ function LibraryPoster({
               disabled={pending}
               onClick={() => onMarkWatched(movie)}
               aria-label={`Marcar ${movie.title} como assistido`}
-              className="truncate rounded-xl bg-emerald-400 px-2 py-3 text-[10px] font-black text-emerald-950 shadow-lg transition hover:bg-emerald-300 disabled:cursor-wait"
+              className="truncate rounded-lg bg-emerald-400 px-2 py-3 text-[10px] font-bold text-emerald-950 shadow-lg transition hover:bg-emerald-300 disabled:cursor-wait"
             >
               ✓ Já assisti
             </button>
@@ -132,7 +131,6 @@ async function fetchHistory(
 }
 
 export function LibraryPage() {
-  const { user, logout } = useAuth()
   const requestSequence = useRef(0)
   const requestInFlight = useRef(false)
   const [activeStatus, setActiveStatus] = useState<UserMovieStatus>('WATCHED')
@@ -265,27 +263,17 @@ export function LibraryPage() {
   const isWatchedTab = activeStatus === 'WATCHED'
 
   return (
-    <main className="relative min-h-svh overflow-hidden bg-canvas px-4 py-5 pb-28 text-white sm:px-8 sm:py-6 sm:pb-28">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(255,60,72,.13),transparent_28%)]" />
+    <main className="relative min-h-svh overflow-hidden bg-canvas px-4 py-5 pb-28 text-paper sm:px-8 sm:py-6 lg:pb-12">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-96 bg-[radial-gradient(circle_at_18%_0%,rgba(233,54,69,.11),transparent_34%)]" />
 
-      <header className="relative mx-auto flex max-w-6xl items-center justify-between">
-        <ReelzLogo />
-        <button
-          type="button"
-          onClick={logout}
-          title={user?.email ? `Sair de ${user.email}` : 'Sair'}
-          className="rounded-xl border border-white/10 px-3 py-2.5 text-xs font-bold text-white/50 transition hover:border-white/20 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reel"
-        >
-          Sair
-        </button>
-      </header>
+      <AppHeader />
 
       <section className="relative mx-auto max-w-6xl pt-10 sm:pt-14">
-        <p className="text-xs font-black uppercase tracking-[0.24em] text-reel">Sua videoteca</p>
+        <p className="reelz-kicker">Sua videoteca</p>
         <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-black tracking-[-0.055em] sm:text-6xl">Biblioteca</h1>
-            <p className="mt-3 text-sm text-white/45 sm:text-base">
+            <h1 className="text-4xl font-extrabold tracking-[-0.045em] sm:text-6xl">Biblioteca</h1>
+            <p className="mt-3 text-sm text-white/60 sm:text-base">
               {initialLoading || totalElements === null
                 ? 'Organizando seus filmes…'
                 : isWatchedTab
@@ -294,9 +282,9 @@ export function LibraryPage() {
             </p>
           </div>
           {!initialLoading && totalElements !== null && totalElements > 0 ? (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center">
-              <strong className="block text-2xl font-black text-reel-bright">{totalElements}</strong>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-white/35">
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center">
+              <strong className="block text-2xl font-bold text-reel-bright">{totalElements}</strong>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-white/55">
                 {isWatchedTab ? 'na coleção' : 'para assistir'}
               </span>
             </div>
@@ -304,7 +292,7 @@ export function LibraryPage() {
         </div>
 
         <div
-          className="mt-7 grid max-w-sm grid-cols-2 rounded-2xl border border-white/8 bg-white/[0.035] p-1.5"
+          className="mt-7 grid max-w-sm grid-cols-2 rounded-xl border border-white/10 bg-white/[0.035] p-1"
           role="tablist"
           aria-label="Seções da biblioteca"
         >
@@ -318,14 +306,14 @@ export function LibraryPage() {
                 role="tab"
                 aria-selected={active}
                 onClick={() => selectTab(tab.status)}
-                className={`relative rounded-xl px-3 py-2.5 text-xs font-black transition ${
-                  active ? 'text-white' : 'text-white/40 hover:text-white/70'
+                className={`relative rounded-lg px-3 py-2.5 text-xs font-semibold transition ${
+                  active ? 'text-paper' : 'text-white/55 hover:text-white/80'
                 }`}
               >
                 {active && (
                   <motion.span
                     layoutId="library-active-tab"
-                    className="absolute inset-0 rounded-xl bg-white/10 shadow-lg"
+                    className="absolute inset-0 rounded-lg bg-white/10"
                     transition={{ type: 'spring', stiffness: 420, damping: 32 }}
                   />
                 )}
@@ -370,19 +358,21 @@ export function LibraryPage() {
           ) : null}
 
           {!initialLoading && movies.length === 0 && !error ? (
-            <div className="mx-auto max-w-md rounded-[2rem] border border-white/8 bg-white/[0.025] px-7 py-10 text-center">
-              <span className="text-5xl" aria-hidden="true">{isWatchedTab ? '🎬' : '🔖'}</span>
-              <h2 className="mt-5 text-xl font-black">
+            <div className="mx-auto max-w-md border-y border-white/10 px-7 py-12 text-center">
+              <svg viewBox="0 0 24 24" className="mx-auto size-11 text-reel-bright" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+                {isWatchedTab ? <><rect x="4" y="5" width="16" height="15" rx="2" /><path d="m4 10 16-3M8 5l3 4M14 4l3 4" /></> : <path d="M7 4h10a1 1 0 0 1 1 1v15l-6-3-6 3V5a1 1 0 0 1 1-1Z" />}
+              </svg>
+              <h2 className="mt-5 text-xl font-bold">
                 {isWatchedTab
                   ? 'Sua coleção começa no próximo giro'
                   : 'Sua lista Quero Ver está livre'}
               </h2>
-              <p className="mt-2 text-sm leading-6 text-white/45">
+              <p className="mt-2 text-sm leading-6 text-white/60">
                 {isWatchedTab
                   ? 'Marque um resultado como “Já vi” e ele aparecerá aqui.'
                   : 'Salve um resultado da roleta para assistir quando chegar a hora certa.'}
               </p>
-              <Link to="/" className="mt-6 inline-flex rounded-2xl bg-reel px-5 py-3 text-sm font-black text-white">
+              <Link to="/" className="mt-6 inline-flex rounded-xl bg-reel px-5 py-3 text-sm font-bold text-white">
                 Girar agora
               </Link>
             </div>
@@ -398,7 +388,7 @@ export function LibraryPage() {
                   movies.length === 0 ? 0 : nextPage,
                   movies.length === 0,
                 )}
-                className="mt-2 font-black underline underline-offset-2"
+                className="mt-2 font-bold underline underline-offset-2"
               >
                 Tentar novamente
               </button>
@@ -424,7 +414,7 @@ export function LibraryPage() {
               type="button"
               onClick={() => void loadPage(activeStatus, nextPage, false)}
               disabled={loadingMore}
-              className="mx-auto mt-8 block rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-3.5 text-sm font-black text-white/70 transition hover:border-white/20 hover:text-white disabled:opacity-40"
+              className="mx-auto mt-8 block rounded-xl border border-white/12 px-6 py-3.5 text-sm font-semibold text-white/70 transition hover:border-white/25 hover:bg-white/[0.04] hover:text-white disabled:opacity-40"
             >
               {loadingMore ? 'Buscando mais filmes…' : 'Carregar mais'}
             </button>

@@ -116,7 +116,7 @@ export function OnboardingPage() {
 
   return (
     <main className="relative min-h-svh overflow-hidden bg-canvas px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-8 text-white">
-      <div className="pointer-events-none absolute -top-32 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-reel/15 blur-[100px]" />
+      <div className="pointer-events-none absolute -top-32 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-reel/10 blur-[100px]" />
 
       <div className="relative mx-auto flex min-h-[calc(100svh-3rem)] w-full max-w-md flex-col">
         <header className="flex items-center justify-between">
@@ -129,14 +129,14 @@ export function OnboardingPage() {
         </header>
 
         <div className="mt-6">
-          <p className="text-xs font-black tracking-[.18em] text-reel-bright uppercase">
+          <p className="reelz-kicker">
             Ajuste seu Reelz
           </p>
-          <h1 className="mt-2 text-3xl leading-tight font-black tracking-tight">
+          <h1 className="mt-2 text-3xl leading-tight font-extrabold tracking-tight">
             O que você já assistiu?
           </h1>
-          <p className="mt-2 text-sm leading-relaxed text-white/50">
-            Deslize para a direita se já viu. Assim a roleta não repete o óbvio.
+          <p className="mt-2 text-sm leading-relaxed text-white/60">
+            Deslize para a direita se já viu. É rápido e evita recomendações óbvias.
           </p>
           <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/8">
             <motion.div
@@ -159,7 +159,7 @@ export function OnboardingPage() {
 
           {loadingState === 'error' && (
             <div className="my-auto rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 text-center">
-              <span className="text-4xl" aria-hidden="true">🎬</span>
+              <svg viewBox="0 0 24 24" className="mx-auto size-10 text-reel-bright" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m10 8.8 5 3.2-5 3.2V8.8Z" /></svg>
               <p role="alert" className="mt-4 text-sm leading-relaxed text-white/65">
                 {errorMessage}
               </p>
@@ -217,7 +217,7 @@ export function OnboardingPage() {
                   type="button"
                   whileTap={{ scale: 0.94 }}
                   onClick={() => decide(false)}
-                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm font-black text-white/70"
+                  className="rounded-xl border border-white/12 px-4 py-4 text-sm font-semibold text-white/75"
                 >
                   ← Não assisti
                 </motion.button>
@@ -225,7 +225,7 @@ export function OnboardingPage() {
                   type="button"
                   whileTap={{ scale: 0.94 }}
                   onClick={() => decide(true)}
-                  className="rounded-2xl bg-emerald-400 px-4 py-4 text-sm font-black text-emerald-950 shadow-[0_12px_35px_rgba(52,211,153,.2)]"
+                  className="rounded-xl bg-reel px-4 py-4 text-sm font-bold text-white shadow-[0_12px_35px_rgba(233,54,69,.2)]"
                 >
                   Já assisti →
                 </motion.button>
@@ -238,12 +238,12 @@ export function OnboardingPage() {
               initial={{ scale: 0.7, opacity: 0, y: 25 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 230, damping: 18, bounce: 0.42 }}
-              className="my-auto rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.07] to-reel/10 p-8 text-center shadow-2xl"
+              className="my-auto rounded-2xl border border-white/10 bg-white/[0.035] p-8 text-center shadow-2xl"
             >
               <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-emerald-400/15 text-4xl">
                 ✓
               </div>
-              <h2 className="mt-6 text-2xl font-black">Seu perfil ganhou forma.</h2>
+              <h2 className="mt-6 text-2xl font-bold">Seu perfil ganhou forma.</h2>
               <p className="mt-3 text-sm leading-relaxed text-white/55">
                 Marcamos {watchedMovieIds.length}{' '}
                 {watchedMovieIds.length === 1
@@ -261,7 +261,7 @@ export function OnboardingPage() {
                 whileTap={{ scale: 0.96 }}
                 disabled={submitting}
                 onClick={() => void finishOnboarding()}
-                className="mt-7 w-full rounded-2xl bg-reel px-5 py-4 text-sm font-black text-white shadow-[0_14px_40px_rgba(255,60,72,.25)] disabled:cursor-wait disabled:opacity-60"
+                className="mt-7 w-full rounded-xl bg-reel px-5 py-4 text-sm font-bold text-white shadow-[0_14px_40px_rgba(233,54,69,.2)] disabled:cursor-wait disabled:opacity-60"
               >
                 {submitting ? 'Salvando escolhas...' : 'Começar a girar'}
               </motion.button>

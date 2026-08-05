@@ -18,17 +18,17 @@ export function SocialJoinPage() {
   }, [inviteCode, navigate])
 
   return (
-    <main className="grid min-h-svh place-items-center bg-canvas px-5 text-center text-white">
+    <main className="grid min-h-svh place-items-center bg-canvas px-5 text-center text-paper">
       <div>
         {error ? (
           <>
             <p className="font-bold text-red-100">{error}</p>
-            <button type="button" onClick={() => navigate('/social')} className="mt-5 font-black text-violet-300">Ir para salas</button>
+            <button type="button" onClick={() => navigate('/social')} className="mt-5 font-bold text-reel-bright underline underline-offset-4">Ir para salas</button>
           </>
         ) : (
           <>
-            <div className="mx-auto size-12 animate-spin rounded-full border-4 border-white/10 border-t-violet-400" />
-            <p className="mt-5 text-sm font-bold text-white/55">Entrando na sala…</p>
+            <div className="mx-auto size-12 animate-spin rounded-full border-4 border-white/10 border-t-reel" />
+            <p className="mt-5 text-sm font-semibold text-white/65">Entrando na sala…</p>
           </>
         )}
       </div>

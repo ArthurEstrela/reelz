@@ -39,19 +39,19 @@ describe('AppRoutes', () => {
   it('redirects an anonymous user from home to login', () => {
     renderRoutes(false)
 
-    expect(screen.getByRole('heading', { name: 'Entre para girar.' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Bom te ver de novo.' })).toBeInTheDocument()
   })
 
   it('renders the private home for an authenticated user', () => {
     renderRoutes(true)
 
-    expect(screen.getByRole('heading', { name: 'A um giro de distância' })).toBeInTheDocument()
-    expect(screen.getByTitle('Sair de person@reelz.app')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Hoje vai de quê?' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Abrir menu da conta' })).toBeInTheDocument()
   })
 
   it('allows only administrators to open product analytics', () => {
     const regularUser = renderRoutes(true, '/admin/analytics')
-    expect(screen.getByRole('heading', { name: 'A um giro de distância' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Hoje vai de quê?' })).toBeInTheDocument()
     regularUser.unmount()
 
     renderRoutes(true, '/admin/analytics', true, 'ADMIN')
@@ -61,7 +61,7 @@ describe('AppRoutes', () => {
   it('keeps authenticated users out of the login page', () => {
     renderRoutes(true, '/login')
 
-    expect(screen.getByRole('heading', { name: 'A um giro de distância' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Hoje vai de quê?' })).toBeInTheDocument()
   })
 
   it('renders the private library for an authenticated user', () => {
