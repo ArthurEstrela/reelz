@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { HomePage } from '../pages/HomePage'
 import { AdminAnalyticsPage } from '../pages/AdminAnalyticsPage'
@@ -11,9 +12,20 @@ import { TermsPage } from '../pages/TermsPage'
 import { PrivateRoute } from './PrivateRoute'
 import { PublicRoute } from './PublicRoute'
 
+const SocialJoinPage = lazy(() => import('../pages/SocialJoinPage').then((module) => ({
+  default: module.SocialJoinPage,
+})))
+const SocialLobbyPage = lazy(() => import('../pages/SocialLobbyPage').then((module) => ({
+  default: module.SocialLobbyPage,
+})))
+const SocialRoomPage = lazy(() => import('../pages/SocialRoomPage').then((module) => ({
+  default: module.SocialRoomPage,
+})))
+
 export function AppRoutes() {
   return (
-    <Routes>
+    <Suspense fallback={<div className="grid min-h-svh place-items-center bg-canvas text-sm font-bold text-white/55">Abrindo sessão…</div>}>
+      <Routes>
       <Route element={<PublicRoute />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -30,6 +42,9 @@ export function AppRoutes() {
       <Route element={<PrivateRoute />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/library" element={<LibraryPage />} />
+        <Route path="/social" element={<SocialLobbyPage />} />
+        <Route path="/social/join/:inviteCode" element={<SocialJoinPage />} />
+        <Route path="/social/rooms/:roomId" element={<SocialRoomPage />} />
       </Route>
 
       <Route element={<PrivateRoute requiredRole="ADMIN" />}>
@@ -37,6 +52,7 @@ export function AppRoutes() {
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+    </Suspense>
   )
 }

@@ -9,6 +9,10 @@ import com.roletadefilmes.roulette.domain.exception.DuplicateSpinException;
 import com.roletadefilmes.roulette.domain.exception.EmptyProviderSelectionException;
 import com.roletadefilmes.roulette.domain.exception.FreePlanProviderLimitException;
 import com.roletadefilmes.roulette.domain.exception.NoMoviesFoundException;
+import com.roletadefilmes.social.domain.exception.InvalidSocialRoomActionException;
+import com.roletadefilmes.social.domain.exception.SocialRoomAccessDeniedException;
+import com.roletadefilmes.social.domain.exception.SocialRoomConflictException;
+import com.roletadefilmes.social.domain.exception.SocialRoomNotFoundException;
 import com.roletadefilmes.streaming.domain.exception.InvalidStreamingPreferenceException;
 import com.roletadefilmes.user.domain.exception.UserNotFoundException;
 import com.roletadefilmes.user.domain.exception.EmailAlreadyRegisteredException;
@@ -188,6 +192,66 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ) {
         return error(HttpStatus.CONFLICT, "DUPLICATE_SPIN", exception.getMessage(), request, List.of());
+    }
+
+    @ExceptionHandler(SocialRoomNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiErrorResponse handleSocialRoomNotFound(
+            SocialRoomNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        return error(
+                HttpStatus.NOT_FOUND,
+                "SOCIAL_ROOM_NOT_FOUND",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ExceptionHandler(SocialRoomAccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiErrorResponse handleSocialRoomAccessDenied(
+            SocialRoomAccessDeniedException exception,
+            HttpServletRequest request
+    ) {
+        return error(
+                HttpStatus.FORBIDDEN,
+                "SOCIAL_ROOM_ACCESS_DENIED",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ExceptionHandler(SocialRoomConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiErrorResponse handleSocialRoomConflict(
+            SocialRoomConflictException exception,
+            HttpServletRequest request
+    ) {
+        return error(
+                HttpStatus.CONFLICT,
+                "SOCIAL_ROOM_CONFLICT",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ExceptionHandler(InvalidSocialRoomActionException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrorResponse handleInvalidSocialRoomAction(
+            InvalidSocialRoomActionException exception,
+            HttpServletRequest request
+    ) {
+        return error(
+                HttpStatus.BAD_REQUEST,
+                "INVALID_SOCIAL_ROOM_ACTION",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
     }
 
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)

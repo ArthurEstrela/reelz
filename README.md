@@ -61,6 +61,9 @@ O MVP inclui:
 - páginas públicas de Termos, Privacidade e atribuição ao TMDB;
 - retenção automática de eventos e proteção de login/cadastro por rate limit no Nginx.
 - feedback qualitativo dentro do app, agregado no cockpit administrativo, e tela de recuperação para erros fatais do front-end.
+- modos Casal e Grupo com salas autenticadas, convite por link/código e até 8 participantes;
+- interseção de streamings e exclusão do histórico de todos os membros no sorteio social;
+- giro exclusivo do anfitrião, quota/idempotência preservadas e resultado sincronizado por polling.
 
 A Home privada contém a experiência funcional da roleta e consome os catálogos, a franquia diária e o histórico diretamente dos endpoints autenticados do backend.
 
@@ -129,4 +132,5 @@ No Docker Compose, a porta do backend fica vinculada somente a `127.0.0.1`. Em p
 - [Progressive Web App](docs/10-pwa.md)
 - [CI/CD e observabilidade](docs/11-ci-observabilidade.md)
 - [Runbook do beta fechado](docs/12-beta-fechado.md)
+- [Modos Casal e Grupo](docs/13-modos-sociais.md)
 - [Front-end React](frontend/README.md)

@@ -86,6 +86,22 @@ public class AnalyticsQueryRepository {
                   WHERE event_type = 'GROUP_MODE_INTERESTED'
                     AND occurred_at >= :fromInstant AND occurred_at < :toInstant)
                     AS group_mode_interested_users,
+                (SELECT COUNT(*) FROM social_room
+                  WHERE created_at >= :fromInstant AND created_at < :toInstant)
+                    AS social_rooms_created,
+                (SELECT COUNT(DISTINCT room.id)
+                   FROM social_room room
+                   JOIN social_room_spin spin ON spin.room_id = room.id
+                  WHERE room.created_at >= :fromInstant AND room.created_at < :toInstant)
+                    AS social_rooms_with_spin,
+                (SELECT COUNT(*) FROM social_room_spin
+                  WHERE created_at >= :fromInstant AND created_at < :toInstant)
+                    AS social_spins,
+                (SELECT COUNT(DISTINCT member.user_id)
+                   FROM social_room_member member
+                   JOIN social_room room ON room.id = member.room_id
+                  WHERE room.created_at >= :fromInstant AND room.created_at < :toInstant)
+                    AS social_participants,
                 (SELECT COUNT(*) FROM d7_cohort) AS d7_eligible_users,
                 (SELECT COUNT(*) FROM d7_cohort cohort
                   WHERE EXISTS (
@@ -147,6 +163,10 @@ public class AnalyticsQueryRepository {
                         resultSet.getLong("watchlisted_movies"),
                         resultSet.getLong("couple_mode_interested_users"),
                         resultSet.getLong("group_mode_interested_users"),
+                        resultSet.getLong("social_rooms_created"),
+                        resultSet.getLong("social_rooms_with_spin"),
+                        resultSet.getLong("social_spins"),
+                        resultSet.getLong("social_participants"),
                         resultSet.getLong("d7_eligible_users"),
                         resultSet.getLong("d7_retained_users"),
                         resultSet.getDouble("average_spins_per_decision")
@@ -181,6 +201,10 @@ public class AnalyticsQueryRepository {
             long watchlistedMovies,
             long coupleModeInterestedUsers,
             long groupModeInterestedUsers,
+            long socialRoomsCreated,
+            long socialRoomsWithSpin,
+            long socialSpins,
+            long socialParticipants,
             long d7EligibleUsers,
             long d7RetainedUsers,
             double averageSpinsPerDecision

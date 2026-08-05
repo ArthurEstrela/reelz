@@ -1,7 +1,7 @@
 import { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router'
+import { MemoryRouter, useLocation } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AuthContext, type AuthContextValue } from '../context/authContextDefinition'
 import { getProviders, getVibes } from '../services/catalogService'
@@ -104,9 +104,15 @@ function renderHome() {
     <AuthContext.Provider value={context}>
       <MemoryRouter>
         <HomePage minimumSpinDuration={0} />
+        <LocationProbe />
       </MemoryRouter>
     </AuthContext.Provider>,
   )
+}
+
+function LocationProbe() {
+  const location = useLocation()
+  return <output data-testid="location">{location.pathname}{location.search}</output>
 }
 
 function apiError(status: number): AxiosError<ApiErrorResponse> {
@@ -227,7 +233,7 @@ describe('HomePage roulette', () => {
     await waitFor(() => expect(getTodayUsage).toHaveBeenCalledTimes(2))
   })
 
-  it('records transparent interest in couple mode without blocking the roulette', async () => {
+  it('records couple mode interest and opens the social lobby', async () => {
     const user = userEvent.setup()
     renderHome()
 
@@ -235,8 +241,7 @@ describe('HomePage roulette', () => {
     await user.click(screen.getByRole('button', { name: '💞 Modo casal' }))
 
     expect(trackProductEventInBackground).toHaveBeenCalledWith('COUPLE_MODE_INTERESTED')
-    expect(await screen.findByRole('alert')).toHaveTextContent('Modo casal anotado')
-    expect(screen.getByRole('button', { name: 'Girar Roleta' })).toBeEnabled()
+    expect(screen.getByTestId('location')).toHaveTextContent('/social?mode=COUPLE')
   })
 
   it('saves a roulette result to the watchlist without closing the movie', async () => {

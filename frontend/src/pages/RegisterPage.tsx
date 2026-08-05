@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { AuthLayout } from '../components/auth/AuthLayout'
 import { FormMessage } from '../components/feedback/FormMessage'
 import { FormField } from '../components/form/FormField'
@@ -12,6 +12,8 @@ import { getBrowserCountryCode, getBrowserTimezone } from '../utils/locale'
 export function RegisterPage() {
   const { register } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const navigationState = location.state as { from?: { pathname?: string } } | null
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -33,7 +35,10 @@ export function RegisterPage() {
         timezone: getBrowserTimezone(),
         countryCode: getBrowserCountryCode(),
       })
-      navigate('/login', { replace: true, state: { registered: true } })
+      navigate('/login', {
+        replace: true,
+        state: { registered: true, from: navigationState?.from },
+      })
     } catch (error) {
       setErrorMessage(
         getApiErrorMessage(error, 'Não foi possível criar sua conta. Revise os dados e tente novamente.'),
@@ -51,7 +56,11 @@ export function RegisterPage() {
       footer={
         <>
           Já tem uma conta?{' '}
-          <Link className="font-bold text-white transition hover:text-reel" to="/login">
+          <Link
+            className="font-bold text-white transition hover:text-reel"
+            to="/login"
+            state={{ from: navigationState?.from }}
+          >
             Fazer login
           </Link>
         </>

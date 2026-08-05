@@ -41,6 +41,10 @@ export interface AnalyticsOverview {
   watchlistedMovies: number
   coupleModeInterestedUsers: number
   groupModeInterestedUsers: number
+  socialRoomsCreated: number
+  socialRoomsWithSpin: number
+  socialSpins: number
+  socialParticipants: number
   d7EligibleUsers: number
   d7RetainedUsers: number
   activationRate: number

@@ -13,6 +13,14 @@ const items = [
     ),
   },
   {
+    to: '/social',
+    label: 'Juntos',
+    end: false,
+    icon: (
+      <path fill="currentColor" d="M8.5 11A3.5 3.5 0 1 0 8.5 4a3.5 3.5 0 0 0 0 7Zm7-1a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2 19.5C2 15.9 4.9 13 8.5 13s6.5 2.9 6.5 6.5V21H2v-1.5Zm14.5-7.4c3 0 5.5 2.4 5.5 5.4V19h-5.1a8.4 8.4 0 0 0-2.4-5.8c.6-.7 1.2-1.1 2-1.1Z" />
+    ),
+  },
+  {
     to: '/library',
     label: 'Biblioteca',
     end: false,
@@ -45,7 +53,7 @@ export function BottomNavigation() {
         aria-label="Navegação principal"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-canvas/90 px-4 pt-2 pb-[calc(.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl"
       >
-        <div className={`mx-auto grid max-w-md gap-1 ${navigationItems.length === 3 ? 'grid-cols-4' : 'grid-cols-3'}`}>
+        <div className={`mx-auto grid max-w-md gap-1 ${navigationItems.length === 4 ? 'grid-cols-5' : 'grid-cols-4'}`}>
         {navigationItems.map((item) => (
           <NavLink
             key={item.to}

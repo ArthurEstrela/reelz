@@ -1,0 +1,336 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useNavigate, useParams } from 'react-router'
+import { getProductSessionId } from '../analytics/productSession'
+import { ReelzLogo } from '../components/brand/ReelzLogo'
+import { BottomNavigation } from '../components/navigation/BottomNavigation'
+import { FilterPills, type PillOption } from '../components/roulette/FilterPills'
+import { SlotMachine } from '../components/roulette/SlotMachine'
+import { GENRE_OPTIONS } from '../config/rouletteFilters'
+import { getVibes } from '../services/catalogService'
+import { trackProductEventInBackground } from '../services/analyticsService'
+import { markMovieAsWatched } from '../services/historyService'
+import { getTodayUsage } from '../services/rouletteService'
+import {
+  getSocialRoom,
+  leaveSocialRoom,
+  spinSocialRoom,
+} from '../services/socialService'
+import type { RouletteMovie, SpinQuota } from '../types/roulette'
+import type { SocialRoom } from '../types/social'
+import { getApiErrorMessage } from '../utils/apiError'
+
+const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'
+
+function wait(milliseconds: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds))
+}
+
+export function SocialRoomPage() {
+  const { roomId = '' } = useParams()
+  const navigate = useNavigate()
+  const productSessionId = useMemo(() => getProductSessionId(), [])
+  const mounted = useRef(true)
+  const spinningRef = useRef(false)
+  const [room, setRoom] = useState<SocialRoom | null>(null)
+  const [quota, setQuota] = useState<SpinQuota | null>(null)
+  const [vibes, setVibes] = useState<PillOption<string>[]>([])
+  const [selectedProviders, setSelectedProviders] = useState<string[]>([])
+  const [selectedGenre, setSelectedGenre] = useState<number | null>(null)
+  const [selectedVibe, setSelectedVibe] = useState<string | null>(null)
+  const [movie, setMovie] = useState<RouletteMovie | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [spinning, setSpinning] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
+  const [leaving, setLeaving] = useState(false)
+
+  const applyRoom = useCallback((nextRoom: SocialRoom) => {
+    setRoom(nextRoom)
+    setMovie(nextRoom.lastMovie)
+    const availableIds = new Set(nextRoom.commonProviders.map((provider) => provider.id))
+    setSelectedProviders((current) => {
+      const valid = current.filter((id) => availableIds.has(id))
+      if (valid.length > 0) return valid
+      return nextRoom.commonProviders[0] ? [nextRoom.commonProviders[0].id] : []
+    })
+  }, [])
+
+  useEffect(() => {
+    mounted.current = true
+    Promise.all([getSocialRoom(roomId), getTodayUsage(), getVibes()])
+      .then(([nextRoom, nextQuota, nextVibes]) => {
+        if (!mounted.current) return
+        applyRoom(nextRoom)
+        setQuota(nextQuota)
+        setVibes(nextVibes.map((vibe) => ({ value: vibe.id, label: vibe.name })))
+      })
+      .catch((requestError) => {
+        if (mounted.current) setError(getApiErrorMessage(requestError, 'Não foi possível abrir esta sala.'))
+      })
+      .finally(() => {
+        if (mounted.current) setLoading(false)
+      })
+
+    return () => {
+      mounted.current = false
+    }
+  }, [applyRoom, roomId])
+
+  useEffect(() => {
+    if (!roomId || loading || error) return
+    const interval = window.setInterval(() => {
+      getSocialRoom(roomId)
+        .then((nextRoom) => {
+          if (mounted.current && !spinningRef.current) applyRoom(nextRoom)
+        })
+        .catch(() => undefined)
+    }, 3_000)
+    return () => window.clearInterval(interval)
+  }, [applyRoom, error, loading, roomId, spinning])
+
+  useEffect(() => {
+    if (!toast) return
+    const timeout = window.setTimeout(() => setToast(null), 4_000)
+    return () => window.clearTimeout(timeout)
+  }, [toast])
+
+  function toggleProvider(providerId: string) {
+    setSelectedProviders((current) => {
+      if (current.includes(providerId)) return current.filter((id) => id !== providerId)
+      return quota?.unlimited ? [...current, providerId] : [providerId]
+    })
+  }
+
+  async function handleSpin() {
+    if (!room || spinning || selectedProviders.length === 0) return
+    spinningRef.current = true
+    setSpinning(true)
+    setMovie(null)
+    setError(null)
+    const minimumAnimation = wait(2_000)
+    try {
+      const response = await spinSocialRoom(room.id, {
+        idempotencyKey: crypto.randomUUID(),
+        providerIds: selectedProviders,
+        genreId: selectedGenre,
+        vibeId: selectedVibe,
+        sessionId: productSessionId,
+      })
+      await minimumAnimation
+      applyRoom(response.room)
+      setMovie(response.movie)
+      setQuota(response.quota)
+    } catch (requestError) {
+      await minimumAnimation
+      setError(getApiErrorMessage(requestError, 'A roleta compartilhada não conseguiu girar.'))
+    } finally {
+      spinningRef.current = false
+      setSpinning(false)
+    }
+  }
+
+  async function handleCopyInvite() {
+    if (!room) return
+    const inviteUrl = `${window.location.origin}/social/join/${room.inviteCode}`
+    try {
+      await navigator.clipboard.writeText(inviteUrl)
+      setToast('Link de convite copiado!')
+    } catch {
+      setToast(`Código do convite: ${room.inviteCode}`)
+    }
+  }
+
+  async function handleWatched() {
+    if (!movie) return
+    try {
+      await markMovieAsWatched(movie.tmdbId)
+      setToast('Filme adicionado à sua coleção.')
+    } catch (requestError) {
+      setToast(getApiErrorMessage(requestError, 'Não foi possível marcar o filme como visto.'))
+    }
+  }
+
+  async function handleLeave() {
+    if (!room || leaving) return
+    setLeaving(true)
+    try {
+      await leaveSocialRoom(room.id)
+      navigate('/social', { replace: true })
+    } catch (requestError) {
+      setError(getApiErrorMessage(requestError, 'Não foi possível sair da sala.'))
+      setLeaving(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <main className="grid min-h-svh place-items-center bg-canvas text-white">
+        <div className="size-12 animate-spin rounded-full border-4 border-white/10 border-t-violet-400" aria-label="Carregando sala" />
+      </main>
+    )
+  }
+
+  if (!room) {
+    return (
+      <main className="grid min-h-svh place-items-center bg-canvas px-5 text-center text-white">
+        <div>
+          <p className="font-bold text-red-100">{error || 'Sala não encontrada.'}</p>
+          <button type="button" onClick={() => navigate('/social')} className="mt-5 font-black text-violet-300">Voltar</button>
+        </div>
+      </main>
+    )
+  }
+
+  const providerOptions = room.commonProviders.map((provider) => ({
+    value: provider.id,
+    label: provider.name,
+  }))
+  const waitingForMembers = room.members.length < 2
+  const noCommonProviders = room.members.length >= 2 && room.commonProviders.length === 0
+
+  return (
+    <main className="min-h-svh bg-canvas px-4 pt-5 pb-28 text-white sm:px-8">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(139,92,246,.18),transparent_32%)]" />
+      <header className="relative mx-auto flex max-w-5xl items-center justify-between gap-3">
+        <ReelzLogo />
+        <button
+          type="button"
+          onClick={() => void handleLeave()}
+          disabled={leaving}
+          className="rounded-xl border border-white/10 px-3 py-2 text-xs font-bold text-white/45"
+        >
+          {leaving ? 'Saindo…' : room.currentUserHost ? 'Encerrar' : 'Sair'}
+        </button>
+      </header>
+
+      <div className="relative mx-auto max-w-3xl pt-7">
+        <section className="rounded-[1.75rem] border border-violet-300/15 bg-violet-300/[0.055] p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-black tracking-[.18em] text-violet-300 uppercase">
+                {room.type === 'COUPLE' ? 'Modo casal' : 'Modo grupo'}
+              </p>
+              <h1 className="mt-1 text-2xl font-black">Sala de {room.hostDisplayName}</h1>
+              <p className="mt-1 text-xs text-white/40">{room.members.length}/{room.capacity} participantes</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void handleCopyInvite()}
+              className="rounded-xl bg-white px-3 py-2 text-xs font-black text-canvas"
+            >
+              Convidar
+            </button>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {room.members.map((member) => (
+              <span key={member.userId} className="rounded-full border border-white/10 bg-black/15 px-3 py-1.5 text-xs font-bold text-white/65">
+                {member.host ? '⭐ ' : ''}{member.displayName}
+              </span>
+            ))}
+          </div>
+          <p className="mt-4 text-xs text-white/35">Convite: <strong className="tracking-[.15em] text-white/70">{room.inviteCode}</strong></p>
+        </section>
+
+        {error ? <p role="alert" className="mt-4 rounded-2xl border border-red-300/15 bg-red-300/[0.06] p-4 text-sm font-bold text-red-100">{error}</p> : null}
+
+        <section className="flex min-h-[25rem] items-center justify-center py-8 text-center">
+          <AnimatePresence mode="wait">
+            {spinning ? <SlotMachine key="social-spinning" /> : null}
+            {!spinning && movie ? (
+              <motion.article
+                key={`${movie.id}-${room.lastSpinNumber}`}
+                initial={{ opacity: 0, scale: 0.5, y: 50 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ type: 'spring', bounce: 0.48, duration: 0.85 }}
+                className="grid w-full max-w-xl grid-cols-[8.5rem_1fr] gap-4 rounded-[2rem] border border-white/10 bg-surface p-4 text-left shadow-2xl sm:grid-cols-[11rem_1fr] sm:p-6"
+              >
+                <div className="aspect-[2/3] overflow-hidden rounded-2xl bg-white/5">
+                  {movie.posterPath ? <img src={`${TMDB_IMAGE_BASE_URL}${movie.posterPath}`} alt={`Pôster de ${movie.title}`} className="h-full w-full object-cover" /> : null}
+                </div>
+                <div className="flex min-w-0 flex-col">
+                  <p className="text-xs font-black text-amber-300">{movie.tmdbRating ? `★ ${Number(movie.tmdbRating).toFixed(1)}` : 'Match do grupo'}</p>
+                  <h2 className="mt-2 text-2xl font-black leading-tight">{movie.title}</h2>
+                  <p className="mt-3 line-clamp-5 text-xs leading-5 text-white/45">{movie.overview || 'Sinopse indisponível.'}</p>
+                  {movie.streamingAvailability[0]?.attributionUrl ? (
+                    <a
+                      href={movie.streamingAvailability[0].attributionUrl ?? undefined}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => trackProductEventInBackground('WATCH_PROVIDER_CLICKED', {
+                        movieId: movie.tmdbId,
+                        providerId: movie.streamingAvailability[0].providerId,
+                      })}
+                      className="mt-auto rounded-xl bg-violet-500 px-3 py-2.5 text-center text-xs font-black text-white"
+                    >
+                      Assistir na {movie.streamingAvailability[0].providerName}
+                    </a>
+                  ) : movie.streamingAvailability[0] ? (
+                    <p className="mt-auto pt-4 text-xs font-bold text-white/45">
+                      Disponível na {movie.streamingAvailability[0].providerName}
+                    </p>
+                  ) : null}
+                  <button type="button" onClick={() => void handleWatched()} className="pt-3 text-left text-xs font-black text-violet-300">
+                    Já vi · adicionar à coleção
+                  </button>
+                </div>
+              </motion.article>
+            ) : null}
+            {!spinning && !movie ? (
+              <motion.div key="social-idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-md">
+                <span className="text-6xl" aria-hidden="true">🎬</span>
+                <h2 className="mt-5 text-3xl font-black tracking-[-.04em]">
+                  {waitingForMembers ? 'Esperando companhia' : noCommonProviders ? 'Falta um streaming em comum' : 'Todo mundo pronto?'}
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-white/40">
+                  {waitingForMembers
+                    ? 'Compartilhe o convite. A sala começa com pelo menos duas pessoas.'
+                    : noCommonProviders
+                      ? 'Cada participante deve salvar seus streamings na tela da roleta.'
+                      : room.currentUserHost ? 'Escolha os filtros e faça o primeiro giro.' : 'O anfitrião controla o giro. O resultado aparecerá aqui automaticamente.'}
+                </p>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </section>
+
+        {room.currentUserHost && room.status === 'OPEN' ? (
+          <section className="rounded-[1.75rem] border border-white/8 bg-white/[0.025] p-4 sm:p-6">
+            <FilterPills
+              legend={quota?.unlimited ? 'Streamings em comum · escolha vários' : 'Streaming em comum · 1 por giro'}
+              options={providerOptions}
+              selectedValues={selectedProviders}
+              onToggle={toggleProvider}
+              disabled={spinning}
+            />
+            <div className="mt-5">
+              <FilterPills legend="Gênero · opcional" options={GENRE_OPTIONS} selectedValues={selectedGenre ? [selectedGenre] : []} onToggle={(genre) => setSelectedGenre((current) => current === genre ? null : genre)} disabled={spinning} />
+            </div>
+            <div className="mt-5">
+              <FilterPills legend="Vibe · opcional" options={vibes} selectedValues={selectedVibe ? [selectedVibe] : []} onToggle={(vibe) => setSelectedVibe((current) => current === vibe ? null : vibe)} disabled={spinning} />
+            </div>
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.96 }}
+              onClick={() => void handleSpin()}
+              disabled={spinning || waitingForMembers || noCommonProviders || selectedProviders.length === 0}
+              className="mt-6 w-full rounded-2xl bg-violet-500 px-5 py-4 text-base font-black shadow-[0_18px_50px_rgba(139,92,246,.25)] disabled:bg-white/10 disabled:text-white/25 disabled:shadow-none"
+            >
+              {spinning ? 'Girando para todos…' : movie ? 'Girar outro filme' : 'Girar para a sala'}
+            </motion.button>
+          </section>
+        ) : null}
+      </div>
+
+      <AnimatePresence>
+        {toast ? (
+          <motion.div initial={{ opacity: 0, y: 25 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} role="status" className="fixed inset-x-4 bottom-24 z-50 mx-auto max-w-md rounded-2xl border border-violet-300/15 bg-[#181328]/95 px-4 py-3 text-sm font-bold text-violet-100 shadow-2xl">
+            {toast}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+      <BottomNavigation />
+    </main>
+  )
+}

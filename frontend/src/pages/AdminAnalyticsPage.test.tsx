@@ -26,6 +26,10 @@ const overview: AnalyticsOverview = {
   watchlistedMovies: 6,
   coupleModeInterestedUsers: 7,
   groupModeInterestedUsers: 4,
+  socialRoomsCreated: 5,
+  socialRoomsWithSpin: 3,
+  socialSpins: 8,
+  socialParticipants: 9,
   d7EligibleUsers: 10,
   d7RetainedUsers: 3,
   activationRate: 80,
@@ -69,7 +73,8 @@ describe('AdminAnalyticsPage', () => {
 
     expect(await screen.findByText('Escolhi em segundos.')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Saúde do produto' })).toBeInTheDocument()
-    expect(screen.getByText('7')).toBeInTheDocument()
+    expect(screen.getByText('salas criadas').parentElement).toHaveTextContent('5')
+    expect(screen.getByText('salas que giraram').parentElement).toHaveTextContent('3')
     expect(screen.getByText('média / 5')).toBeInTheDocument()
   })
 })

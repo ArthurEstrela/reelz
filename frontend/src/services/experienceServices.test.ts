@@ -9,6 +9,14 @@ import {
   saveMovieToWatchlist,
 } from './historyService'
 import { getTodayUsage } from './rouletteService'
+import {
+  createSocialRoom,
+  getSocialRoom,
+  joinSocialRoom,
+  leaveSocialRoom,
+  listSocialRooms,
+  spinSocialRoom,
+} from './socialService'
 
 vi.mock('./api', () => ({
   api: {
@@ -89,5 +97,38 @@ describe('experience API services', () => {
       params: { status: 'WATCHLIST', page: 0, size: 24 },
     })
     expect(api.delete).toHaveBeenCalledWith('/api/v1/history/watchlist/603')
+  })
+
+  it('uses the social room contracts for create, invite, polling, spin and leave', async () => {
+    const room = { id: 'room-id', inviteCode: 'ABCD2345' }
+    const spinRequest = {
+      idempotencyKey: 'spin-key',
+      providerIds: ['provider-id'],
+      genreId: null,
+      vibeId: null,
+      sessionId: 'session-id',
+    }
+    vi.mocked(api.post)
+      .mockResolvedValueOnce({ data: room })
+      .mockResolvedValueOnce({ data: room })
+      .mockResolvedValueOnce({ data: { room, movie: { tmdbId: 550 } } })
+    vi.mocked(api.get)
+      .mockResolvedValueOnce({ data: [room] })
+      .mockResolvedValueOnce({ data: room })
+    vi.mocked(api.delete).mockResolvedValueOnce({ data: undefined })
+
+    await createSocialRoom('COUPLE')
+    await joinSocialRoom('abcd2345')
+    await listSocialRooms()
+    await getSocialRoom('room-id')
+    await spinSocialRoom('room-id', spinRequest)
+    await leaveSocialRoom('room-id')
+
+    expect(api.post).toHaveBeenNthCalledWith(1, '/api/v1/social/rooms', { type: 'COUPLE' })
+    expect(api.post).toHaveBeenNthCalledWith(2, '/api/v1/social/rooms/join', { inviteCode: 'abcd2345' })
+    expect(api.get).toHaveBeenNthCalledWith(1, '/api/v1/social/rooms')
+    expect(api.get).toHaveBeenNthCalledWith(2, '/api/v1/social/rooms/room-id')
+    expect(api.post).toHaveBeenNthCalledWith(3, '/api/v1/social/rooms/room-id/spin', spinRequest)
+    expect(api.delete).toHaveBeenCalledWith('/api/v1/social/rooms/room-id/members/me')
   })
 })

@@ -1,5 +1,6 @@
 package com.roletadefilmes.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roletadefilmes.analytics.persistence.repository.ProductEventRepository;
 import com.roletadefilmes.feedback.persistence.repository.BetaFeedbackRepository;
 import com.roletadefilmes.history.domain.UserMovieStatus;
@@ -10,9 +11,11 @@ import com.roletadefilmes.movie.persistence.repository.MovieCacheRepository;
 import com.roletadefilmes.roulette.persistence.entity.RouletteDailyUsageEntity;
 import com.roletadefilmes.roulette.persistence.repository.RouletteDailyUsageRepository;
 import com.roletadefilmes.security.JwtService;
+import com.roletadefilmes.social.persistence.repository.SocialRoomSpinRepository;
 import com.roletadefilmes.streaming.domain.MonetizationType;
 import com.roletadefilmes.streaming.persistence.entity.MovieStreamingOfferEntity;
 import com.roletadefilmes.streaming.persistence.entity.StreamingProviderEntity;
+import com.roletadefilmes.streaming.persistence.entity.UserStreamingPreferenceEntity;
 import com.roletadefilmes.streaming.persistence.repository.MovieStreamingOfferRepository;
 import com.roletadefilmes.streaming.persistence.repository.StreamingProviderRepository;
 import com.roletadefilmes.streaming.persistence.repository.UserStreamingPreferenceRepository;
@@ -92,6 +95,9 @@ class UserExperienceEndpointsIntegrationTest {
     private JwtService jwtService;
 
     @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
     private UserAccountRepository userRepository;
 
     @Autowired
@@ -120,6 +126,142 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Autowired
     private BetaFeedbackRepository feedbackRepository;
+
+    @Autowired
+    private SocialRoomSpinRepository socialRoomSpinRepository;
+
+    @Test
+    void shouldCreateJoinAndSpinACoupleRoomExcludingEveryMembersHistory() throws Exception {
+        var host = userRepository.saveAndFlush(newUser("social-host@reelz.app"));
+        var guest = userRepository.saveAndFlush(newUser("social-guest@reelz.app"));
+        var thirdUser = newUser("social-third@reelz.app");
+        thirdUser.promoteToAdmin();
+        userRepository.saveAndFlush(thirdUser);
+        var provider = providerRepository.saveAndFlush(new StreamingProviderEntity(8, "Netflix"));
+        var watchedByGuest = movieRepository.saveAndFlush(newMovie(
+                31_001L,
+                "Já visto pelo convidado",
+                "/watched-social.jpg",
+                new BigDecimal("8.0")
+        ));
+        var eligible = movieRepository.saveAndFlush(newMovie(
+                31_002L,
+                "Escolha do casal",
+                "/eligible-social.jpg",
+                new BigDecimal("7.8")
+        ));
+        offerRepository.saveAllAndFlush(List.of(
+                new MovieStreamingOfferEntity(
+                        watchedByGuest,
+                        provider,
+                        "BR",
+                        MonetizationType.FLATRATE,
+                        Instant.now()
+                ),
+                new MovieStreamingOfferEntity(
+                        eligible,
+                        provider,
+                        "BR",
+                        MonetizationType.FLATRATE,
+                        Instant.now()
+                )
+        ));
+        streamingPreferenceRepository.saveAllAndFlush(List.of(
+                new UserStreamingPreferenceEntity(host, provider),
+                new UserStreamingPreferenceEntity(guest, provider),
+                new UserStreamingPreferenceEntity(thirdUser, provider)
+        ));
+        historyRepository.saveAndFlush(new UserMovieHistoryEntity(
+                guest,
+                watchedByGuest,
+                UserMovieStatus.WATCHED,
+                Instant.now(),
+                null
+        ));
+
+        var createResult = mockMvc.perform(post("/api/v1/social/rooms")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(host))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"type":"COUPLE"}
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.currentUserHost").value(true))
+                .andExpect(jsonPath("$.capacity").value(2))
+                .andReturn();
+        var createdRoom = objectMapper.readTree(createResult.getResponse().getContentAsByteArray());
+        var roomId = createdRoom.get("id").asText();
+        var inviteCode = createdRoom.get("inviteCode").asText();
+
+        mockMvc.perform(post("/api/v1/social/rooms/join")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(guest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"inviteCode":"%s"}
+                                """.formatted(inviteCode)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.members.length()").value(2))
+                .andExpect(jsonPath("$.commonProviders[0].id").value(provider.getId().toString()));
+
+        mockMvc.perform(post("/api/v1/social/rooms/join")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(thirdUser))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"inviteCode":"%s"}
+                                """.formatted(inviteCode)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("SOCIAL_ROOM_CONFLICT"));
+
+        var spinBody = """
+                {
+                  "idempotencyKey":"%s",
+                  "providerIds":["%s"]
+                }
+                """.formatted(UUID.randomUUID(), provider.getId());
+        mockMvc.perform(post("/api/v1/social/rooms/{roomId}/spin", roomId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(guest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(spinBody))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("SOCIAL_ROOM_ACCESS_DENIED"));
+
+        mockMvc.perform(post("/api/v1/social/rooms/{roomId}/spin", roomId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(host))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(spinBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.movie.tmdbId").value(eligible.getTmdbId()))
+                .andExpect(jsonPath("$.room.lastSpinNumber").value(1))
+                .andExpect(jsonPath("$.quota.remainingDailySpins").value(4));
+
+        mockMvc.perform(post("/api/v1/social/rooms/{roomId}/spin", roomId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(host))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(spinBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.movie.tmdbId").value(eligible.getTmdbId()))
+                .andExpect(jsonPath("$.room.lastSpinNumber").value(1))
+                .andExpect(jsonPath("$.quota.remainingDailySpins").value(4));
+
+        mockMvc.perform(get("/api/v1/social/rooms/{roomId}", roomId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(guest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lastMovie.tmdbId").value(eligible.getTmdbId()))
+                .andExpect(jsonPath("$.lastSpinNumber").value(1));
+
+        mockMvc.perform(get("/api/v1/admin/analytics/overview")
+                        .param("days", "30")
+                        .header(HttpHeaders.AUTHORIZATION, adminBearerToken(thirdUser)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.socialRoomsCreated").value(1))
+                .andExpect(jsonPath("$.socialRoomsWithSpin").value(1))
+                .andExpect(jsonPath("$.socialSpins").value(1))
+                .andExpect(jsonPath("$.socialParticipants").value(2));
+
+        assertThat(socialRoomSpinRepository.count()).isEqualTo(1);
+        assertThat(dailyUsageRepository.findAll()).hasSize(1);
+        assertThat(dailyUsageRepository.findAll().getFirst().getUser().getId()).isEqualTo(host.getId());
+    }
 
     @Test
     void shouldTrackIdempotentProductEventsAndExposeOnlyAggregatesToAdmins() throws Exception {

@@ -15,7 +15,7 @@ export function PrivateRoute({ mode = 'completed', requiredRole }: PrivateRouteP
   }
 
   if (mode === 'completed' && !user?.onboardingCompleted) {
-    return <Navigate to="/onboarding" replace />
+    return <Navigate to="/onboarding" replace state={{ from: location }} />
   }
 
   if (mode === 'onboarding' && user?.onboardingCompleted) {

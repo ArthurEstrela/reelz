@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -78,6 +79,23 @@ public class RouletteService {
 
     @Transactional
     public RouletteSpinResponse spin(UUID userId, RouletteSpinRequest request) {
+        return spinInternal(userId, request, null);
+    }
+
+    @Transactional
+    public RouletteSpinResponse spinForRoom(
+            UUID hostUserId,
+            UUID roomId,
+            RouletteSpinRequest request
+    ) {
+        return spinInternal(hostUserId, request, roomId);
+    }
+
+    private RouletteSpinResponse spinInternal(
+            UUID userId,
+            RouletteSpinRequest request,
+            UUID socialRoomId
+    ) {
         var sample = metrics.startRouletteSpin();
         var plan = "unknown";
 
@@ -93,7 +111,12 @@ public class RouletteService {
 
             var usageDate = currentDateFor(user);
             var usage = getOrCreateDailyUsage(userId, user, usageDate);
-            var auditFilters = buildAuditFilters(request, providerIds, user.getCountryCode());
+            var auditFilters = buildAuditFilters(
+                    request,
+                    providerIds,
+                    user.getCountryCode(),
+                    socialRoomId
+            );
 
             var existingSpin = spinRepository.findByUserIdAndIdempotencyKey(
                     userId,
@@ -113,8 +136,9 @@ public class RouletteService {
 
             ensureSpinIsAvailable(usage, premium);
 
-            var movie = movieRepository.findRandomAvailableMovie(
+            var movie = findRandomMovie(
                             userId,
+                            socialRoomId,
                             providerIds,
                             user.getCountryCode(),
                             request.genreId(),
@@ -158,6 +182,32 @@ public class RouletteService {
             metrics.recordRouletteSpin(sample, RouletteSpinOutcome.ERROR, plan);
             throw exception;
         }
+    }
+
+    private Optional<MovieCacheEntity> findRandomMovie(
+            UUID userId,
+            UUID socialRoomId,
+            List<UUID> providerIds,
+            String countryCode,
+            Integer genreId,
+            UUID vibeId
+    ) {
+        if (socialRoomId == null) {
+            return movieRepository.findRandomAvailableMovie(
+                    userId,
+                    providerIds,
+                    countryCode,
+                    genreId,
+                    vibeId
+            );
+        }
+        return movieRepository.findRandomAvailableMovieForRoom(
+                socialRoomId,
+                providerIds,
+                countryCode,
+                genreId,
+                vibeId
+        );
     }
 
     private List<UUID> validateAndSortProviderIds(Set<UUID> providerIds) {
@@ -242,7 +292,8 @@ public class RouletteService {
     private Map<String, Object> buildAuditFilters(
             RouletteSpinRequest request,
             List<UUID> providerIds,
-            String countryCode
+            String countryCode,
+            UUID socialRoomId
     ) {
         Map<String, Object> filters = new LinkedHashMap<>();
         filters.put("providerIds", providerIds.stream().map(UUID::toString).toList());
@@ -255,6 +306,9 @@ public class RouletteService {
         }
         if (request.sessionId() != null) {
             filters.put("sessionId", request.sessionId().toString());
+        }
+        if (socialRoomId != null) {
+            filters.put("socialRoomId", socialRoomId.toString());
         }
         return filters;
     }

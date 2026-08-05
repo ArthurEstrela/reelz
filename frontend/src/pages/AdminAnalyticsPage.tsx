@@ -173,20 +173,28 @@ export function AdminAnalyticsPage() {
               </article>
 
               <article className="rounded-[1.75rem] border border-violet-300/10 bg-violet-300/[0.035] p-5">
-                <p className="text-[10px] font-black tracking-[.16em] text-violet-200/55 uppercase">Próxima aposta</p>
-                <h2 className="mt-2 text-xl font-black">Casal ou grupo?</h2>
-                <div className="mt-5 space-y-3">
+                <p className="text-[10px] font-black tracking-[.16em] text-violet-200/55 uppercase">Uso social</p>
+                <h2 className="mt-2 text-xl font-black">Casal e grupo</h2>
+                <div className="mt-5 grid grid-cols-2 gap-3">
                   <div className="rounded-2xl bg-pink-300/[0.07] p-4">
-                    <span className="text-2xl font-black text-pink-100">{overview.coupleModeInterestedUsers}</span>
-                    <p className="text-xs text-white/40">usuários querem modo casal</p>
+                    <span className="text-2xl font-black text-pink-100">{overview.socialRoomsCreated}</span>
+                    <p className="text-xs text-white/40">salas criadas</p>
                   </div>
                   <div className="rounded-2xl bg-violet-300/[0.07] p-4">
-                    <span className="text-2xl font-black text-violet-100">{overview.groupModeInterestedUsers}</span>
-                    <p className="text-xs text-white/40">usuários querem modo grupo</p>
+                    <span className="text-2xl font-black text-violet-100">{overview.socialRoomsWithSpin}</span>
+                    <p className="text-xs text-white/40">salas que giraram</p>
+                  </div>
+                  <div className="rounded-2xl bg-white/[0.04] p-4">
+                    <span className="text-2xl font-black text-white">{overview.socialSpins}</span>
+                    <p className="text-xs text-white/40">giros sociais</p>
+                  </div>
+                  <div className="rounded-2xl bg-white/[0.04] p-4">
+                    <span className="text-2xl font-black text-white">{overview.socialParticipants}</span>
+                    <p className="text-xs text-white/40">participantes únicos</p>
                   </div>
                 </div>
                 <p className="mt-5 text-xs leading-5 text-white/35">
-                  Interesse é contado por usuário, mesmo que a pessoa clique várias vezes.
+                  Interesse pré-lançamento: {overview.coupleModeInterestedUsers} casal · {overview.groupModeInterestedUsers} grupo.
                 </p>
               </article>
             </section>

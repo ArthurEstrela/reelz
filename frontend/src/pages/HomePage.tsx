@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { getProductSessionId } from '../analytics/productSession'
 import { ReelzLogo } from '../components/brand/ReelzLogo'
 import { BottomNavigation } from '../components/navigation/BottomNavigation'
@@ -50,6 +50,7 @@ async function waitForMinimumDuration(startedAt: number, minimumDuration: number
 }
 
 export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
+  const navigate = useNavigate()
   const { user, logout } = useAuth()
   const productSessionId = useMemo(() => getProductSessionId(), [])
   const quotaRequestSequence = useRef(0)
@@ -330,13 +331,7 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
     trackProductEventInBackground(
       mode === 'couple' ? 'COUPLE_MODE_INTERESTED' : 'GROUP_MODE_INTERESTED',
     )
-    setToast({
-      id: Date.now(),
-      message: mode === 'couple'
-        ? 'Modo casal anotado! Estamos medindo o interesse para priorizar o beta.'
-        : 'Modo grupo anotado! Você ajudou a escolher a próxima evolução do Reelz.',
-      tone: 'info',
-    })
+    navigate(`/social?mode=${mode === 'couple' ? 'COUPLE' : 'GROUP'}`)
   }
 
   return (
@@ -500,11 +495,11 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
 
           <section className="mt-5 rounded-[1.75rem] border border-violet-300/10 bg-violet-300/[0.035] p-4 sm:p-6">
             <p className="text-[10px] font-black tracking-[.18em] text-violet-200/55 uppercase">
-              Ajude a construir o beta
+              Escolha em companhia
             </p>
             <h2 className="mt-2 text-lg font-black text-white">Com quem você escolhe filmes?</h2>
             <p className="mt-1 text-xs leading-5 text-white/40">
-              Estes modos ainda estão em pesquisa. Seu clique mostra qual devemos criar primeiro.
+              Crie uma sala, compartilhe o convite e sorteie apenas o que funciona para todos.
             </p>
             <div className="mt-4 grid grid-cols-2 gap-3">
               <motion.button

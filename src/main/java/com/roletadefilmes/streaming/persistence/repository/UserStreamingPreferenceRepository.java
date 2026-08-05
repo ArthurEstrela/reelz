@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +22,17 @@ public interface UserStreamingPreferenceRepository
              ORDER BY provider.displayPriority ASC, provider.name ASC
             """)
     List<UserStreamingPreferenceEntity> findAllWithProviderByUserId(@Param("userId") UUID userId);
+
+    @Query("""
+            SELECT preference
+              FROM UserStreamingPreferenceEntity preference
+              JOIN FETCH preference.provider
+              JOIN FETCH preference.user
+             WHERE preference.user.id IN :userIds
+            """)
+    List<UserStreamingPreferenceEntity> findAllWithProviderByUserIdIn(
+            @Param("userIds") Collection<UUID> userIds
+    );
 
     boolean existsByUserIdAndProviderId(UUID userId, UUID providerId);
 }

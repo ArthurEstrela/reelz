@@ -62,7 +62,11 @@ export function LoginPage() {
       footer={
         <>
           Ainda não tem uma conta?{' '}
-          <Link className="font-bold text-white transition hover:text-reel" to="/register">
+          <Link
+            className="font-bold text-white transition hover:text-reel"
+            to="/register"
+            state={{ from: navigationState?.from }}
+          >
             Criar agora
           </Link>
         </>

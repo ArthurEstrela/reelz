@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { ReelzLogo } from '../components/brand/ReelzLogo'
 import { SwipeMovieCard } from '../components/onboarding/SwipeMovieCard'
 import { useAuth } from '../hooks/useAuth'
@@ -15,6 +15,8 @@ type LoadingState = 'loading' | 'ready' | 'error'
 
 export function OnboardingPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const navigationState = location.state as { from?: { pathname?: string } } | null
   const { markOnboardingCompleted } = useAuth()
   const [movies, setMovies] = useState<OnboardingMovie[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -100,7 +102,10 @@ export function OnboardingPage() {
         watchedMovieIds,
       })
       markOnboardingCompleted()
-      navigate('/', { replace: true })
+      const returnPath = navigationState?.from?.pathname
+      navigate(returnPath?.startsWith('/') && !returnPath.startsWith('//') ? returnPath : '/', {
+        replace: true,
+      })
     } catch (error) {
       setErrorMessage(
         getApiErrorMessage(error, 'Não foi possível salvar suas escolhas. Tente novamente.'),

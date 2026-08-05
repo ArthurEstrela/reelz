@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Set;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public interface MovieCacheRepository extends JpaRepository<MovieCacheEntity, UUID> {
@@ -87,6 +87,52 @@ public interface MovieCacheRepository extends JpaRepository<MovieCacheEntity, UU
             """, nativeQuery = true)
     Optional<MovieCacheEntity> findRandomAvailableMovie(
             @Param("userId") UUID userId,
+            @Param("providerIds") List<UUID> providerIds,
+            @Param("countryCode") String countryCode,
+            @Param("genreId") Integer genreId,
+            @Param("vibeId") UUID vibeId
+    );
+
+    @Query(value = """
+            SELECT m.*
+              FROM movie_cache m
+             WHERE m.adult = FALSE
+               AND (:genreId IS NULL OR CAST(:genreId AS INTEGER) = ANY(m.genre_ids))
+               AND (
+                    :vibeId IS NULL
+                    OR EXISTS (
+                        SELECT 1
+                          FROM vibe v
+                         WHERE v.id = CAST(:vibeId AS UUID)
+                           AND v.active = TRUE
+                           AND m.genre_ids && v.genre_ids
+                    )
+               )
+               AND NOT EXISTS (
+                    SELECT 1
+                      FROM user_movie_history history
+                      JOIN social_room_member member ON member.user_id = history.user_id
+                     WHERE member.room_id = CAST(:roomId AS UUID)
+                       AND history.movie_id = m.id
+                       AND history.status = 'WATCHED'
+               )
+               AND EXISTS (
+                    SELECT 1
+                      FROM movie_streaming_offer offer
+                      JOIN streaming_provider provider ON provider.id = offer.provider_id
+                     WHERE offer.movie_id = m.id
+                       AND offer.provider_id IN (:providerIds)
+                       AND offer.country_code = :countryCode
+                       AND offer.monetization_type IN ('FLATRATE', 'FREE', 'ADS')
+                       AND provider.active = TRUE
+                       AND (offer.available_from IS NULL OR offer.available_from <= CURRENT_TIMESTAMP)
+                       AND (offer.available_until IS NULL OR offer.available_until > CURRENT_TIMESTAMP)
+               )
+             ORDER BY RANDOM()
+             LIMIT 1
+            """, nativeQuery = true)
+    Optional<MovieCacheEntity> findRandomAvailableMovieForRoom(
+            @Param("roomId") UUID roomId,
             @Param("providerIds") List<UUID> providerIds,
             @Param("countryCode") String countryCode,
             @Param("genreId") Integer genreId,
