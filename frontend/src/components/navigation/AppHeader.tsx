@@ -44,8 +44,10 @@ export function AppHeader({ accessory }: AppHeaderProps) {
 
   return (
     <>
-      <header className="relative z-40 mx-auto flex w-full max-w-7xl items-center justify-between gap-4">
-        <ReelzLogo />
+      <header className="relative z-40 mx-auto grid w-full max-w-7xl grid-cols-[1fr_auto] items-center gap-4 lg:grid-cols-[1fr_auto_1fr]">
+        <div className="justify-self-start">
+          <ReelzLogo />
+        </div>
 
         <nav aria-label="Navegação principal" className="hidden items-center gap-1 rounded-2xl border border-white/10 bg-surface/90 p-1.5 shadow-xl lg:flex">
           {navigationItems.map((item) => (
@@ -63,7 +65,7 @@ export function AppHeader({ accessory }: AppHeaderProps) {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 justify-self-end">
           {accessory}
           <div className="relative" ref={menuRef}>
             <button

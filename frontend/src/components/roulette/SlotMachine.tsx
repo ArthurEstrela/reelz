@@ -1,8 +1,26 @@
-import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 
 const reelItems = ['COMÉDIA', 'AÇÃO', 'DRAMA', 'TERROR', 'FICÇÃO', 'SUSPENSE']
+const progressMessages = [
+  'Procurando a sessão perfeita…',
+  'Cruzando seus streamings…',
+  'Tirando os filmes já vistos…',
+  'Escolhendo sem favoritismo…',
+]
 
 export function SlotMachine() {
+  const prefersReducedMotion = useReducedMotion()
+  const [messageIndex, setMessageIndex] = useState(0)
+
+  useEffect(() => {
+    const interval = window.setInterval(
+      () => setMessageIndex((current) => (current + 1) % progressMessages.length),
+      1_300,
+    )
+    return () => window.clearInterval(interval)
+  }, [])
+
   return (
     <motion.div
       key="slot-machine"
@@ -13,6 +31,7 @@ export function SlotMachine() {
       className="flex flex-col items-center"
       role="status"
       aria-live="polite"
+      aria-busy="true"
     >
       <motion.div
         animate={{ scale: [1, 1.05, 1], boxShadow: ['0 0 0 rgba(255,60,72,0)', '0 0 70px rgba(255,60,72,.35)', '0 0 0 rgba(255,60,72,0)'] }}
@@ -24,9 +43,11 @@ export function SlotMachine() {
         <div className="pointer-events-none absolute inset-x-4 top-1/2 z-20 h-12 -translate-y-1/2 border-y border-reel/60 bg-reel/8" />
 
         <motion.div
-          animate={{ y: [0, -288] }}
-          transition={{ duration: 0.72, repeat: Infinity, ease: 'linear' }}
-          className="flex flex-col gap-2"
+          animate={prefersReducedMotion ? { opacity: [0.55, 1, 0.55] } : { y: [0, -288] }}
+          transition={prefersReducedMotion
+            ? { duration: 1.1, repeat: Infinity, ease: 'easeInOut' }
+            : { duration: 0.72, repeat: Infinity, repeatType: 'loop', ease: 'linear' }}
+          className="flex flex-col gap-2 will-change-transform"
           aria-hidden="true"
         >
           {[...reelItems, ...reelItems].map((item, index) => (
@@ -40,13 +61,19 @@ export function SlotMachine() {
         </motion.div>
       </motion.div>
 
-      <motion.p
-        animate={{ opacity: [0.4, 1, 0.4] }}
-        transition={{ duration: 1.1, repeat: Infinity }}
-        className="mt-5 text-sm font-semibold text-white/70"
-      >
-        Procurando a sessão perfeita…
-      </motion.p>
+      <div className="mt-5 flex h-6 items-center gap-2 text-sm font-semibold text-white/70">
+        <span className="flex gap-1" aria-hidden="true">
+          {[0, 1, 2].map((dot) => (
+            <motion.span
+              key={dot}
+              className="size-1.5 rounded-full bg-reel-bright"
+              animate={{ opacity: [0.25, 1, 0.25], scale: [0.8, 1.15, 0.8] }}
+              transition={{ duration: 0.9, delay: dot * 0.16, repeat: Infinity }}
+            />
+          ))}
+        </span>
+        <span>{progressMessages[messageIndex]}</span>
+      </div>
     </motion.div>
   )
 }
