@@ -16,12 +16,14 @@ import {
   leaveSocialRoom,
   listSocialRooms,
   spinSocialRoom,
+  updateSocialPreference,
 } from './socialService'
 
 vi.mock('./api', () => ({
   api: {
     get: vi.fn(),
     post: vi.fn(),
+    put: vi.fn(),
     delete: vi.fn(),
   },
 }))
@@ -116,6 +118,7 @@ describe('experience API services', () => {
       .mockResolvedValueOnce({ data: [room] })
       .mockResolvedValueOnce({ data: room })
     vi.mocked(api.delete).mockResolvedValueOnce({ data: undefined })
+    vi.mocked(api.put).mockResolvedValueOnce({ data: room })
 
     await createSocialRoom('COUPLE')
     await joinSocialRoom('abcd2345')
@@ -123,6 +126,11 @@ describe('experience API services', () => {
     await getSocialRoom('room-id')
     await spinSocialRoom('room-id', spinRequest)
     await leaveSocialRoom('room-id')
+    await updateSocialPreference('room-id', {
+      genreIds: [18, 35],
+      vibeId: null,
+      ready: true,
+    })
 
     expect(api.post).toHaveBeenNthCalledWith(1, '/api/v1/social/rooms', { type: 'COUPLE' })
     expect(api.post).toHaveBeenNthCalledWith(2, '/api/v1/social/rooms/join', { inviteCode: 'abcd2345' })
@@ -130,5 +138,9 @@ describe('experience API services', () => {
     expect(api.get).toHaveBeenNthCalledWith(2, '/api/v1/social/rooms/room-id')
     expect(api.post).toHaveBeenNthCalledWith(3, '/api/v1/social/rooms/room-id/spin', spinRequest)
     expect(api.delete).toHaveBeenCalledWith('/api/v1/social/rooms/room-id/members/me')
+    expect(api.put).toHaveBeenCalledWith(
+      '/api/v1/social/rooms/room-id/members/me/preferences',
+      { genreIds: [18, 35], vibeId: null, ready: true },
+    )
   })
 })

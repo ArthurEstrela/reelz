@@ -9,6 +9,11 @@ public record SocialRoomMemberResponse(
         String displayName,
         boolean host,
         Instant joinedAt,
-        List<SocialProviderResponse> providers
+        List<SocialProviderResponse> providers,
+        List<Integer> selectedGenreIds,
+        UUID selectedVibeId,
+        String selectedVibeName,
+        boolean ready,
+        Instant preferenceUpdatedAt
 ) {
 }

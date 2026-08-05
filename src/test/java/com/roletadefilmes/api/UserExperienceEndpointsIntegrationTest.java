@@ -150,6 +150,13 @@ class UserExperienceEndpointsIntegrationTest {
                 "/eligible-social.jpg",
                 new BigDecimal("7.8")
         ));
+        var mismatched = movieRepository.saveAndFlush(newMovieWithGenres(
+                31_003L,
+                "Não combina com os dois",
+                "/mismatched-social.jpg",
+                new BigDecimal("9.0"),
+                new Integer[]{35}
+        ));
         offerRepository.saveAllAndFlush(List.of(
                 new MovieStreamingOfferEntity(
                         watchedByGuest,
@@ -160,6 +167,13 @@ class UserExperienceEndpointsIntegrationTest {
                 ),
                 new MovieStreamingOfferEntity(
                         eligible,
+                        provider,
+                        "BR",
+                        MonetizationType.FLATRATE,
+                        Instant.now()
+                ),
+                new MovieStreamingOfferEntity(
+                        mismatched,
                         provider,
                         "BR",
                         MonetizationType.FLATRATE,
@@ -218,6 +232,44 @@ class UserExperienceEndpointsIntegrationTest {
                   "providerIds":["%s"]
                 }
                 """.formatted(UUID.randomUUID(), provider.getId());
+
+        mockMvc.perform(post("/api/v1/social/rooms/{roomId}/spin", roomId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(host))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(spinBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_SOCIAL_ROOM_ACTION"));
+
+        mockMvc.perform(put("/api/v1/social/rooms/{roomId}/members/me/preferences", roomId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(host))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"genreIds":[],"vibeId":null,"ready":true}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_SOCIAL_ROOM_ACTION"));
+
+        mockMvc.perform(put("/api/v1/social/rooms/{roomId}/members/me/preferences", roomId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(host))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"genreIds":[18],"vibeId":null,"ready":true}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.members[0].selectedGenreIds[0]").value(18))
+                .andExpect(jsonPath("$.members[0].ready").value(true));
+
+        mockMvc.perform(put("/api/v1/social/rooms/{roomId}/members/me/preferences", roomId)
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(guest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"genreIds":[35,18],"vibeId":null,"ready":true}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.members[1].selectedGenreIds[0]").value(18))
+                .andExpect(jsonPath("$.members[1].selectedGenreIds[1]").value(35))
+                .andExpect(jsonPath("$.members[1].ready").value(true));
+
         mockMvc.perform(post("/api/v1/social/rooms/{roomId}/spin", roomId)
                         .header(HttpHeaders.AUTHORIZATION, bearerToken(guest))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -232,6 +284,8 @@ class UserExperienceEndpointsIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.movie.tmdbId").value(eligible.getTmdbId()))
                 .andExpect(jsonPath("$.room.lastSpinNumber").value(1))
+                .andExpect(jsonPath("$.room.members[0].ready").value(false))
+                .andExpect(jsonPath("$.room.members[1].ready").value(false))
                 .andExpect(jsonPath("$.quota.remainingDailySpins").value(4));
 
         mockMvc.perform(post("/api/v1/social/rooms/{roomId}/spin", roomId)
@@ -734,7 +788,17 @@ class UserExperienceEndpointsIntegrationTest {
             String posterPath,
             BigDecimal rating
     ) {
-        var movie = new MovieCacheEntity(tmdbId, title, new Integer[]{18}, Instant.now());
+        return newMovieWithGenres(tmdbId, title, posterPath, rating, new Integer[]{18});
+    }
+
+    private MovieCacheEntity newMovieWithGenres(
+            Long tmdbId,
+            String title,
+            String posterPath,
+            BigDecimal rating,
+            Integer[] genreIds
+    ) {
+        var movie = new MovieCacheEntity(tmdbId, title, genreIds, Instant.now());
         movie.refreshMetadata(
                 title,
                 title,
@@ -743,7 +807,7 @@ class UserExperienceEndpointsIntegrationTest {
                 LocalDate.of(2020, 1, 1),
                 rating,
                 1_000,
-                new Integer[]{18},
+                genreIds,
                 false,
                 "pt",
                 120,

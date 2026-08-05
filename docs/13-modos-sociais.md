@@ -12,8 +12,12 @@ O conjunto elegível é formado por filmes que:
 
 - estão disponíveis no país do anfitrião;
 - pertencem aos provedores selecionados entre os streamings em comum dos membros;
-- atendem ao gênero e à vibe opcionais;
+- atendem a pelo menos um palpite de cada participante;
 - não aparecem como `WATCHED` no histórico de nenhum participante ativo da sala.
+
+Cada pessoa escolhe até três gêneros e uma vibe opcional. Dentro do palpite de uma pessoa vale `OR`; entre participantes vale `AND`. Por exemplo, quem escolhe Ação ou Comédia aceita qualquer uma dessas opções, mas o filme também precisa combinar com pelo menos uma escolha de cada outra pessoa.
+
+Todos confirmam “Estou pronto” antes do giro. O anfitrião apenas seleciona, conforme seu plano, quais streamings em comum serão usados e dispara a roleta. Ele não adiciona filtros próprios por cima dos palpites coletivos. Depois de um giro novo, a prontidão é reiniciada para que ninguém reutilize consentimento antigo no próximo sorteio.
 
 O sorteio continua usando `ORDER BY RANDOM() LIMIT 1`. A quota e o plano do anfitrião são usados: conta Free seleciona um provedor e consome um giro; Premium pode cruzar vários provedores e possui giros ilimitados.
 
@@ -33,11 +37,12 @@ O cliente consulta `GET /api/v1/social/rooms/{roomId}` a cada três segundos. Po
 - `GET /api/v1/social/rooms`: lista salas do usuário.
 - `POST /api/v1/social/rooms/join`: entra por código.
 - `GET /api/v1/social/rooms/{roomId}`: consulta lobby e último resultado.
+- `PUT /api/v1/social/rooms/{roomId}/members/me/preferences`: salva o palpite e a prontidão do participante.
 - `POST /api/v1/social/rooms/{roomId}/spin`: gira como anfitrião.
 - `DELETE /api/v1/social/rooms/{roomId}/members/me`: sai ou encerra a sala.
 
 ## Fora deste corte
 
-Votação, chat, presença em tempo real, convidados anônimos e transferência de anfitrião ficaram fora do primeiro beta. Esses itens devem ser priorizados com dados de uso das salas, não por antecipação.
+Votação ou veto depois do resultado, chat, presença em tempo real, convidados anônimos e transferência de anfitrião ficaram fora do primeiro beta. Esses itens devem ser priorizados com dados de uso das salas, não por antecipação.
 
 O cockpit administrativo já expõe salas criadas, salas que chegaram ao primeiro giro, quantidade de giros sociais e participantes únicos. Esses quatro números formam o funil inicial de validação do recurso.

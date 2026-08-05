@@ -7,6 +7,7 @@ import { BottomNavigation } from '../components/navigation/BottomNavigation'
 import { FilterPills, type PillOption } from '../components/roulette/FilterPills'
 import { SlotMachine } from '../components/roulette/SlotMachine'
 import { GENRE_OPTIONS } from '../config/rouletteFilters'
+import { useAuth } from '../hooks/useAuth'
 import { getVibes } from '../services/catalogService'
 import { trackProductEventInBackground } from '../services/analyticsService'
 import { markMovieAsWatched } from '../services/historyService'
@@ -15,6 +16,7 @@ import {
   getSocialRoom,
   leaveSocialRoom,
   spinSocialRoom,
+  updateSocialPreference,
 } from '../services/socialService'
 import type { RouletteMovie, SpinQuota } from '../types/roulette'
 import type { SocialRoom } from '../types/social'
@@ -29,14 +31,16 @@ function wait(milliseconds: number) {
 export function SocialRoomPage() {
   const { roomId = '' } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const productSessionId = useMemo(() => getProductSessionId(), [])
   const mounted = useRef(true)
   const spinningRef = useRef(false)
+  const preferenceDraftDirty = useRef(false)
   const [room, setRoom] = useState<SocialRoom | null>(null)
   const [quota, setQuota] = useState<SpinQuota | null>(null)
   const [vibes, setVibes] = useState<PillOption<string>[]>([])
   const [selectedProviders, setSelectedProviders] = useState<string[]>([])
-  const [selectedGenre, setSelectedGenre] = useState<number | null>(null)
+  const [selectedGenres, setSelectedGenres] = useState<number[]>([])
   const [selectedVibe, setSelectedVibe] = useState<string | null>(null)
   const [movie, setMovie] = useState<RouletteMovie | null>(null)
   const [loading, setLoading] = useState(true)
@@ -44,17 +48,23 @@ export function SocialRoomPage() {
   const [error, setError] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [leaving, setLeaving] = useState(false)
+  const [savingPreference, setSavingPreference] = useState(false)
 
   const applyRoom = useCallback((nextRoom: SocialRoom) => {
     setRoom(nextRoom)
     setMovie(nextRoom.lastMovie)
+    const currentMember = nextRoom.members.find((member) => member.userId === user?.id)
+    if (currentMember && !preferenceDraftDirty.current) {
+      setSelectedGenres(currentMember.selectedGenreIds)
+      setSelectedVibe(currentMember.selectedVibeId)
+    }
     const availableIds = new Set(nextRoom.commonProviders.map((provider) => provider.id))
     setSelectedProviders((current) => {
       const valid = current.filter((id) => availableIds.has(id))
       if (valid.length > 0) return valid
       return nextRoom.commonProviders[0] ? [nextRoom.commonProviders[0].id] : []
     })
-  }, [])
+  }, [user?.id])
 
   useEffect(() => {
     mounted.current = true
@@ -102,6 +112,47 @@ export function SocialRoomPage() {
     })
   }
 
+  function toggleGenre(genreId: number) {
+    preferenceDraftDirty.current = true
+    setSelectedGenres((current) => {
+      if (current.includes(genreId)) return current.filter((id) => id !== genreId)
+      if (current.length >= 3) {
+        setToast('Escolha no máximo 3 gêneros.')
+        return current
+      }
+      return [...current, genreId]
+    })
+  }
+
+  function toggleVibe(vibeId: string) {
+    preferenceDraftDirty.current = true
+    setSelectedVibe((current) => current === vibeId ? null : vibeId)
+  }
+
+  async function savePreference(ready: boolean) {
+    if (!room || savingPreference) return
+    if (ready && selectedGenres.length === 0 && selectedVibe === null) {
+      setToast('Escolha pelo menos um gênero ou uma vibe.')
+      return
+    }
+    setSavingPreference(true)
+    setError(null)
+    try {
+      const nextRoom = await updateSocialPreference(room.id, {
+        genreIds: selectedGenres,
+        vibeId: selectedVibe,
+        ready,
+      })
+      preferenceDraftDirty.current = false
+      applyRoom(nextRoom)
+      setToast(ready ? 'Palpite confirmado. Agora é só esperar todo mundo.' : 'Você pode alterar seu palpite.')
+    } catch (requestError) {
+      setError(getApiErrorMessage(requestError, 'Não foi possível salvar seu palpite.'))
+    } finally {
+      setSavingPreference(false)
+    }
+  }
+
   async function handleSpin() {
     if (!room || spinning || selectedProviders.length === 0) return
     spinningRef.current = true
@@ -113,8 +164,8 @@ export function SocialRoomPage() {
       const response = await spinSocialRoom(room.id, {
         idempotencyKey: crypto.randomUUID(),
         providerIds: selectedProviders,
-        genreId: selectedGenre,
-        vibeId: selectedVibe,
+        genreId: null,
+        vibeId: null,
         sessionId: productSessionId,
       })
       await minimumAnimation
@@ -188,6 +239,9 @@ export function SocialRoomPage() {
   }))
   const waitingForMembers = room.members.length < 2
   const noCommonProviders = room.members.length >= 2 && room.commonProviders.length === 0
+  const currentMember = room.members.find((member) => member.userId === user?.id)
+  const allReady = room.members.length >= 2 && room.members.every((member) => member.ready)
+  const genreLabels = new Map(GENRE_OPTIONS.map((genre) => [genre.value, genre.label]))
 
   return (
     <main className="min-h-svh bg-canvas px-4 pt-5 pb-28 text-white sm:px-8">
@@ -224,8 +278,8 @@ export function SocialRoomPage() {
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             {room.members.map((member) => (
-              <span key={member.userId} className="rounded-full border border-white/10 bg-black/15 px-3 py-1.5 text-xs font-bold text-white/65">
-                {member.host ? '⭐ ' : ''}{member.displayName}
+              <span key={member.userId} className={`rounded-full border px-3 py-1.5 text-xs font-bold ${member.ready ? 'border-emerald-300/20 bg-emerald-300/[0.08] text-emerald-100' : 'border-white/10 bg-black/15 text-white/55'}`}>
+                {member.ready ? '✓ ' : '○ '}{member.host ? '⭐ ' : ''}{member.displayName}
               </span>
             ))}
           </div>
@@ -233,6 +287,34 @@ export function SocialRoomPage() {
         </section>
 
         {error ? <p role="alert" className="mt-4 rounded-2xl border border-red-300/15 bg-red-300/[0.06] p-4 text-sm font-bold text-red-100">{error}</p> : null}
+
+        <section className="mt-4 rounded-[1.75rem] border border-white/8 bg-white/[0.025] p-4 sm:p-5" aria-label="Palpites dos participantes">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-sm font-black">Palpites da sala</h2>
+            <span className="text-[10px] font-black text-white/35">{room.members.filter((member) => member.ready).length}/{room.members.length} prontos</span>
+          </div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {room.members.map((member) => {
+              const choices = [
+                ...member.selectedGenreIds.map((genreId) => genreLabels.get(genreId) ?? `Gênero ${genreId}`),
+                ...(member.selectedVibeName ? [member.selectedVibeName] : []),
+              ]
+              return (
+                <div key={member.userId} className="rounded-2xl border border-white/8 bg-black/10 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-black text-white/75">{member.displayName}</span>
+                    <span className={`text-[10px] font-black ${member.ready ? 'text-emerald-300' : 'text-amber-200/65'}`}>
+                      {member.ready ? 'PRONTO' : 'ESCOLHENDO'}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-white/35">
+                    {choices.length > 0 ? choices.join(' · ') : 'Ainda não deu seu pitaco.'}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        </section>
 
         <section className="flex min-h-[25rem] items-center justify-center py-8 text-center">
           <AnimatePresence mode="wait">
@@ -288,36 +370,91 @@ export function SocialRoomPage() {
                     ? 'Compartilhe o convite. A sala começa com pelo menos duas pessoas.'
                     : noCommonProviders
                       ? 'Cada participante deve salvar seus streamings na tela da roleta.'
-                      : room.currentUserHost ? 'Escolha os filtros e faça o primeiro giro.' : 'O anfitrião controla o giro. O resultado aparecerá aqui automaticamente.'}
+                      : allReady
+                        ? room.currentUserHost ? 'Os palpites combinaram. Você já pode girar.' : 'Todo mundo confirmou. O anfitrião já pode girar.'
+                        : 'Cada pessoa escolhe seus gêneros ou vibe e confirma quando estiver pronta.'}
                 </p>
               </motion.div>
             ) : null}
           </AnimatePresence>
         </section>
 
-        {room.currentUserHost && room.status === 'OPEN' ? (
+        {currentMember && room.status === 'OPEN' ? (
           <section className="rounded-[1.75rem] border border-white/8 bg-white/[0.025] p-4 sm:p-6">
-            <FilterPills
-              legend={quota?.unlimited ? 'Streamings em comum · escolha vários' : 'Streaming em comum · 1 por giro'}
-              options={providerOptions}
-              selectedValues={selectedProviders}
-              onToggle={toggleProvider}
-              disabled={spinning}
-            />
+            <p className="text-[10px] font-black tracking-[.18em] text-violet-300 uppercase">Seu pitaco</p>
+            <h2 className="mt-1 text-xl font-black">
+              {currentMember.ready ? 'Você está pronto' : 'O que você topa assistir?'}
+            </h2>
+            {currentMember.ready ? (
+              <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-emerald-300/15 bg-emerald-300/[0.06] p-4">
+                <p className="text-sm font-bold text-emerald-100">✓ Palpite confirmado</p>
+                <button
+                  type="button"
+                  onClick={() => void savePreference(false)}
+                  disabled={savingPreference || spinning}
+                  className="text-xs font-black text-white/55 underline underline-offset-4 disabled:opacity-40"
+                >
+                  Alterar
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="mt-5">
+                  <FilterPills
+                    legend={`Gêneros · escolha até 3 (${selectedGenres.length}/3)`}
+                    options={GENRE_OPTIONS}
+                    selectedValues={selectedGenres}
+                    onToggle={toggleGenre}
+                    disabled={savingPreference || spinning}
+                  />
+                </div>
+                <div className="mt-5">
+                  <FilterPills
+                    legend="Vibe · opcional"
+                    options={vibes}
+                    selectedValues={selectedVibe ? [selectedVibe] : []}
+                    onToggle={toggleVibe}
+                    disabled={savingPreference || spinning}
+                  />
+                </div>
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => void savePreference(true)}
+                  disabled={savingPreference || spinning || (selectedGenres.length === 0 && selectedVibe === null)}
+                  className="mt-6 w-full rounded-2xl bg-emerald-500 px-5 py-4 text-sm font-black text-white disabled:bg-white/10 disabled:text-white/25"
+                >
+                  {savingPreference ? 'Salvando…' : 'Confirmar meu palpite'}
+                </motion.button>
+              </>
+            )}
+          </section>
+        ) : null}
+
+        {room.currentUserHost && room.status === 'OPEN' ? (
+          <section className="mt-4 rounded-[1.75rem] border border-violet-300/12 bg-violet-300/[0.04] p-4 sm:p-6">
+            <p className="text-[10px] font-black tracking-[.18em] text-violet-300 uppercase">Controle do anfitrião</p>
             <div className="mt-5">
-              <FilterPills legend="Gênero · opcional" options={GENRE_OPTIONS} selectedValues={selectedGenre ? [selectedGenre] : []} onToggle={(genre) => setSelectedGenre((current) => current === genre ? null : genre)} disabled={spinning} />
-            </div>
-            <div className="mt-5">
-              <FilterPills legend="Vibe · opcional" options={vibes} selectedValues={selectedVibe ? [selectedVibe] : []} onToggle={(vibe) => setSelectedVibe((current) => current === vibe ? null : vibe)} disabled={spinning} />
+              <FilterPills
+                legend={quota?.unlimited ? 'Streamings em comum · escolha vários' : 'Streaming em comum · 1 por giro'}
+                options={providerOptions}
+                selectedValues={selectedProviders}
+                onToggle={toggleProvider}
+                disabled={spinning}
+              />
             </div>
             <motion.button
               type="button"
               whileTap={{ scale: 0.96 }}
               onClick={() => void handleSpin()}
-              disabled={spinning || waitingForMembers || noCommonProviders || selectedProviders.length === 0}
+              disabled={spinning || waitingForMembers || noCommonProviders || !allReady || selectedProviders.length === 0}
               className="mt-6 w-full rounded-2xl bg-violet-500 px-5 py-4 text-base font-black shadow-[0_18px_50px_rgba(139,92,246,.25)] disabled:bg-white/10 disabled:text-white/25 disabled:shadow-none"
             >
-              {spinning ? 'Girando para todos…' : movie ? 'Girar outro filme' : 'Girar para a sala'}
+              {spinning
+                ? 'Girando para todos…'
+                : !allReady
+                  ? `Aguardando ${room.members.filter((member) => !member.ready).length} palpite(s)`
+                  : movie ? 'Girar outro filme' : 'Girar para a sala'}
             </motion.button>
           </section>
         ) : null}

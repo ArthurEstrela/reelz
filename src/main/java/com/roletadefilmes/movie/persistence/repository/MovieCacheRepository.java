@@ -110,6 +110,27 @@ public interface MovieCacheRepository extends JpaRepository<MovieCacheEntity, UU
                )
                AND NOT EXISTS (
                     SELECT 1
+                      FROM social_room_member preference
+                     WHERE preference.room_id = CAST(:roomId AS UUID)
+                       AND NOT (
+                            (
+                                cardinality(preference.selected_genre_ids) > 0
+                                AND m.genre_ids && preference.selected_genre_ids
+                            )
+                            OR (
+                                preference.selected_vibe_id IS NOT NULL
+                                AND EXISTS (
+                                    SELECT 1
+                                      FROM vibe selected_vibe
+                                     WHERE selected_vibe.id = preference.selected_vibe_id
+                                       AND selected_vibe.active = TRUE
+                                       AND m.genre_ids && selected_vibe.genre_ids
+                                )
+                            )
+                       )
+               )
+               AND NOT EXISTS (
+                    SELECT 1
                       FROM user_movie_history history
                       JOIN social_room_member member ON member.user_id = history.user_id
                      WHERE member.room_id = CAST(:roomId AS UUID)

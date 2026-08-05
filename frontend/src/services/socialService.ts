@@ -5,6 +5,7 @@ import type {
   SocialRoomType,
   SocialSpinRequest,
   SocialSpinResponse,
+  UpdateSocialPreferenceRequest,
 } from '../types/social'
 
 export async function createSocialRoom(type: SocialRoomType): Promise<SocialRoom> {
@@ -40,4 +41,15 @@ export async function spinSocialRoom(
 
 export async function leaveSocialRoom(roomId: string): Promise<void> {
   await api.delete(`/api/v1/social/rooms/${roomId}/members/me`)
+}
+
+export async function updateSocialPreference(
+  roomId: string,
+  payload: UpdateSocialPreferenceRequest,
+): Promise<SocialRoom> {
+  const { data } = await api.put<SocialRoom>(
+    `/api/v1/social/rooms/${roomId}/members/me/preferences`,
+    payload,
+  )
+  return data
 }

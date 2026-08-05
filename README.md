@@ -62,6 +62,7 @@ O MVP inclui:
 - retenção automática de eventos e proteção de login/cadastro por rate limit no Nginx.
 - feedback qualitativo dentro do app, agregado no cockpit administrativo, e tela de recuperação para erros fatais do front-end.
 - modos Casal e Grupo com salas autenticadas, convite por link/código e até 8 participantes;
+- palpites individuais de gênero/vibe e confirmação de prontidão antes de cada giro social;
 - interseção de streamings e exclusão do histórico de todos os membros no sorteio social;
 - giro exclusivo do anfitrião, quota/idempotência preservadas e resultado sincronizado por polling.
 

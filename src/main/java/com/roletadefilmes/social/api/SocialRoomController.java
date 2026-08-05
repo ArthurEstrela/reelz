@@ -7,6 +7,7 @@ import com.roletadefilmes.social.api.dto.JoinSocialRoomRequest;
 import com.roletadefilmes.social.api.dto.SocialRoomResponse;
 import com.roletadefilmes.social.api.dto.SocialRoomSummaryResponse;
 import com.roletadefilmes.social.api.dto.SocialSpinResponse;
+import com.roletadefilmes.social.api.dto.UpdateSocialPreferenceRequest;
 import com.roletadefilmes.social.service.SocialRoomService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -72,6 +74,15 @@ public class SocialRoomController {
             @Valid @RequestBody RouletteSpinRequest request
     ) {
         return service.spin(principal.userId(), roomId, request);
+    }
+
+    @PutMapping("/{roomId}/members/me/preferences")
+    public SocialRoomResponse updatePreference(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @PathVariable UUID roomId,
+            @Valid @RequestBody UpdateSocialPreferenceRequest request
+    ) {
+        return service.updatePreference(principal.userId(), roomId, request);
     }
 
     @DeleteMapping("/{roomId}/members/me")

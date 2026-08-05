@@ -22,6 +22,7 @@ public interface SocialRoomMemberRepository extends JpaRepository<SocialRoomMemb
             SELECT member
               FROM SocialRoomMemberEntity member
               JOIN FETCH member.user
+              LEFT JOIN FETCH member.selectedVibe
              WHERE member.room.id = :roomId
              ORDER BY member.joinedAt, member.id
             """)

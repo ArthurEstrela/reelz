@@ -10,6 +10,7 @@ import com.roletadefilmes.social.api.dto.SocialRoomMemberResponse;
 import com.roletadefilmes.social.api.dto.SocialRoomResponse;
 import com.roletadefilmes.social.api.dto.SocialRoomSummaryResponse;
 import com.roletadefilmes.social.api.dto.SocialSpinResponse;
+import com.roletadefilmes.social.api.dto.UpdateSocialPreferenceRequest;
 import com.roletadefilmes.social.domain.SocialRoomMemberRole;
 import com.roletadefilmes.social.domain.SocialRoomStatus;
 import com.roletadefilmes.social.domain.SocialRoomType;
@@ -27,6 +28,7 @@ import com.roletadefilmes.streaming.persistence.entity.StreamingProviderEntity;
 import com.roletadefilmes.streaming.persistence.repository.UserStreamingPreferenceRepository;
 import com.roletadefilmes.user.domain.exception.UserNotFoundException;
 import com.roletadefilmes.user.persistence.repository.UserAccountRepository;
+import com.roletadefilmes.vibe.persistence.repository.VibeRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +36,7 @@ import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -61,6 +64,7 @@ public class SocialRoomService {
     private final UserAccountRepository userRepository;
     private final UserStreamingPreferenceRepository preferenceRepository;
     private final RouletteService rouletteService;
+    private final VibeRepository vibeRepository;
     private final ObjectMapper objectMapper;
     private final Clock clock;
 
@@ -71,6 +75,7 @@ public class SocialRoomService {
             UserAccountRepository userRepository,
             UserStreamingPreferenceRepository preferenceRepository,
             RouletteService rouletteService,
+            VibeRepository vibeRepository,
             ObjectMapper objectMapper,
             Clock clock
     ) {
@@ -80,6 +85,7 @@ public class SocialRoomService {
         this.userRepository = userRepository;
         this.preferenceRepository = preferenceRepository;
         this.rouletteService = rouletteService;
+        this.vibeRepository = vibeRepository;
         this.objectMapper = objectMapper;
         this.clock = clock;
     }
@@ -160,6 +166,39 @@ public class SocialRoomService {
     }
 
     @Transactional
+    public SocialRoomResponse updatePreference(
+            UUID userId,
+            UUID roomId,
+            UpdateSocialPreferenceRequest request
+    ) {
+        var room = roomRepository.findByIdForUpdate(roomId)
+                .orElseThrow(SocialRoomNotFoundException::new);
+        ensureOpen(room);
+        var member = memberRepository.findByRoomIdAndUserId(roomId, userId)
+                .orElseThrow(() -> new SocialRoomAccessDeniedException(
+                        "Você não participa desta sala."
+                ));
+
+        var genreIds = request.genreIds().stream().sorted().toArray(Integer[]::new);
+        var vibe = request.vibeId() == null
+                ? null
+                : vibeRepository.findById(request.vibeId())
+                        .filter(candidate -> candidate.isActive())
+                        .orElseThrow(() -> new InvalidSocialRoomActionException(
+                                "A vibe selecionada não está disponível."
+                        ));
+        if (request.ready() && genreIds.length == 0 && vibe == null) {
+            throw new InvalidSocialRoomActionException(
+                    "Escolha pelo menos um gênero ou uma vibe antes de confirmar."
+            );
+        }
+
+        member.updatePreferences(genreIds, vibe, request.ready(), Instant.now(clock));
+        memberRepository.saveAndFlush(member);
+        return toResponse(room, userId, null);
+    }
+
+    @Transactional
     public SocialSpinResponse spin(
             UUID userId,
             UUID roomId,
@@ -174,6 +213,30 @@ public class SocialRoomService {
         if (members.size() < 2) {
             throw new InvalidSocialRoomActionException(
                     "Convide pelo menos uma pessoa antes de girar."
+            );
+        }
+
+        var existingSpin = roomSpinRepository.findByRoomIdAndIdempotencyKey(
+                roomId,
+                request.idempotencyKey().toString()
+        );
+        if (existingSpin.isPresent()) {
+            var replayedResponse = rouletteService.spinForRoom(userId, roomId, request);
+            return new SocialSpinResponse(
+                    toResponse(room, userId, existingSpin.orElseThrow()),
+                    replayedResponse.movie(),
+                    replayedResponse.quota()
+            );
+        }
+
+        if (members.stream().anyMatch(member -> !member.isReady())) {
+            throw new InvalidSocialRoomActionException(
+                    "Todos os participantes precisam confirmar seus palpites antes do giro."
+            );
+        }
+        if (request.genreId() != null || request.vibeId() != null) {
+            throw new InvalidSocialRoomActionException(
+                    "No modo social, gênero e vibe são definidos pelos palpites dos participantes."
             );
         }
 
@@ -192,17 +255,6 @@ public class SocialRoomService {
         }
 
         var rouletteResponse = rouletteService.spinForRoom(userId, roomId, request);
-        var existingSpin = roomSpinRepository.findByRoomIdAndIdempotencyKey(
-                roomId,
-                request.idempotencyKey().toString()
-        );
-        if (existingSpin.isPresent()) {
-            return new SocialSpinResponse(
-                    toResponse(room, userId, existingSpin.orElseThrow()),
-                    rouletteResponse.movie(),
-                    rouletteResponse.quota()
-            );
-        }
 
         var spinNumber = room.nextSpinNumber();
         var socialSpin = roomSpinRepository.save(new SocialRoomSpinEntity(
@@ -210,9 +262,11 @@ public class SocialRoomService {
                 room.getOwner(),
                 request.idempotencyKey().toString(),
                 spinNumber,
-                buildFilters(request),
+                buildFilters(request, members),
                 objectMapper.convertValue(rouletteResponse.movie(), MAP_TYPE)
         ));
+        members.forEach(SocialRoomMemberEntity::resetReady);
+        memberRepository.saveAll(members);
         roomRepository.saveAndFlush(room);
 
         return new SocialSpinResponse(
@@ -240,7 +294,12 @@ public class SocialRoomService {
                         member.getJoinedAt(),
                         preferencesByUser.getOrDefault(member.getUser().getId(), List.of()).stream()
                                 .map(this::toProviderResponse)
-                                .toList()
+                                .toList(),
+                        Arrays.stream(member.getSelectedGenreIds()).sorted().toList(),
+                        member.getSelectedVibe() == null ? null : member.getSelectedVibe().getId(),
+                        member.getSelectedVibe() == null ? null : member.getSelectedVibe().getLabel(),
+                        member.isReady(),
+                        member.getPreferenceUpdatedAt()
                 ))
                 .toList();
         var lastSpin = knownLastSpin != null
@@ -324,15 +383,25 @@ public class SocialRoomService {
         return new SocialProviderResponse(provider.getId(), provider.getName(), provider.getLogoPath());
     }
 
-    private Map<String, Object> buildFilters(RouletteSpinRequest request) {
+    private Map<String, Object> buildFilters(
+            RouletteSpinRequest request,
+            List<SocialRoomMemberEntity> members
+    ) {
         Map<String, Object> filters = new LinkedHashMap<>();
         filters.put("providerIds", request.providerIds().stream().map(UUID::toString).sorted().toList());
-        if (request.genreId() != null) {
-            filters.put("genreId", request.genreId());
-        }
-        if (request.vibeId() != null) {
-            filters.put("vibeId", request.vibeId().toString());
-        }
+        filters.put("consensusMode", "EVERY_MEMBER_MATCHES_AT_LEAST_ONE");
+        filters.put("memberPreferences", members.stream().map(member -> {
+            Map<String, Object> preference = new LinkedHashMap<>();
+            preference.put("userId", member.getUser().getId().toString());
+            preference.put("genreIds", Arrays.stream(member.getSelectedGenreIds()).sorted().toList());
+            preference.put(
+                    "vibeId",
+                    member.getSelectedVibe() == null
+                            ? null
+                            : member.getSelectedVibe().getId().toString()
+            );
+            return preference;
+        }).toList());
         return filters;
     }
 

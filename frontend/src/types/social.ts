@@ -15,6 +15,11 @@ export interface SocialRoomMember {
   host: boolean
   joinedAt: string
   providers: SocialProvider[]
+  selectedGenreIds: number[]
+  selectedVibeId: string | null
+  selectedVibeName: string | null
+  ready: boolean
+  preferenceUpdatedAt: string | null
 }
 
 export interface SocialRoom {
@@ -51,3 +56,9 @@ export interface SocialSpinResponse {
 }
 
 export type SocialSpinRequest = RouletteSpinRequest
+
+export interface UpdateSocialPreferenceRequest {
+  genreIds: number[]
+  vibeId: string | null
+  ready: boolean
+}
