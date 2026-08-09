@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 # As dependências atuais de build/teste declaram Node >= 22.
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 
 # npm ci garante uma instalação reprodutível a partir do package-lock.json.
