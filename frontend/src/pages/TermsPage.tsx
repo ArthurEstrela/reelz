@@ -39,8 +39,8 @@ export function TermsPage() {
         <h2>5. Suspensão e encerramento</h2>
         <p>
           Podemos limitar ou encerrar contas usadas de forma abusiva ou que comprometam o beta. Você
-          pode solicitar a exclusão da sua conta e dos dados associados pelo canal privado informado
-          no convite do beta.
+          pode excluir sua conta em “Conta e privacidade”; os dados pessoais serão anonimizados e o
+          acesso será encerrado imediatamente.
         </p>
       </section>
       <section>

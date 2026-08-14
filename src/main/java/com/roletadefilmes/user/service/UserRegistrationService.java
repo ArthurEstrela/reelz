@@ -1,6 +1,7 @@
 package com.roletadefilmes.user.service;
 
 import com.roletadefilmes.admin.config.AdminProperties;
+import com.roletadefilmes.account.service.AccountSecurityService;
 import com.roletadefilmes.legal.domain.LegalDocumentType;
 import com.roletadefilmes.legal.persistence.entity.UserLegalAcceptanceEntity;
 import com.roletadefilmes.legal.persistence.repository.UserLegalAcceptanceRepository;
@@ -33,6 +34,7 @@ public class UserRegistrationService {
     private final String privacyVersion;
     private final ReelzMetrics metrics;
     private final AdminProperties adminProperties;
+    private final AccountSecurityService accountSecurityService;
 
     public UserRegistrationService(
             UserAccountRepository userRepository,
@@ -41,7 +43,8 @@ public class UserRegistrationService {
             @Value("${reelz.legal.terms-version}") String termsVersion,
             @Value("${reelz.legal.privacy-version}") String privacyVersion,
             ReelzMetrics metrics,
-            AdminProperties adminProperties
+            AdminProperties adminProperties,
+            AccountSecurityService accountSecurityService
     ) {
         this.userRepository = userRepository;
         this.legalAcceptanceRepository = legalAcceptanceRepository;
@@ -50,6 +53,7 @@ public class UserRegistrationService {
         this.privacyVersion = privacyVersion;
         this.metrics = metrics;
         this.adminProperties = adminProperties;
+        this.accountSecurityService = accountSecurityService;
     }
 
     @Transactional
@@ -82,6 +86,7 @@ public class UserRegistrationService {
                 acceptance(user, LegalDocumentType.PRIVACY_POLICY, privacyVersion)
         ));
         metrics.recordUserRegistrationAfterCommit();
+        accountSecurityService.issueVerification(user);
 
         return new UserResponse(
                 user.getId(),
@@ -91,6 +96,7 @@ public class UserRegistrationService {
                 user.getRole(),
                 user.getTimezone(),
                 user.getCountryCode(),
+                user.getEmailVerifiedAt() != null,
                 user.getOnboardingCompletedAt() != null,
                 user.getCreatedAt()
         );

@@ -17,9 +17,11 @@ public interface UserAccountRepository extends JpaRepository<UserAccountEntity, 
 
     Optional<UserAccountEntity> findByEmailIgnoreCaseAndDeletedAtIsNull(String email);
 
+    Optional<UserAccountEntity> findByIdAndDeletedAtIsNull(UUID id);
+
     boolean existsByEmailIgnoreCase(String email);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT user FROM UserAccountEntity user WHERE user.id = :userId")
+    @Query("SELECT user FROM UserAccountEntity user WHERE user.id = :userId AND user.deletedAt IS NULL")
     Optional<UserAccountEntity> findByIdForUpdate(@Param("userId") UUID userId);
 }

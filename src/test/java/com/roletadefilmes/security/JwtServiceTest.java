@@ -26,10 +26,11 @@ class JwtServiceTest {
         var service = service(SECRET, NOW, Duration.ofHours(2));
         var userId = UUID.randomUUID();
 
-        var token = service.generateToken(userId, UserRole.ADMIN);
+        var token = service.generateToken(userId, UserRole.ADMIN, 3);
 
         assertThat(service.extractUserId(token)).isEqualTo(userId);
         assertThat(service.extractRole(token)).isEqualTo(UserRole.ADMIN);
+        assertThat(service.extractAuthVersion(token)).isEqualTo(3);
         assertThat(service.getExpirationSeconds()).isEqualTo(7_200);
     }
 

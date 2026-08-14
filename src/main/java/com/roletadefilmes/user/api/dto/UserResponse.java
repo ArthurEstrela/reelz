@@ -14,6 +14,7 @@ public record UserResponse(
         UserRole role,
         String timezone,
         String countryCode,
+        boolean emailVerified,
         boolean onboardingCompleted,
         Instant createdAt
 ) {

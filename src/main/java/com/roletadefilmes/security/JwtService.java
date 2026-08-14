@@ -51,11 +51,16 @@ public class JwtService {
     }
 
     public String generateToken(UUID userId, UserRole role) {
+        return generateToken(userId, role, 0);
+    }
+
+    public String generateToken(UUID userId, UserRole role, long authVersion) {
         var issuedAt = Instant.now(clock);
         return Jwts.builder()
                 .subject(userId.toString())
                 .issuer(issuer)
                 .claim("role", role.name())
+                .claim("ver", authVersion)
                 .issuedAt(Date.from(issuedAt))
                 .expiration(Date.from(issuedAt.plus(expiration)))
                 .signWith(signingKey)
@@ -77,6 +82,11 @@ public class JwtService {
             return UserRole.USER;
         }
         return UserRole.valueOf(role);
+    }
+
+    public long extractAuthVersion(String token) {
+        var version = extractClaims(token).get("ver", Long.class);
+        return version == null ? 0 : version;
     }
 
     private Claims extractClaims(String token) {

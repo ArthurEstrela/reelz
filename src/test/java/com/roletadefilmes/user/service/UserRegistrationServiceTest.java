@@ -1,6 +1,7 @@
 package com.roletadefilmes.user.service;
 
 import com.roletadefilmes.admin.config.AdminProperties;
+import com.roletadefilmes.account.service.AccountSecurityService;
 import com.roletadefilmes.legal.persistence.entity.UserLegalAcceptanceEntity;
 import com.roletadefilmes.legal.persistence.repository.UserLegalAcceptanceRepository;
 import com.roletadefilmes.observability.ReelzMetrics;
@@ -34,6 +35,9 @@ class UserRegistrationServiceTest {
     @Mock
     private ReelzMetrics metrics;
 
+    @Mock
+    private AccountSecurityService accountSecurityService;
+
     private UserRegistrationService service;
 
     @BeforeEach
@@ -45,7 +49,8 @@ class UserRegistrationServiceTest {
                 "terms-1.0",
                 "privacy-1.0",
                 metrics,
-                new AdminProperties()
+                new AdminProperties(),
+                accountSecurityService
         );
     }
 
@@ -78,5 +83,6 @@ class UserRegistrationServiceTest {
                 ArgumentCaptor.forClass(List.class);
         verify(legalAcceptanceRepository).saveAll(acceptanceCaptor.capture());
         assertThat(acceptanceCaptor.getValue()).hasSize(2);
+        verify(accountSecurityService).issueVerification(userCaptor.getValue());
     }
 }

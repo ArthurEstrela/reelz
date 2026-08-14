@@ -44,6 +44,13 @@ export interface UserResponse {
   role: 'USER' | 'ADMIN'
   timezone: string
   countryCode: string
+  emailVerified: boolean
   onboardingCompleted: boolean
   createdAt: string
+}
+
+export interface UpdateUserRequest {
+  displayName: string
+  timezone: string
+  countryCode: string
 }

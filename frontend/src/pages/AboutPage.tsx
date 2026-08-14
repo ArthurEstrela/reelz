@@ -28,8 +28,9 @@ export function AboutPage() {
       <section>
         <h2>Disponibilidade</h2>
         <p>
-          Informações de onde assistir são fornecidas pelo JustWatch via TMDB e podem mudar. O link
-          exibido no resultado preserva a atribuição recebida da fonte.
+          Informações de onde assistir são fornecidas pelo{' '}
+          <a href="https://www.justwatch.com/br" target="_blank" rel="noreferrer">JustWatch</a> via TMDB
+          e podem mudar. O link exibido no resultado preserva a atribuição recebida da fonte.
         </p>
       </section>
       <section>

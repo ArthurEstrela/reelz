@@ -84,6 +84,14 @@ export function AppHeader({ accessory }: AppHeaderProps) {
                   <p className="truncate text-sm font-semibold text-paper">{user?.email}</p>
                   <p className="mt-1 text-xs text-white/50">Conta Reelz</p>
                 </div>
+                <NavLink
+                  to="/account"
+                  role="menuitem"
+                  onClick={() => setMenuOpen(false)}
+                  className="mt-1 block w-full rounded-xl px-3 py-2.5 text-left text-sm font-medium text-white/70 transition hover:bg-white/[0.06] hover:text-white"
+                >
+                  Conta e privacidade
+                </NavLink>
                 <button
                   type="button"
                   role="menuitem"

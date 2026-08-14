@@ -65,6 +65,9 @@ O MVP inclui:
 - palpites individuais de gênero/vibe e confirmação de prontidão antes de cada giro social;
 - interseção de streamings e exclusão do histórico de todos os membros no sorteio social;
 - giro exclusivo do anfitrião, quota/idempotência preservadas e resultado sincronizado por polling.
+- confirmação de e-mail, recuperação de senha e tokens de conta armazenados apenas como hash;
+- perfil self-service, exclusão com anonimização e invalidação imediata de sessões de contas excluídas;
+- perfil de produção com SMTP/HTTPS obrigatórios, backup validado e alertas Prometheus do beta.
 
 A Home privada contém a experiência funcional da roleta e consome os catálogos, a franquia diária e o histórico diretamente dos endpoints autenticados do backend.
 
@@ -134,4 +137,5 @@ No Docker Compose, a porta do backend fica vinculada somente a `127.0.0.1`. Em p
 - [CI/CD e observabilidade](docs/11-ci-observabilidade.md)
 - [Runbook do beta fechado](docs/12-beta-fechado.md)
 - [Modos Casal e Grupo](docs/13-modos-sociais.md)
+- [Pacote beta ready](docs/14-beta-ready.md)
 - [Front-end React](frontend/README.md)

@@ -9,10 +9,13 @@ import { SubmitButton } from '../components/form/SubmitButton'
 import { useAuth } from '../hooks/useAuth'
 import type { ApiErrorResponse } from '../types/api'
 import { getApiErrorMessage } from '../utils/apiError'
+import { consumeAuthSessionExpired } from '../storage/authStorage'
 
 interface LoginNavigationState {
   from?: { pathname?: string }
   registered?: boolean
+  passwordReset?: boolean
+  accountDeleted?: boolean
 }
 
 function getSafeReturnPath(pathname?: string): string {
@@ -31,16 +34,21 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [emailNotVerified, setEmailNotVerified] = useState(false)
+  const [sessionExpired] = useState(() => consumeAuthSessionExpired())
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setLoading(true)
     setErrorMessage(null)
+    setEmailNotVerified(false)
 
     try {
       await login(email, password)
       navigate(getSafeReturnPath(navigationState?.from?.pathname), { replace: true })
     } catch (error) {
+      const errorCode = axios.isAxiosError<ApiErrorResponse>(error) ? error.response?.data?.code : undefined
+      setEmailNotVerified(errorCode === 'EMAIL_NOT_VERIFIED')
       const isCredentialsError =
         axios.isAxiosError<ApiErrorResponse>(error) &&
         (error.response?.status === 401 || error.response?.status === 403)
@@ -76,7 +84,11 @@ export function LoginPage() {
         {navigationState?.registered && (
           <FormMessage tone="success">Conta criada! Agora é só entrar.</FormMessage>
         )}
+        {navigationState?.passwordReset && <FormMessage tone="success">Senha atualizada. Entre novamente.</FormMessage>}
+        {navigationState?.accountDeleted && <FormMessage tone="success">Conta excluída e dados anonimizados.</FormMessage>}
+        {sessionExpired && <FormMessage>Sua sessão expirou. Entre novamente para continuar.</FormMessage>}
         {errorMessage && <FormMessage>{errorMessage}</FormMessage>}
+        {emailNotVerified && <Link to="/verify-email" state={{ email }} className="block text-sm font-bold text-reel-bright">Reenviar confirmação</Link>}
 
         <FormField
           id="email"
@@ -102,6 +114,10 @@ export function LoginPage() {
           maxLength={128}
           required
         />
+
+        <div className="text-right">
+          <Link to="/forgot-password" className="text-xs font-semibold text-white/55 transition hover:text-white">Esqueci minha senha</Link>
+        </div>
 
         <SubmitButton loading={loading} loadingLabel="Entrando...">
           Entrar no Reelz

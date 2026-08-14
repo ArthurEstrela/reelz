@@ -52,6 +52,9 @@ public class UserAccountEntity extends AuditableUuidEntity {
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
+    @Column(name = "auth_version", nullable = false)
+    private long authVersion;
+
     @Version
     @Column(name = "version", nullable = false)
     private long version;
@@ -121,6 +124,10 @@ public class UserAccountEntity extends AuditableUuidEntity {
         return version;
     }
 
+    public long getAuthVersion() {
+        return authVersion;
+    }
+
     public boolean isPremiumAt(Instant instant) {
         return plan == PlanType.PREMIUM
                 && (premiumUntil == null || premiumUntil.isAfter(instant));
@@ -128,6 +135,27 @@ public class UserAccountEntity extends AuditableUuidEntity {
 
     public void markEmailVerified(Instant verifiedAt) {
         this.emailVerifiedAt = verifiedAt;
+    }
+
+    public void changePassword(String passwordHash) {
+        this.passwordHash = passwordHash;
+        this.authVersion++;
+    }
+
+    public void updateProfile(String displayName, String timezone, String countryCode) {
+        this.displayName = displayName;
+        this.timezone = timezone;
+        this.countryCode = countryCode.toUpperCase(Locale.ROOT);
+    }
+
+    public void anonymizeAndDelete(Instant deletedAt) {
+        var anonymousId = getId().toString();
+        this.email = "deleted-" + anonymousId + "@deleted.reelz.invalid";
+        this.displayName = "Conta excluída";
+        this.passwordHash = "deleted:" + anonymousId;
+        this.role = UserRole.USER;
+        this.premiumUntil = null;
+        this.deletedAt = deletedAt;
     }
 
     public void completeOnboarding(Instant completedAt) {

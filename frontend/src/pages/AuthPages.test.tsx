@@ -61,7 +61,7 @@ describe('authentication pages', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('E-mail ou senha inválidos.')
   })
 
-  it('registers with browser metadata and redirects to login', async () => {
+  it('registers with browser metadata and redirects to email verification', async () => {
     const register = vi.fn().mockResolvedValue(undefined)
     const user = userEvent.setup()
     renderAt('/register', { register })
@@ -72,7 +72,8 @@ describe('authentication pages', () => {
     await user.click(screen.getByRole('checkbox'))
     await user.click(screen.getByRole('button', { name: 'Criar conta grátis' }))
 
-    expect(await screen.findByText('Conta criada! Agora é só entrar.')).toBeInTheDocument()
+    expect(await screen.findByText('Confira sua caixa de entrada.')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('person@reelz.app')).toBeInTheDocument()
     expect(register).toHaveBeenCalledWith(
       expect.objectContaining({
         displayName: 'Pessoa',

@@ -1,7 +1,7 @@
 package com.roletadefilmes.security;
 
 import io.jsonwebtoken.JwtException;
-import com.roletadefilmes.user.domain.UserRole;
+import com.roletadefilmes.user.persistence.repository.UserAccountRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,9 +21,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtService jwtService;
+    private final UserAccountRepository userRepository;
 
-    public JwtAuthenticationFilter(JwtService jwtService) {
+    public JwtAuthenticationFilter(JwtService jwtService, UserAccountRepository userRepository) {
         this.jwtService = jwtService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -46,10 +48,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private void authenticate(String token, HttpServletRequest request) {
         try {
             var userId = jwtService.extractUserId(token);
-            var role = jwtService.extractRole(token);
-            if (role == null) {
-                role = UserRole.USER;
+            var user = userRepository.findByIdAndDeletedAtIsNull(userId).orElse(null);
+            if (user == null || jwtService.extractAuthVersion(token) != user.getAuthVersion()) {
+                return;
             }
+            var role = user.getRole();
             var principal = new AuthenticatedUser(userId, role);
             var authentication = UsernamePasswordAuthenticationToken.authenticated(
                     principal,

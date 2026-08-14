@@ -3,6 +3,7 @@ import {
   AUTH_SESSION_EXPIRED_EVENT,
   clearAuthSession,
   getAuthSession,
+  markAuthSessionExpired,
 } from '../storage/authStorage'
 
 const baseURL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
@@ -27,7 +28,9 @@ api.interceptors.response.use(
   (response) => response,
   (error: unknown) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
+      const hadSession = getAuthSession() !== null
       clearAuthSession()
+      if (hadSession) markAuthSessionExpired()
       window.dispatchEvent(new Event(AUTH_SESSION_EXPIRED_EVENT))
     }
     return Promise.reject(error)

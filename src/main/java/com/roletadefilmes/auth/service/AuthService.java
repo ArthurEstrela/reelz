@@ -3,6 +3,7 @@ package com.roletadefilmes.auth.service;
 import com.roletadefilmes.auth.api.dto.LoginRequest;
 import com.roletadefilmes.auth.api.dto.LoginResponse;
 import com.roletadefilmes.auth.domain.exception.InvalidCredentialsException;
+import com.roletadefilmes.account.domain.exception.EmailNotVerifiedException;
 import com.roletadefilmes.security.JwtService;
 import com.roletadefilmes.user.persistence.repository.UserAccountRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,9 +44,12 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
         var user = userCandidate.orElseThrow();
+        if (user.getEmailVerifiedAt() == null) {
+            throw new EmailNotVerifiedException();
+        }
 
         return new LoginResponse(
-                jwtService.generateToken(user.getId(), user.getRole()),
+                jwtService.generateToken(user.getId(), user.getRole(), user.getAuthVersion()),
                 "Bearer",
                 jwtService.getExpirationSeconds(),
                 user.getId(),

@@ -2,6 +2,9 @@ package com.roletadefilmes.shared.api.error;
 
 import com.roletadefilmes.analytics.domain.exception.InvalidProductEventException;
 import com.roletadefilmes.auth.domain.exception.InvalidCredentialsException;
+import com.roletadefilmes.account.domain.exception.EmailNotVerifiedException;
+import com.roletadefilmes.account.domain.exception.InvalidAccountTokenException;
+import com.roletadefilmes.account.domain.exception.InvalidCurrentPasswordException;
 import com.roletadefilmes.movie.domain.exception.MovieNotFoundException;
 import com.roletadefilmes.onboarding.domain.exception.InvalidOnboardingSelectionException;
 import com.roletadefilmes.roulette.domain.exception.DailyLimitExceededException;
@@ -28,9 +31,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     private final Clock clock;
 
@@ -93,6 +100,33 @@ public class GlobalExceptionHandler {
                 request,
                 List.of()
         );
+    }
+
+    @ExceptionHandler(EmailNotVerifiedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiErrorResponse handleEmailNotVerified(
+            EmailNotVerifiedException exception,
+            HttpServletRequest request
+    ) {
+        return error(HttpStatus.FORBIDDEN, "EMAIL_NOT_VERIFIED", exception.getMessage(), request, List.of());
+    }
+
+    @ExceptionHandler(InvalidAccountTokenException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrorResponse handleInvalidAccountToken(
+            InvalidAccountTokenException exception,
+            HttpServletRequest request
+    ) {
+        return error(HttpStatus.BAD_REQUEST, "INVALID_ACCOUNT_TOKEN", exception.getMessage(), request, List.of());
+    }
+
+    @ExceptionHandler(InvalidCurrentPasswordException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiErrorResponse handleInvalidCurrentPassword(
+            InvalidCurrentPasswordException exception,
+            HttpServletRequest request
+    ) {
+        return error(HttpStatus.FORBIDDEN, "INVALID_CURRENT_PASSWORD", exception.getMessage(), request, List.of());
     }
 
     @ExceptionHandler(EmailAlreadyRegisteredException.class)
@@ -284,6 +318,22 @@ public class GlobalExceptionHandler {
                 "A requisição possui campos inválidos.",
                 request,
                 violations
+        );
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ApiErrorResponse handleUnexpected(
+            Exception exception,
+            HttpServletRequest request
+    ) {
+        LOGGER.error("Erro inesperado em {} {}", request.getMethod(), request.getRequestURI(), exception);
+        return error(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "INTERNAL_ERROR",
+                "O Reelz encontrou um erro inesperado. Tente novamente em instantes.",
+                request,
+                List.of()
         );
     }
 

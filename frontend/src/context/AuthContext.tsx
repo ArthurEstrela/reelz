@@ -11,6 +11,7 @@ import {
   clearAuthSession,
   getAuthSession,
   saveAuthSession,
+  markAuthSessionExpired,
 } from '../storage/authStorage'
 import type { RegisterRequest } from '../types/api'
 import type { AuthSession } from '../types/auth'
@@ -69,10 +70,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
     if (!session) return
 
     const remainingTime = session.expiresAt - Date.now()
-    const timeout = window.setTimeout(
-      logout,
-      Math.min(Math.max(remainingTime, 0), 2_147_483_647),
-    )
+    const timeout = window.setTimeout(() => {
+      markAuthSessionExpired()
+      logout()
+    }, Math.min(Math.max(remainingTime, 0), 2_147_483_647))
     return () => window.clearTimeout(timeout)
   }, [logout, session])
 

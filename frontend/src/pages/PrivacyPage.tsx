@@ -48,9 +48,10 @@ export function PrivacyPage() {
       <section>
         <h2>6. Seus direitos</h2>
         <p>
-          Você pode solicitar confirmação, acesso, correção, portabilidade quando aplicável e exclusão
-          dos seus dados pelo canal privado informado no convite. Não publique dados pessoais em issues
-          ou fóruns públicos ao fazer essa solicitação.
+          Você pode consultar e corrigir seu perfil ou excluir a conta diretamente em “Conta e
+          privacidade”. Na exclusão, os identificadores pessoais são anonimizados e a sessão é encerrada.
+          Para outros direitos, use o canal privado informado no convite; não publique dados pessoais em
+          issues ou fóruns públicos.
         </p>
       </section>
     </LegalPageLayout>

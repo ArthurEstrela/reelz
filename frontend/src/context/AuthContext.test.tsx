@@ -80,6 +80,7 @@ describe('AuthProvider', () => {
       role: 'USER',
       timezone: 'America/Sao_Paulo',
       countryCode: 'BR',
+      emailVerified: false,
       onboardingCompleted: false,
       createdAt: '2026-07-29T15:00:00Z',
     })

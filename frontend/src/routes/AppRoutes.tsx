@@ -9,6 +9,10 @@ import { AboutPage } from '../pages/AboutPage'
 import { PrivacyPage } from '../pages/PrivacyPage'
 import { RegisterPage } from '../pages/RegisterPage'
 import { TermsPage } from '../pages/TermsPage'
+import { ForgotPasswordPage } from '../pages/ForgotPasswordPage'
+import { ResetPasswordPage } from '../pages/ResetPasswordPage'
+import { VerifyEmailPage } from '../pages/VerifyEmailPage'
+import { AccountPage } from '../pages/AccountPage'
 import { PrivateRoute } from './PrivateRoute'
 import { PublicRoute } from './PublicRoute'
 
@@ -29,6 +33,9 @@ export function AppRoutes() {
       <Route element={<PublicRoute />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
       </Route>
 
       <Route path="/about" element={<AboutPage />} />
@@ -42,6 +49,7 @@ export function AppRoutes() {
       <Route element={<PrivateRoute />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/library" element={<LibraryPage />} />
+        <Route path="/account" element={<AccountPage />} />
         <Route path="/social" element={<SocialLobbyPage />} />
         <Route path="/social/join/:inviteCode" element={<SocialJoinPage />} />
         <Route path="/social/rooms/:roomId" element={<SocialRoomPage />} />

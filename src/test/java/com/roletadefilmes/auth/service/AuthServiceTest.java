@@ -2,6 +2,7 @@ package com.roletadefilmes.auth.service;
 
 import com.roletadefilmes.auth.api.dto.LoginRequest;
 import com.roletadefilmes.auth.domain.exception.InvalidCredentialsException;
+import com.roletadefilmes.account.domain.exception.EmailNotVerifiedException;
 import com.roletadefilmes.security.JwtService;
 import com.roletadefilmes.user.persistence.entity.UserAccountEntity;
 import com.roletadefilmes.user.domain.UserRole;
@@ -56,8 +57,10 @@ class AuthServiceTest {
         when(user.getId()).thenReturn(userId);
         when(user.getOnboardingCompletedAt()).thenReturn(Instant.now());
         when(user.getRole()).thenReturn(UserRole.USER);
+        when(user.getAuthVersion()).thenReturn(2L);
+        when(user.getEmailVerifiedAt()).thenReturn(Instant.now());
         when(passwordEncoder.matches("correct-password", "bcrypt-hash")).thenReturn(true);
-        when(jwtService.generateToken(userId, UserRole.USER)).thenReturn("signed-token");
+        when(jwtService.generateToken(userId, UserRole.USER, 2L)).thenReturn("signed-token");
         when(jwtService.getExpirationSeconds()).thenReturn(7_200L);
 
         var response = service.login(request);
@@ -81,7 +84,8 @@ class AuthServiceTest {
 
         verify(jwtService, never()).generateToken(
                 org.mockito.ArgumentMatchers.any(UUID.class),
-                org.mockito.ArgumentMatchers.any(UserRole.class)
+                org.mockito.ArgumentMatchers.any(UserRole.class),
+                org.mockito.ArgumentMatchers.anyLong()
         );
         verify(passwordEncoder).matches("some-password", "dummy-bcrypt-hash");
     }
@@ -100,7 +104,27 @@ class AuthServiceTest {
 
         verify(jwtService, never()).generateToken(
                 org.mockito.ArgumentMatchers.any(UUID.class),
-                org.mockito.ArgumentMatchers.any(UserRole.class)
+                org.mockito.ArgumentMatchers.any(UserRole.class),
+                org.mockito.ArgumentMatchers.anyLong()
+        );
+    }
+
+    @Test
+    void shouldRequireEmailVerificationBeforeCreatingAToken() {
+        var request = new LoginRequest("person@reelz.app", "correct-password");
+        when(userRepository.findByEmailIgnoreCaseAndDeletedAtIsNull("person@reelz.app"))
+                .thenReturn(Optional.of(user));
+        when(user.getPasswordHash()).thenReturn("bcrypt-hash");
+        when(passwordEncoder.matches("correct-password", "bcrypt-hash")).thenReturn(true);
+        when(user.getEmailVerifiedAt()).thenReturn(null);
+
+        assertThatThrownBy(() -> service.login(request))
+                .isInstanceOf(EmailNotVerifiedException.class);
+
+        verify(jwtService, never()).generateToken(
+                org.mockito.ArgumentMatchers.any(UUID.class),
+                org.mockito.ArgumentMatchers.any(UserRole.class),
+                org.mockito.ArgumentMatchers.anyLong()
         );
     }
 }

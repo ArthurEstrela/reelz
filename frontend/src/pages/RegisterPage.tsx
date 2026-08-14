@@ -35,9 +35,9 @@ export function RegisterPage() {
         timezone: getBrowserTimezone(),
         countryCode: getBrowserCountryCode(),
       })
-      navigate('/login', {
+      navigate('/verify-email', {
         replace: true,
-        state: { registered: true, from: navigationState?.from },
+        state: { email: email.trim().toLowerCase(), from: navigationState?.from },
       })
     } catch (error) {
       setErrorMessage(

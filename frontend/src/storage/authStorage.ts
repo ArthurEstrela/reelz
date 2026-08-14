@@ -1,6 +1,7 @@
 import type { AuthSession } from '../types/auth'
 
 const AUTH_SESSION_KEY = 'reelz.auth.session'
+const AUTH_SESSION_EXPIRED_KEY = 'reelz.auth.expired'
 
 export const AUTH_SESSION_EXPIRED_EVENT = 'reelz:auth-session-expired'
 
@@ -42,4 +43,14 @@ export function saveAuthSession(session: AuthSession): void {
 
 export function clearAuthSession(): void {
   sessionStorage.removeItem(AUTH_SESSION_KEY)
+}
+
+export function markAuthSessionExpired(): void {
+  sessionStorage.setItem(AUTH_SESSION_EXPIRED_KEY, 'true')
+}
+
+export function consumeAuthSessionExpired(): boolean {
+  const expired = sessionStorage.getItem(AUTH_SESSION_EXPIRED_KEY) === 'true'
+  sessionStorage.removeItem(AUTH_SESSION_EXPIRED_KEY)
+  return expired
 }

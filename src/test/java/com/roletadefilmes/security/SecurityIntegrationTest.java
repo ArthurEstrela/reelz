@@ -9,6 +9,9 @@ import com.roletadefilmes.shared.config.TimeConfiguration;
 import com.roletadefilmes.support.security.WithMockReelzUser;
 import com.roletadefilmes.user.api.UserController;
 import com.roletadefilmes.user.service.UserRegistrationService;
+import com.roletadefilmes.user.service.UserAccountService;
+import com.roletadefilmes.user.persistence.entity.UserAccountEntity;
+import com.roletadefilmes.user.persistence.repository.UserAccountRepository;
 import com.roletadefilmes.user.domain.UserRole;
 import io.jsonwebtoken.MalformedJwtException;
 import org.junit.jupiter.api.Test;
@@ -21,10 +24,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -67,6 +72,12 @@ class SecurityIntegrationTest {
     private UserRegistrationService registrationService;
 
     @MockitoBean
+    private UserAccountService userAccountService;
+
+    @MockitoBean
+    private UserAccountRepository userAccountRepository;
+
+    @MockitoBean
     private JwtService jwtService;
 
     @Test
@@ -83,7 +94,9 @@ class SecurityIntegrationTest {
     void shouldAuthenticateAValidBearerTokenAndUseItsSubject() throws Exception {
         var userId = UUID.randomUUID();
         when(jwtService.extractUserId("valid-token")).thenReturn(userId);
-        when(jwtService.extractRole("valid-token")).thenReturn(UserRole.USER);
+        var user = org.mockito.Mockito.mock(UserAccountEntity.class);
+        when(user.getRole()).thenReturn(UserRole.USER);
+        when(userAccountRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
 
         mockMvc.perform(post("/api/v1/roulette/spin")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer valid-token")
@@ -116,6 +129,24 @@ class SecurityIntegrationTest {
                         .content(SPIN_BODY))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"));
+    }
+
+    @Test
+    void shouldRejectATokenIssuedBeforeTheLatestPasswordChange() throws Exception {
+        var userId = UUID.randomUUID();
+        var user = org.mockito.Mockito.mock(UserAccountEntity.class);
+        when(jwtService.extractUserId("old-token")).thenReturn(userId);
+        when(jwtService.extractAuthVersion("old-token")).thenReturn(1L);
+        when(user.getAuthVersion()).thenReturn(2L);
+        when(userAccountRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
+
+        mockMvc.perform(post("/api/v1/roulette/spin")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer old-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(SPIN_BODY))
+                .andExpect(status().isUnauthorized());
+
+        verify(rouletteService, never()).spin(eq(userId), any());
     }
 
     @Test
