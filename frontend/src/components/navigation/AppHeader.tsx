@@ -13,6 +13,7 @@ const primaryItems: Array<{ to: string; label: string; icon: NavigationIconName;
   { to: '/', label: 'Roleta', icon: 'roulette', end: true },
   { to: '/social', label: 'Juntos', icon: 'social' },
   { to: '/library', label: 'Biblioteca', icon: 'library' },
+  { to: '/achievements', label: 'Conquistas', icon: 'achievements' },
 ]
 
 export function AppHeader({ accessory }: AppHeaderProps) {

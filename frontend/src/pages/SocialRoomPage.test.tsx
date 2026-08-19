@@ -18,7 +18,10 @@ vi.mock('../services/socialService', () => ({
   spinSocialRoom: vi.fn(),
 }))
 vi.mock('../services/historyService', () => ({ markMovieAsWatched: vi.fn() }))
-vi.mock('../services/analyticsService', () => ({ trackProductEventInBackground: vi.fn() }))
+vi.mock('../services/analyticsService', () => ({ trackProductEvent: vi.fn() }))
+vi.mock('../hooks/useAchievements', () => ({
+  useAchievements: () => ({ refreshAchievements: vi.fn() }),
+}))
 
 const hostId = '0198f032-7370-7000-8000-000000000101'
 const guestId = '0198f032-7370-7000-8000-000000000102'

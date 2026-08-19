@@ -6,6 +6,7 @@ const items: Array<{ to: string; label: string; icon: NavigationIconName; end?: 
   { to: '/', label: 'Roleta', icon: 'roulette', end: true },
   { to: '/social', label: 'Juntos', icon: 'social' },
   { to: '/library', label: 'Biblioteca', icon: 'library' },
+  { to: '/achievements', label: 'Troféus', icon: 'achievements' },
 ]
 
 export function BottomNavigation() {

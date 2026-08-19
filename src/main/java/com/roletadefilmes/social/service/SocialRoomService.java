@@ -257,7 +257,7 @@ public class SocialRoomService {
         var rouletteResponse = rouletteService.spinForRoom(userId, roomId, request);
 
         var spinNumber = room.nextSpinNumber();
-        var socialSpin = roomSpinRepository.save(new SocialRoomSpinEntity(
+        var socialSpin = roomSpinRepository.saveAndFlush(new SocialRoomSpinEntity(
                 room,
                 room.getOwner(),
                 request.idempotencyKey().toString(),
@@ -265,6 +265,7 @@ public class SocialRoomService {
                 buildFilters(request, members),
                 objectMapper.convertValue(rouletteResponse.movie(), MAP_TYPE)
         ));
+        roomSpinRepository.snapshotParticipants(socialSpin.getId(), roomId, members.size());
         members.forEach(SocialRoomMemberEntity::resetReady);
         memberRepository.saveAll(members);
         roomRepository.saveAndFlush(room);

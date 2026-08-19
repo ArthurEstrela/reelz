@@ -13,6 +13,9 @@ server:
   shutdown: graceful
 
 management:
+  health:
+    mail:
+      enabled: true
   endpoint:
     health:
       show-details: never

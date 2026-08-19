@@ -20,6 +20,10 @@ vi.mock('../services/historyService', () => ({
   removeMovieFromWatchlist: vi.fn(),
 }))
 
+vi.mock('../hooks/useAchievements', () => ({
+  useAchievements: () => ({ refreshAchievements: vi.fn() }),
+}))
+
 const context: AuthContextValue = {
   user: { id: 'user-id', email: 'collector@reelz.app', onboardingCompleted: true, role: 'USER' },
   isAuthenticated: true,

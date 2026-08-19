@@ -69,6 +69,9 @@ O MVP inclui:
 - perfil self-service, exclusão com anonimização e invalidação imediata de sessões de contas excluídas;
 - perfil de produção com SMTP/HTTPS obrigatórios, backup validado e alertas Prometheus do beta.
 
+- conquistas retroativas e idempotentes baseadas em descoberta, coleção, exploração e escolhas sociais;
+- Sala de Troféus responsiva e celebração discreta de novos marcos no front-end.
+
 A Home privada contém a experiência funcional da roleta e consome os catálogos, a franquia diária e o histórico diretamente dos endpoints autenticados do backend.
 
 ## Stack
@@ -138,4 +141,5 @@ No Docker Compose, a porta do backend fica vinculada somente a `127.0.0.1`. Em p
 - [Runbook do beta fechado](docs/12-beta-fechado.md)
 - [Modos Casal e Grupo](docs/13-modos-sociais.md)
 - [Pacote beta ready](docs/14-beta-ready.md)
+- [Sistema de conquistas](docs/15-conquistas.md)
 - [Front-end React](frontend/README.md)

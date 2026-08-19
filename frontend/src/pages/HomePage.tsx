@@ -12,7 +12,7 @@ import { SpinLimitModal } from '../components/roulette/SpinLimitModal'
 import { PWA_ENGAGEMENT_EVENT } from '../components/pwa/PwaStatusPrompt'
 import { StreamingPreferencesModal } from '../components/streaming/StreamingPreferencesModal'
 import { GENRE_OPTIONS } from '../config/rouletteFilters'
-import { trackProductEventInBackground } from '../services/analyticsService'
+import { trackProductEvent, trackProductEventInBackground } from '../services/analyticsService'
 import { getProviders, getVibes } from '../services/catalogService'
 import {
   markMovieAsWatched,
@@ -26,6 +26,7 @@ import {
 import type { CatalogItem } from '../types/catalog'
 import type { RouletteMovie, SpinQuota } from '../types/roulette'
 import { getApiErrorMessage } from '../utils/apiError'
+import { useAchievements } from '../hooks/useAchievements'
 
 type RouletteState = 'idle' | 'spinning' | 'result' | 'empty'
 type CatalogState = 'loading' | 'ready' | 'error'
@@ -50,6 +51,7 @@ async function waitForMinimumDuration(startedAt: number, minimumDuration: number
 }
 
 export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
+  const { refreshAchievements } = useAchievements()
   const productSessionId = useMemo(() => getProductSessionId(), [])
   const quotaRequestSequence = useRef(0)
   const [providers, setProviders] = useState<CatalogItem[]>([])
@@ -208,6 +210,7 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
       await waitForMinimumDuration(startedAt, minimumSpinDuration)
       setMovie(response.movie)
       setRouletteState('result')
+      void refreshAchievements()
       window.dispatchEvent(new Event(PWA_ENGAGEMENT_EVENT))
     } catch (error) {
       await waitForMinimumDuration(startedAt, minimumSpinDuration)
@@ -281,6 +284,7 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
 
     try {
       await markMovieAsWatched(watchedMovie.tmdbId)
+      void refreshAchievements()
     } catch (error) {
       setToast({
         id: Date.now(),
@@ -300,6 +304,7 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
 
     try {
       await saveMovieToWatchlist(movieToSave.tmdbId)
+      void refreshAchievements()
       return true
     } catch (error) {
       setToast({
@@ -320,9 +325,11 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
 
   function handleWatchProvider() {
     if (!movie?.streamingAvailability[0]) return
-    trackProductEventInBackground('WATCH_PROVIDER_CLICKED', {
+    void trackProductEvent('WATCH_PROVIDER_CLICKED', {
       movieId: movie.tmdbId,
       providerId: movie.streamingAvailability[0].providerId,
+    }).then(refreshAchievements).catch(() => {
+      // Abrir o streaming continua sendo a ação principal, mesmo sem telemetria.
     })
   }
 

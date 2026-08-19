@@ -13,6 +13,7 @@ import { ForgotPasswordPage } from '../pages/ForgotPasswordPage'
 import { ResetPasswordPage } from '../pages/ResetPasswordPage'
 import { VerifyEmailPage } from '../pages/VerifyEmailPage'
 import { AccountPage } from '../pages/AccountPage'
+import { AchievementsPage } from '../pages/AchievementsPage'
 import { PrivateRoute } from './PrivateRoute'
 import { PublicRoute } from './PublicRoute'
 
@@ -49,6 +50,7 @@ export function AppRoutes() {
       <Route element={<PrivateRoute />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/library" element={<LibraryPage />} />
+        <Route path="/achievements" element={<AchievementsPage />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path="/social" element={<SocialLobbyPage />} />
         <Route path="/social/join/:inviteCode" element={<SocialJoinPage />} />

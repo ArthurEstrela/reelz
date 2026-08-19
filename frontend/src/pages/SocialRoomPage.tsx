@@ -8,8 +8,9 @@ import { FilterPills, type PillOption } from '../components/roulette/FilterPills
 import { SlotMachine } from '../components/roulette/SlotMachine'
 import { GENRE_OPTIONS } from '../config/rouletteFilters'
 import { useAuth } from '../hooks/useAuth'
+import { useAchievements } from '../hooks/useAchievements'
 import { getVibes } from '../services/catalogService'
-import { trackProductEventInBackground } from '../services/analyticsService'
+import { trackProductEvent } from '../services/analyticsService'
 import { markMovieAsWatched } from '../services/historyService'
 import { getTodayUsage } from '../services/rouletteService'
 import {
@@ -32,6 +33,7 @@ export function SocialRoomPage() {
   const { roomId = '' } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { refreshAchievements } = useAchievements()
   const productSessionId = useMemo(() => getProductSessionId(), [])
   const mounted = useRef(true)
   const spinningRef = useRef(false)
@@ -172,6 +174,7 @@ export function SocialRoomPage() {
       applyRoom(response.room)
       setMovie(response.movie)
       setQuota(response.quota)
+      void refreshAchievements()
     } catch (requestError) {
       await minimumAnimation
       setError(getApiErrorMessage(requestError, 'A roleta compartilhada não conseguiu girar.'))
@@ -196,6 +199,7 @@ export function SocialRoomPage() {
     if (!movie) return
     try {
       await markMovieAsWatched(movie.tmdbId)
+      void refreshAchievements()
       setToast('Filme adicionado à sua coleção.')
     } catch (requestError) {
       setToast(getApiErrorMessage(requestError, 'Não foi possível marcar o filme como visto.'))
@@ -341,10 +345,14 @@ export function SocialRoomPage() {
                       href={movie.streamingAvailability[0].attributionUrl ?? undefined}
                       target="_blank"
                       rel="noreferrer"
-                      onClick={() => trackProductEventInBackground('WATCH_PROVIDER_CLICKED', {
-                        movieId: movie.tmdbId,
-                        providerId: movie.streamingAvailability[0].providerId,
-                      })}
+                      onClick={() => {
+                        void trackProductEvent('WATCH_PROVIDER_CLICKED', {
+                          movieId: movie.tmdbId,
+                          providerId: movie.streamingAvailability[0].providerId,
+                        }).then(refreshAchievements).catch(() => {
+                          // O clique segue para o streaming mesmo se a telemetria falhar.
+                        })
+                      }}
                       className="mt-auto rounded-lg bg-reel px-3 py-2.5 text-center text-xs font-bold text-white"
                     >
                       Assistir na {movie.streamingAvailability[0].providerName}

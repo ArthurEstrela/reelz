@@ -6,7 +6,17 @@ import { AppRoutes } from './AppRoutes'
 
 vi.mock('../services/analyticsService', () => ({
   getAnalyticsOverview: vi.fn(() => new Promise(() => undefined)),
+  trackProductEvent: vi.fn(),
   trackProductEventInBackground: vi.fn(),
+}))
+
+vi.mock('../hooks/useAchievements', () => ({
+  useAchievements: () => ({
+    overview: null,
+    loading: true,
+    error: false,
+    refreshAchievements: vi.fn(),
+  }),
 }))
 
 function renderRoutes(

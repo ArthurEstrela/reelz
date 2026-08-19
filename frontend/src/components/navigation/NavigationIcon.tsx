@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-export type NavigationIconName = 'roulette' | 'social' | 'library' | 'analytics'
+export type NavigationIconName = 'roulette' | 'social' | 'library' | 'achievements' | 'analytics'
 
 interface NavigationIconProps {
   name: NavigationIconName
@@ -26,6 +26,12 @@ export function NavigationIcon({ name, className = 'size-5' }: NavigationIconPro
       <>
         <rect x="4" y="4" width="16" height="16" rx="2" />
         <path d="M8 4v16M12 8h4M12 12h4M12 16h3" />
+      </>
+    ),
+    achievements: (
+      <>
+        <path d="M8 4h8v3c0 3-1.5 5-4 5S8 10 8 7V4Z" />
+        <path d="M8 6H5v1c0 2.2 1.1 3.5 3.5 3.8M16 6h3v1c0 2.2-1.1 3.5-3.5 3.8M12 12v4M8.5 20h7M10 16h4v4" />
       </>
     ),
     analytics: (

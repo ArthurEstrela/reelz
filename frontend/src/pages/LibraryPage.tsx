@@ -12,6 +12,7 @@ import {
 import type { LibraryMovie, UserMovieStatus } from '../types/history'
 import type { PageResponse } from '../types/pagination'
 import { getApiErrorMessage } from '../utils/apiError'
+import { useAchievements } from '../hooks/useAchievements'
 
 const PAGE_SIZE = 24
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'
@@ -131,6 +132,7 @@ async function fetchHistory(
 }
 
 export function LibraryPage() {
+  const { refreshAchievements } = useAchievements()
   const requestSequence = useRef(0)
   const requestInFlight = useRef(false)
   const [activeStatus, setActiveStatus] = useState<UserMovieStatus>('WATCHED')
@@ -229,6 +231,7 @@ export function LibraryPage() {
     try {
       if (action === 'WATCHED') {
         await markMovieAsWatched(movie.movieId)
+        void refreshAchievements()
       } else {
         await removeMovieFromWatchlist(movie.movieId)
       }

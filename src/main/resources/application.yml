@@ -21,6 +21,9 @@ spring:
       mail.smtp.starttls.enable: ${MAIL_STARTTLS:false}
 
 management:
+  health:
+    mail:
+      enabled: ${MAIL_HEALTH_ENABLED:false}
   endpoint:
     health:
       probes:

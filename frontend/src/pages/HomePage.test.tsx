@@ -26,7 +26,12 @@ vi.mock('../services/catalogService', () => ({
 }))
 
 vi.mock('../services/analyticsService', () => ({
+  trackProductEvent: vi.fn(),
   trackProductEventInBackground: vi.fn(),
+}))
+
+vi.mock('../hooks/useAchievements', () => ({
+  useAchievements: () => ({ refreshAchievements: vi.fn() }),
 }))
 
 vi.mock('../services/historyService', () => ({

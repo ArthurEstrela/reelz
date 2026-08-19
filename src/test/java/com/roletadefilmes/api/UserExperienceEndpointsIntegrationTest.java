@@ -2,6 +2,7 @@ package com.roletadefilmes.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roletadefilmes.analytics.persistence.repository.ProductEventRepository;
+import com.roletadefilmes.achievement.persistence.repository.UserAchievementRepository;
 import com.roletadefilmes.feedback.persistence.repository.BetaFeedbackRepository;
 import com.roletadefilmes.history.domain.UserMovieStatus;
 import com.roletadefilmes.history.persistence.entity.UserMovieHistoryEntity;
@@ -10,6 +11,8 @@ import com.roletadefilmes.movie.persistence.entity.MovieCacheEntity;
 import com.roletadefilmes.movie.persistence.repository.MovieCacheRepository;
 import com.roletadefilmes.roulette.persistence.entity.RouletteDailyUsageEntity;
 import com.roletadefilmes.roulette.persistence.repository.RouletteDailyUsageRepository;
+import com.roletadefilmes.roulette.persistence.entity.RouletteSpinEntity;
+import com.roletadefilmes.roulette.persistence.repository.RouletteSpinRepository;
 import com.roletadefilmes.security.JwtService;
 import com.roletadefilmes.social.persistence.repository.SocialRoomSpinRepository;
 import com.roletadefilmes.streaming.domain.MonetizationType;
@@ -129,6 +132,56 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Autowired
     private SocialRoomSpinRepository socialRoomSpinRepository;
+
+    @Autowired
+    private RouletteSpinRepository rouletteSpinRepository;
+
+    @Autowired
+    private UserAchievementRepository userAchievementRepository;
+
+    @Test
+    void shouldCalculateRetroactiveAchievementsAndKeepEvaluationIdempotent() throws Exception {
+        var user = userRepository.saveAndFlush(newUser("achievements@reelz.app"));
+        var movies = IntStream.range(0, 10)
+                .mapToObj(index -> newMovieWithGenres(
+                        40_000L + index,
+                        "Filme de conquista " + index,
+                        "/achievement-" + index + ".jpg",
+                        new BigDecimal("7.0"),
+                        new Integer[]{index % 5 + 1}
+                ))
+                .toList();
+        movieRepository.saveAllAndFlush(movies);
+        historyRepository.saveAllAndFlush(movies.stream()
+                .map(movie -> new UserMovieHistoryEntity(
+                        user,
+                        movie,
+                        UserMovieStatus.WATCHED,
+                        Instant.now().minus(1, ChronoUnit.DAYS),
+                        null
+                ))
+                .toList());
+        var spin = new RouletteSpinEntity(user, UUID.randomUUID().toString(), java.util.Map.of());
+        spin.succeedWith(movies.getFirst(), Instant.now());
+        rouletteSpinRepository.saveAndFlush(spin);
+
+        mockMvc.perform(get("/api/v1/achievements")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalCount").value(10))
+                .andExpect(jsonPath("$.unlockedCount").value(3))
+                .andExpect(jsonPath("$.achievements[?(@.code == 'FIRST_SPIN')].unlocked", hasItem(true)))
+                .andExpect(jsonPath("$.achievements[?(@.code == 'WATCHED_10')].progress", hasItem(10)))
+                .andExpect(jsonPath("$.achievements[?(@.code == 'GENRES_5')].progress", hasItem(5)));
+
+        mockMvc.perform(get("/api/v1/achievements")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.unlockedCount").value(3));
+
+        assertThat(userAchievementRepository.findAllWithDefinitionByUserId(user.getId()))
+                .hasSize(10);
+    }
 
     @Test
     void shouldCreateJoinAndSpinACoupleRoomExcludingEveryMembersHistory() throws Exception {
@@ -302,6 +355,16 @@ class UserExperienceEndpointsIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.lastMovie.tmdbId").value(eligible.getTmdbId()))
                 .andExpect(jsonPath("$.lastSpinNumber").value(1));
+
+        for (var participant : List.of(host, guest)) {
+            mockMvc.perform(get("/api/v1/achievements")
+                            .header(HttpHeaders.AUTHORIZATION, bearerToken(participant)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath(
+                            "$.achievements[?(@.code == 'COUPLE_SPIN')].unlocked",
+                            hasItem(true)
+                    ));
+        }
 
         mockMvc.perform(get("/api/v1/admin/analytics/overview")
                         .param("days", "30")
