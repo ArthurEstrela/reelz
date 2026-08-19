@@ -13,14 +13,30 @@ COPY src ./src
 RUN --mount=type=cache,target=/root/.m2 \
     mvn -B -ntp clean package -DskipTests
 
-# A imagem final contém somente o JRE e o artefato executável.
-FROM eclipse-temurin:21-jre-alpine AS runtime
+# Corretto 21.0.12 inclui as correções do CPU de julho/2026. Geramos um
+# runtime modular para não carregar o JDK inteiro na imagem final.
+FROM amazoncorretto:21.0.12-alpine3.24 AS jre-build
+RUN apk add --no-cache binutils \
+    && "$JAVA_HOME/bin/jlink" \
+    --add-modules java.base,java.compiler,java.desktop,java.instrument,java.logging,java.management,java.naming,java.net.http,java.prefs,java.rmi,java.security.jgss,java.security.sasl,java.sql,java.transaction.xa,java.xml,jdk.crypto.ec,jdk.management,jdk.naming.dns,jdk.unsupported,jdk.zipfs \
+    --strip-debug \
+    --no-man-pages \
+    --no-header-files \
+    --compress=zip-6 \
+    --output /opt/reelz-jre
+
+# Alpine 3.24 remove os CVEs de SQLite presentes na antiga base Temurin 3.23.
+FROM alpine:3.24 AS runtime
 WORKDIR /app
 
 # Aplica correções de segurança da distribuição antes de remover o root.
 RUN apk upgrade --no-cache \
+    && apk add --no-cache ca-certificates tzdata \
     && addgroup -S reelz \
     && adduser -S reelz -G reelz
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+COPY --from=jre-build /opt/reelz-jre "$JAVA_HOME"
 COPY --from=build --chown=reelz:reelz /workspace/target/*.jar /app/reelz.jar
 
 USER reelz
