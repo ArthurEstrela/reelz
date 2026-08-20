@@ -13,6 +13,7 @@ import { ForgotPasswordPage } from '../pages/ForgotPasswordPage'
 import { ResetPasswordPage } from '../pages/ResetPasswordPage'
 import { VerifyEmailPage } from '../pages/VerifyEmailPage'
 import { AccountPage } from '../pages/AccountPage'
+import { PremiumPage } from '../pages/PremiumPage'
 import { AchievementsPage } from '../pages/AchievementsPage'
 import { PrivateRoute } from './PrivateRoute'
 import { PublicRoute } from './PublicRoute'
@@ -52,6 +53,7 @@ export function AppRoutes() {
         <Route path="/library" element={<LibraryPage />} />
         <Route path="/achievements" element={<AchievementsPage />} />
         <Route path="/account" element={<AccountPage />} />
+        <Route path="/premium" element={<PremiumPage />} />
         <Route path="/social" element={<SocialLobbyPage />} />
         <Route path="/social/join/:inviteCode" element={<SocialJoinPage />} />
         <Route path="/social/rooms/:roomId" element={<SocialRoomPage />} />

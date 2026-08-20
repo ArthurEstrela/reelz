@@ -93,6 +93,15 @@ export function AppHeader({ accessory }: AppHeaderProps) {
                 >
                   Conta e privacidade
                 </NavLink>
+                <NavLink
+                  to="/premium"
+                  role="menuitem"
+                  onClick={() => setMenuOpen(false)}
+                  className="mt-1 flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-medium text-white/70 transition hover:bg-white/[0.06] hover:text-white"
+                >
+                  <span>Reelz Premium</span>
+                  <span className="rounded-full bg-reel/20 px-2 py-0.5 text-[0.62rem] font-black uppercase tracking-wide text-reel-bright">Pro</span>
+                </NavLink>
                 <button
                   type="button"
                   role="menuitem"

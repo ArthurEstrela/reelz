@@ -2,6 +2,9 @@ package com.roletadefilmes.user.service;
 
 import com.roletadefilmes.account.domain.exception.InvalidCurrentPasswordException;
 import com.roletadefilmes.account.persistence.repository.AccountActionTokenRepository;
+import com.roletadefilmes.billing.domain.BillingSubscriptionStatus;
+import com.roletadefilmes.billing.domain.exception.BillingSubscriptionConflictException;
+import com.roletadefilmes.billing.persistence.repository.BillingSubscriptionRepository;
 import com.roletadefilmes.user.api.dto.DeleteUserRequest;
 import com.roletadefilmes.user.api.dto.UpdateUserRequest;
 import com.roletadefilmes.user.api.dto.UserResponse;
@@ -17,23 +20,27 @@ import java.time.Clock;
 import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.util.UUID;
+import java.util.List;
 
 @Service
 public class UserAccountService {
 
     private final UserAccountRepository userRepository;
     private final AccountActionTokenRepository tokenRepository;
+    private final BillingSubscriptionRepository billingSubscriptionRepository;
     private final PasswordEncoder passwordEncoder;
     private final Clock clock;
 
     public UserAccountService(
             UserAccountRepository userRepository,
             AccountActionTokenRepository tokenRepository,
+            BillingSubscriptionRepository billingSubscriptionRepository,
             PasswordEncoder passwordEncoder,
             Clock clock
     ) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
+        this.billingSubscriptionRepository = billingSubscriptionRepository;
         this.passwordEncoder = passwordEncoder;
         this.clock = clock;
     }
@@ -56,6 +63,18 @@ public class UserAccountService {
         var user = findUser(userId);
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new InvalidCurrentPasswordException();
+        }
+        if (billingSubscriptionRepository.existsByUserIdAndStatusIn(
+                userId,
+                List.of(
+                        BillingSubscriptionStatus.CHECKOUT_PENDING,
+                        BillingSubscriptionStatus.ACTIVE,
+                        BillingSubscriptionStatus.PAST_DUE
+                )
+        )) {
+            throw new BillingSubscriptionConflictException(
+                    "Resolva o checkout ou cancele sua assinatura Premium antes de excluir a conta."
+            );
         }
         tokenRepository.deleteByUserId(userId);
         user.anonymizeAndDelete(clock.instant());

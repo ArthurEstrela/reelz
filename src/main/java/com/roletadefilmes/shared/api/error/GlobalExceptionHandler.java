@@ -2,6 +2,12 @@ package com.roletadefilmes.shared.api.error;
 
 import com.roletadefilmes.analytics.domain.exception.InvalidProductEventException;
 import com.roletadefilmes.auth.domain.exception.InvalidCredentialsException;
+import com.roletadefilmes.billing.domain.exception.BillingNotConfiguredException;
+import com.roletadefilmes.billing.domain.exception.BillingProviderException;
+import com.roletadefilmes.billing.domain.exception.BillingSubscriptionConflictException;
+import com.roletadefilmes.billing.domain.exception.BillingSubscriptionNotFoundException;
+import com.roletadefilmes.billing.domain.exception.InvalidBillingWebhookException;
+import com.roletadefilmes.billing.domain.exception.InvalidBillingWebhookSignatureException;
 import com.roletadefilmes.account.domain.exception.EmailNotVerifiedException;
 import com.roletadefilmes.account.domain.exception.InvalidAccountTokenException;
 import com.roletadefilmes.account.domain.exception.InvalidCurrentPasswordException;
@@ -217,6 +223,67 @@ public class GlobalExceptionHandler {
                 request,
                 List.of()
         );
+    }
+
+    @ExceptionHandler(BillingNotConfiguredException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public ApiErrorResponse handleBillingNotConfigured(
+            BillingNotConfiguredException exception,
+            HttpServletRequest request
+    ) {
+        return error(HttpStatus.SERVICE_UNAVAILABLE, "BILLING_NOT_CONFIGURED", exception.getMessage(), request, List.of());
+    }
+
+    @ExceptionHandler(BillingProviderException.class)
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    public ApiErrorResponse handleBillingProvider(
+            BillingProviderException exception,
+            HttpServletRequest request
+    ) {
+        LOGGER.warn("Falha no provedor de pagamentos em {}: {}", request.getRequestURI(), exception.getMessage());
+        return error(
+                HttpStatus.BAD_GATEWAY,
+                "BILLING_PROVIDER_ERROR",
+                "O pagamento não pôde ser processado agora. Tente novamente em instantes.",
+                request,
+                List.of()
+        );
+    }
+
+    @ExceptionHandler(BillingSubscriptionConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiErrorResponse handleBillingConflict(
+            BillingSubscriptionConflictException exception,
+            HttpServletRequest request
+    ) {
+        return error(HttpStatus.CONFLICT, "BILLING_SUBSCRIPTION_CONFLICT", exception.getMessage(), request, List.of());
+    }
+
+    @ExceptionHandler(BillingSubscriptionNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiErrorResponse handleBillingSubscriptionNotFound(
+            BillingSubscriptionNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        return error(HttpStatus.NOT_FOUND, "BILLING_SUBSCRIPTION_NOT_FOUND", exception.getMessage(), request, List.of());
+    }
+
+    @ExceptionHandler(InvalidBillingWebhookSignatureException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiErrorResponse handleInvalidBillingWebhookSignature(
+            InvalidBillingWebhookSignatureException exception,
+            HttpServletRequest request
+    ) {
+        return error(HttpStatus.UNAUTHORIZED, "INVALID_BILLING_WEBHOOK_SIGNATURE", exception.getMessage(), request, List.of());
+    }
+
+    @ExceptionHandler(InvalidBillingWebhookException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrorResponse handleInvalidBillingWebhook(
+            InvalidBillingWebhookException exception,
+            HttpServletRequest request
+    ) {
+        return error(HttpStatus.BAD_REQUEST, "INVALID_BILLING_WEBHOOK", exception.getMessage(), request, List.of());
     }
 
     @ExceptionHandler(DuplicateSpinException.class)

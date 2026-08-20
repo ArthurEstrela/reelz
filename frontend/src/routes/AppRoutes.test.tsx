@@ -19,6 +19,13 @@ vi.mock('../hooks/useAchievements', () => ({
   }),
 }))
 
+vi.mock('../services/billingService', () => ({
+  getBillingPlans: vi.fn(() => new Promise(() => undefined)),
+  getCurrentSubscription: vi.fn(() => new Promise(() => undefined)),
+  createSubscriptionCheckout: vi.fn(),
+  cancelCurrentSubscription: vi.fn(),
+}))
+
 function renderRoutes(
   isAuthenticated: boolean,
   initialPath = '/',
@@ -79,6 +86,12 @@ describe('AppRoutes', () => {
 
     expect(screen.getByRole('heading', { name: 'Biblioteca' })).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: 'Navegação principal' })).toBeInTheDocument()
+  })
+
+  it('renders the premium page for an authenticated user', () => {
+    renderRoutes(true, '/premium')
+
+    expect(screen.getByRole('heading', { name: 'Menos limite. Mais histórias.' })).toBeInTheDocument()
   })
 
   it('redirects a new authenticated user to onboarding', () => {

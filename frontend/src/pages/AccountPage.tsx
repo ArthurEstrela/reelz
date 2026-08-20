@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { AppHeader } from '../components/navigation/AppHeader'
 import { BottomNavigation } from '../components/navigation/BottomNavigation'
 import { FormMessage } from '../components/feedback/FormMessage'
@@ -77,17 +77,29 @@ export function AccountPage() {
             <SubmitButton loading={saving} loadingLabel="Salvando...">Salvar perfil</SubmitButton>
           </form>
         </section>
-        <section className="h-fit rounded-3xl border border-red-400/15 bg-red-400/[0.035] p-6 sm:p-8">
-          <p className="text-xs font-bold uppercase tracking-widest text-red-300/70">Zona de cuidado</p>
-          <h2 className="mt-3 text-xl font-bold text-paper">Excluir minha conta</h2>
-          <p className="mt-2 text-sm leading-6 text-white/50">Seus dados pessoais serão anonimizados e o acesso será encerrado imediatamente.</p>
-          <div className="mt-6">
-            <PasswordField id="delete-password" label="Confirme sua senha" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} />
-            <button type="button" disabled={deleting || !password} onClick={() => void removeAccount()} className="mt-4 w-full rounded-xl border border-red-400/25 px-4 py-3 text-sm font-bold text-red-200 transition hover:bg-red-400/10 disabled:opacity-40">
-              {deleting ? 'Excluindo...' : 'Excluir conta permanentemente'}
-            </button>
-          </div>
-        </section>
+        <div className="space-y-6">
+          <section className="rounded-3xl border border-reel/25 bg-reel/[0.07] p-6 sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-widest text-reel-bright/80">Seu plano</p>
+            <h2 className="mt-3 text-xl font-bold text-paper">{profile?.plan === 'PREMIUM' ? 'Reelz Premium' : 'Reelz Free'}</h2>
+            <p className="mt-2 text-sm leading-6 text-white/50">
+              {profile?.plan === 'PREMIUM' ? 'Giros ilimitados e todos os streamings combinados.' : 'Conheça os giros ilimitados e a experiência sem anúncios.'}
+            </p>
+            <Link to="/premium" className="mt-5 inline-flex rounded-xl bg-paper px-4 py-3 text-sm font-bold text-canvas transition hover:bg-white">
+              {profile?.plan === 'PREMIUM' ? 'Gerenciar assinatura' : 'Conhecer Premium'}
+            </Link>
+          </section>
+          <section className="rounded-3xl border border-red-400/15 bg-red-400/[0.035] p-6 sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-widest text-red-300/70">Zona de cuidado</p>
+            <h2 className="mt-3 text-xl font-bold text-paper">Excluir minha conta</h2>
+            <p className="mt-2 text-sm leading-6 text-white/50">Seus dados pessoais serão anonimizados e o acesso será encerrado imediatamente.</p>
+            <div className="mt-6">
+              <PasswordField id="delete-password" label="Confirme sua senha" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} />
+              <button type="button" disabled={deleting || !password} onClick={() => void removeAccount()} className="mt-4 w-full rounded-xl border border-red-400/25 px-4 py-3 text-sm font-bold text-red-200 transition hover:bg-red-400/10 disabled:opacity-40">
+                {deleting ? 'Excluindo...' : 'Excluir conta permanentemente'}
+              </button>
+            </div>
+          </section>
+        </div>
       </div>
       <BottomNavigation />
     </main>

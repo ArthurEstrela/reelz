@@ -154,6 +154,7 @@ public class UserAccountEntity extends AuditableUuidEntity {
         this.displayName = "Conta excluída";
         this.passwordHash = "deleted:" + anonymousId;
         this.role = UserRole.USER;
+        this.plan = PlanType.FREE;
         this.premiumUntil = null;
         this.deletedAt = deletedAt;
     }
@@ -165,6 +166,11 @@ public class UserAccountEntity extends AuditableUuidEntity {
     public void activatePremium(Instant validUntil) {
         this.plan = PlanType.PREMIUM;
         this.premiumUntil = validUntil;
+    }
+
+    public void deactivatePremium() {
+        this.plan = PlanType.FREE;
+        this.premiumUntil = null;
     }
 
     public void promoteToAdmin() {

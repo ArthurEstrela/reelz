@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { motion } from 'framer-motion'
+import { Link } from 'react-router'
 import { useDialogFocus } from '../../hooks/useDialogFocus'
 
 interface SpinLimitModalProps {
@@ -36,15 +37,21 @@ export function SpinLimitModal({ onClose }: SpinLimitModalProps) {
           Seus giros acabaram
         </h2>
         <p className="mt-3 text-sm leading-6 text-white/55">
-          Volte amanhã ou ganhe mais giros com um anúncio quando a recompensa estiver disponível.
+          Volte amanhã ou continue sem limites com o Reelz Premium.
         </p>
+        <Link
+          to="/premium"
+          className="mt-6 block w-full rounded-xl bg-reel px-5 py-3.5 text-sm font-bold text-white transition hover:bg-reel-bright focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reel"
+        >
+          Conhecer o Premium
+        </Link>
         <button
           type="button"
           onClick={onClose}
           autoFocus
-          className="mt-6 w-full rounded-xl bg-reel px-5 py-3.5 text-sm font-bold text-white transition hover:bg-reel-bright focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reel"
+          className="mt-2 w-full rounded-xl px-5 py-3 text-sm font-bold text-white/55 transition hover:bg-white/[0.05] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2"
         >
-          Entendi
+          Agora não
         </button>
       </motion.div>
     </motion.div>

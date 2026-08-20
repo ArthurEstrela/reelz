@@ -50,6 +50,8 @@ public class SecurityConfig {
                                 "/actuator/prometheus"
                         )
                         .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/webhooks/abacatepay")
+                        .permitAll()
                         .requestMatchers("/api/v1/admin/**")
                         .hasRole("ADMIN")
                         .anyRequest()

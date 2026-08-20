@@ -51,5 +51,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     css: true,
+    fileParallelism: false,
+    testTimeout: 15_000,
+    hookTimeout: 15_000,
   },
 })

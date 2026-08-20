@@ -142,4 +142,5 @@ No Docker Compose, a porta do backend fica vinculada somente a `127.0.0.1`. Em p
 - [Modos Casal e Grupo](docs/13-modos-sociais.md)
 - [Pacote beta ready](docs/14-beta-ready.md)
 - [Sistema de conquistas](docs/15-conquistas.md)
+- [Pagamentos e Reelz Premium](docs/16-pagamentos-premium.md)
 - [Front-end React](frontend/README.md)

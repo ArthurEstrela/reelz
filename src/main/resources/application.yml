@@ -50,6 +50,21 @@ reelz:
   analytics:
     retention-days: ${ANALYTICS_RETENTION_DAYS:180}
     cleanup-cron: ${ANALYTICS_CLEANUP_CRON:0 30 3 * * *}
+  billing:
+    abacatepay:
+      enabled: ${ABACATEPAY_ENABLED:false}
+      api-key: ${ABACATEPAY_API_KEY:}
+      webhook-secret: ${ABACATEPAY_WEBHOOK_SECRET:}
+      webhook-hmac-key: ${ABACATEPAY_WEBHOOK_HMAC_KEY:}
+      monthly-product-id: ${ABACATEPAY_MONTHLY_PRODUCT_ID:}
+      annual-product-id: ${ABACATEPAY_ANNUAL_PRODUCT_ID:}
+      monthly-price-cents: ${REELZ_PREMIUM_MONTHLY_PRICE_CENTS:1290}
+      annual-price-cents: ${REELZ_PREMIUM_ANNUAL_PRICE_CENTS:9990}
+      public-app-url: ${PUBLIC_APP_URL:http://localhost}
+      methods: ${ABACATEPAY_METHODS:CARD}
+      accept-dev-events: ${ABACATEPAY_ACCEPT_DEV_EVENTS:false}
+      connect-timeout: ${ABACATEPAY_CONNECT_TIMEOUT:PT5S}
+      read-timeout: ${ABACATEPAY_READ_TIMEOUT:PT15S}
   security:
     jwt:
       secret: ${JWT_SECRET}
