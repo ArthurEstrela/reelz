@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/root/.m2 \
 
 # Corretto 21.0.12 inclui as correções do CPU de julho/2026. Geramos um
 # runtime modular para não carregar o JDK inteiro na imagem final.
-FROM amazoncorretto:21.0.12-alpine3.24 AS jre-build
+FROM amazoncorretto:26.0.1-alpine3.24 AS jre-build
 RUN apk add --no-cache binutils \
     && "$JAVA_HOME/bin/jlink" \
     --add-modules java.base,java.compiler,java.desktop,java.instrument,java.logging,java.management,java.naming,java.net.http,java.prefs,java.rmi,java.security.jgss,java.security.sasl,java.sql,java.transaction.xa,java.xml,jdk.crypto.ec,jdk.management,jdk.naming.dns,jdk.unsupported,jdk.zipfs \
