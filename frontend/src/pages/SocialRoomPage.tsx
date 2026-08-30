@@ -22,8 +22,7 @@ import {
 import type { RouletteMovie, SpinQuota } from '../types/roulette'
 import type { SocialRoom } from '../types/social'
 import { getApiErrorMessage } from '../utils/apiError'
-
-const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'
+import { resolveCatalogImageUrl } from '../utils/catalogImage'
 
 function wait(milliseconds: number) {
   return new Promise((resolve) => window.setTimeout(resolve, milliseconds))
@@ -334,7 +333,7 @@ export function SocialRoomPage() {
                 className="grid w-full max-w-xl grid-cols-[8.5rem_1fr] gap-4 rounded-2xl border border-white/10 bg-surface p-4 text-left shadow-2xl sm:grid-cols-[11rem_1fr] sm:p-6"
               >
                 <div className="aspect-[2/3] overflow-hidden rounded-2xl bg-white/5">
-                  {movie.posterPath ? <img src={`${TMDB_IMAGE_BASE_URL}${movie.posterPath}`} alt={`Pôster de ${movie.title}`} className="h-full w-full object-cover" /> : null}
+                  {movie.posterPath ? <img src={resolveCatalogImageUrl(movie.posterPath) ?? undefined} alt={`Pôster de ${movie.title}`} className="h-full w-full object-cover" /> : null}
                 </div>
                 <div className="flex min-w-0 flex-col">
                   <p className="text-xs font-semibold text-gold">{movie.tmdbRating ? `★ ${Number(movie.tmdbRating).toFixed(1)}` : 'Escolha do grupo'}</p>

@@ -4,7 +4,7 @@ const TMDB_LOGO_URL = 'https://www.themoviedb.org/assets/2/v4/logos/v2/blue_squa
 
 export function AboutPage() {
   return (
-    <LegalPageLayout eyebrow="Créditos" title="Sobre o Reelz" updatedAt="3 de agosto de 2026">
+    <LegalPageLayout eyebrow="Créditos" title="Sobre o Reelz" updatedAt="28 de agosto de 2026">
       <section>
         <h2>Decidir sem transformar a noite em catálogo</h2>
         <p>
@@ -21,14 +21,18 @@ export function AboutPage() {
           This product uses the TMDB API but is not endorsed or certified by TMDB.
         </p>
         <p className="mt-2">
-          Metadados, pôsteres e informações de disponibilidade são obtidos por meio dos serviços do
-          TMDB.
+          Quando essa fonte está ativa, metadados, pôsteres e informações de disponibilidade são
+          obtidos por meio dos serviços do TMDB.
         </p>
       </section>
       <section>
         <h2>Disponibilidade</h2>
         <p>
-          Informações de onde assistir são fornecidas pelo{' '}
+          Conforme a fonte ativa do catálogo, informações de onde assistir são fornecidas pela{' '}
+          <a href="https://www.movieofthenight.com/about/api" target="_blank" rel="noreferrer">
+            Streaming Availability API by Movie of the Night
+          </a>{' '}
+          ou pelo{' '}
           <a href="https://www.justwatch.com/br" target="_blank" rel="noreferrer">JustWatch</a> via TMDB
           e podem mudar. O link exibido no resultado preserva a atribuição recebida da fonte.
         </p>

@@ -13,9 +13,9 @@ import type { LibraryMovie, UserMovieStatus } from '../types/history'
 import type { PageResponse } from '../types/pagination'
 import { getApiErrorMessage } from '../utils/apiError'
 import { useAchievements } from '../hooks/useAchievements'
+import { resolveCatalogImageUrl } from '../utils/catalogImage'
 
 const PAGE_SIZE = 24
-const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'
 
 const tabs: Array<{ status: UserMovieStatus; label: string }> = [
   { status: 'WATCHED', label: 'Assistidos' },
@@ -38,9 +38,7 @@ function LibraryPoster({
   onRemove,
 }: LibraryPosterProps) {
   const [imageFailed, setImageFailed] = useState(false)
-  const posterUrl = movie.posterPath && !imageFailed
-    ? `${TMDB_IMAGE_BASE_URL}${movie.posterPath}`
-    : null
+  const posterUrl = imageFailed ? null : resolveCatalogImageUrl(movie.posterPath)
   const watchedDate = movie.watchedAt
     ? new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium' }).format(new Date(movie.watchedAt))
     : null

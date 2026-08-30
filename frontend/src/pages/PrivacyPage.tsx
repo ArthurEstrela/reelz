@@ -2,7 +2,7 @@ import { LegalPageLayout } from '../components/legal/LegalPageLayout'
 
 export function PrivacyPage() {
   return (
-    <LegalPageLayout eyebrow="Transparência" title="Política de Privacidade" updatedAt="3 de agosto de 2026">
+    <LegalPageLayout eyebrow="Transparência" title="Política de Privacidade" updatedAt="28 de agosto de 2026">
       <section>
         <h2>1. Dados tratados</h2>
         <ul>
@@ -32,7 +32,8 @@ export function PrivacyPage() {
       <section>
         <h2>4. Compartilhamento e terceiros</h2>
         <p>
-          O Reelz utiliza infraestrutura de hospedagem e dados de catálogo do TMDB. Ao abrir “onde
+          O Reelz utiliza infraestrutura de hospedagem e fornecedores externos de catálogo e
+          disponibilidade, incluindo TMDB e Movie of the Night. Ao abrir “onde
           assistir”, você é direcionado a uma página externa e passa a estar sujeito à política desse
           serviço. Não utilizamos publicidade comportamental neste beta fechado.
         </p>

@@ -8,11 +8,12 @@ export interface RouletteSpinRequest {
 
 export interface StreamingAvailability {
   providerId: string
-  tmdbProviderId: number
+  tmdbProviderId: number | null
   providerName: string
   logoPath: string | null
   monetizationType: 'FLATRATE' | 'FREE' | 'ADS' | 'RENT' | 'BUY'
   attributionUrl: string | null
+  catalogSource?: 'TMDB' | 'STREAMING_AVAILABILITY' | string
 }
 
 export interface RouletteMovie {

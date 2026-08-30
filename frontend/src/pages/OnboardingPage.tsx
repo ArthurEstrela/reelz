@@ -10,6 +10,7 @@ import {
 } from '../services/onboardingService'
 import type { OnboardingMovie } from '../types/onboarding'
 import { getApiErrorMessage } from '../utils/apiError'
+import { resolveCatalogImageUrl } from '../utils/catalogImage'
 
 type LoadingState = 'loading' | 'ready' | 'error'
 
@@ -191,7 +192,7 @@ export function OnboardingPage() {
                     >
                       {movie.posterPath && (
                         <img
-                          src={`https://image.tmdb.org/t/p/w500${movie.posterPath}`}
+                          src={resolveCatalogImageUrl(movie.posterPath) ?? undefined}
                           alt=""
                           className="h-full w-full object-cover"
                         />

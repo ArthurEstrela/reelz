@@ -1,9 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import type { RouletteMovie } from '../../types/roulette'
-
-const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'
-const TMDB_LOGO_BASE_URL = 'https://image.tmdb.org/t/p/original'
+import { resolveCatalogImageUrl } from '../../utils/catalogImage'
 
 interface MovieCardProps {
   movie: RouletteMovie
@@ -27,7 +25,7 @@ export function MovieCard({
   const [savingToWatchlist, setSavingToWatchlist] = useState(false)
   const [savedToWatchlist, setSavedToWatchlist] = useState(false)
   const offer = movie.streamingAvailability[0]
-  const posterUrl = movie.posterPath && !imageFailed ? `${TMDB_IMAGE_BASE_URL}${movie.posterPath}` : null
+  const posterUrl = imageFailed ? null : resolveCatalogImageUrl(movie.posterPath)
   const releaseYear = movie.releaseDate?.slice(0, 4)
   const formattedRating = movie.tmdbRating === null ? null : Number(movie.tmdbRating).toFixed(1)
 
@@ -96,7 +94,13 @@ export function MovieCard({
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-reel px-5 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(233,54,69,.22)] transition hover:bg-reel-bright focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reel"
           >
             {offer.logoPath ? (
-              <img src={`${TMDB_LOGO_BASE_URL}${offer.logoPath}`} alt="" className="size-6 rounded-md object-cover" />
+              <span className="flex h-7 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-black/20 px-1.5 py-1">
+                <img
+                  src={resolveCatalogImageUrl(offer.logoPath, 'original') ?? undefined}
+                  alt=""
+                  className="max-h-full max-w-full object-contain"
+                />
+              </span>
             ) : null}
             Assistir na {offer.providerName}
           </motion.a>
@@ -113,7 +117,19 @@ export function MovieCard({
 
         {offer ? (
           <p className="mt-2 text-center text-[0.68rem] font-medium text-white/50">
-            Disponibilidade fornecida pelo JustWatch via TMDB.
+            {offer.catalogSource === 'STREAMING_AVAILABILITY' ? (
+              <>
+                Disponibilidade por{' '}
+                <a
+                  href="https://www.movieofthenight.com/about/api"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline underline-offset-2 hover:text-white/75"
+                >
+                  Streaming Availability API by Movie of the Night
+                </a>.
+              </>
+            ) : 'Disponibilidade fornecida pelo JustWatch via TMDB.'}
           </p>
         ) : null}
 

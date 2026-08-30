@@ -5,8 +5,7 @@ import {
   type PanInfo,
 } from 'framer-motion'
 import type { OnboardingMovie } from '../../types/onboarding'
-
-const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'
+import { resolveCatalogImageUrl } from '../../utils/catalogImage'
 const SWIPE_DISTANCE = 105
 const SWIPE_VELOCITY = 650
 
@@ -25,9 +24,7 @@ export function SwipeMovieCard({
   const rotate = useTransform(x, [-220, 0, 220], [-11, 0, 11])
   const watchedOpacity = useTransform(x, [20, 120], [0, 1])
   const unseenOpacity = useTransform(x, [-120, -20], [1, 0])
-  const posterUrl = movie.posterPath
-    ? `${TMDB_IMAGE_BASE_URL}${movie.posterPath}`
-    : null
+  const posterUrl = resolveCatalogImageUrl(movie.posterPath)
 
   function handleDragEnd(_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) {
     const swipedRight =
@@ -94,7 +91,7 @@ export function SwipeMovieCard({
         {movie.voteAverage !== null && (
           <p className="mt-2 flex items-center gap-1.5 text-sm font-bold text-amber-300">
             <span aria-hidden="true">★</span>
-            {movie.voteAverage.toFixed(1)} no TMDB
+            {movie.voteAverage.toFixed(1)} no catálogo
           </p>
         )}
       </div>
