@@ -184,6 +184,54 @@ class UserExperienceEndpointsIntegrationTest {
     }
 
     @Test
+    void shouldRequirePremiumOnlyToCreateGroupWhileAllowingFreeGuestsToJoin() throws Exception {
+        var freeHost = userRepository.saveAndFlush(newUser("social-free-host@reelz.app"));
+        var premiumHost = newUser("social-premium-host@reelz.app");
+        premiumHost.activatePremium(Instant.now().plus(1, ChronoUnit.DAYS));
+        userRepository.saveAndFlush(premiumHost);
+        var freeGuest = userRepository.saveAndFlush(newUser("social-free-guest@reelz.app"));
+
+        mockMvc.perform(post("/api/v1/social/rooms")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(freeHost))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"type":"GROUP"}
+                                """))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("PREMIUM_REQUIRED"));
+
+        mockMvc.perform(post("/api/v1/social/rooms")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(freeHost))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"type":"COUPLE"}
+                                """))
+                .andExpect(status().isCreated());
+
+        var createResult = mockMvc.perform(post("/api/v1/social/rooms")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(premiumHost))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"type":"GROUP"}
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.capacity").value(8))
+                .andReturn();
+        var inviteCode = objectMapper.readTree(createResult.getResponse().getContentAsByteArray())
+                .get("inviteCode")
+                .asText();
+
+        mockMvc.perform(post("/api/v1/social/rooms/join")
+                        .header(HttpHeaders.AUTHORIZATION, bearerToken(freeGuest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"inviteCode":"%s"}
+                                """.formatted(inviteCode)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.members.length()").value(2));
+    }
+
+    @Test
     void shouldCreateJoinAndSpinACoupleRoomExcludingEveryMembersHistory() throws Exception {
         var host = userRepository.saveAndFlush(newUser("social-host@reelz.app"));
         var guest = userRepository.saveAndFlush(newUser("social-guest@reelz.app"));
@@ -339,7 +387,7 @@ class UserExperienceEndpointsIntegrationTest {
                 .andExpect(jsonPath("$.room.lastSpinNumber").value(1))
                 .andExpect(jsonPath("$.room.members[0].ready").value(false))
                 .andExpect(jsonPath("$.room.members[1].ready").value(false))
-                .andExpect(jsonPath("$.quota.remainingDailySpins").value(4));
+                .andExpect(jsonPath("$.quota.remainingDailySpins").value(2));
 
         mockMvc.perform(post("/api/v1/social/rooms/{roomId}/spin", roomId)
                         .header(HttpHeaders.AUTHORIZATION, bearerToken(host))
@@ -348,7 +396,7 @@ class UserExperienceEndpointsIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.movie.tmdbId").value(eligible.getTmdbId()))
                 .andExpect(jsonPath("$.room.lastSpinNumber").value(1))
-                .andExpect(jsonPath("$.quota.remainingDailySpins").value(4));
+                .andExpect(jsonPath("$.quota.remainingDailySpins").value(2));
 
         mockMvc.perform(get("/api/v1/social/rooms/{roomId}", roomId)
                         .header(HttpHeaders.AUTHORIZATION, bearerToken(guest)))
@@ -625,8 +673,8 @@ class UserExperienceEndpointsIntegrationTest {
                         .header(HttpHeaders.AUTHORIZATION, bearerToken(user)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.unlimited").value(false))
-                .andExpect(jsonPath("$.dailyLimit").value(5))
-                .andExpect(jsonPath("$.remainingDailySpins").value(3))
+                .andExpect(jsonPath("$.dailyLimit").value(3))
+                .andExpect(jsonPath("$.remainingDailySpins").value(1))
                 .andExpect(jsonPath("$.remainingRewardedSpins").value(2));
     }
 
@@ -638,8 +686,8 @@ class UserExperienceEndpointsIntegrationTest {
                         .header(HttpHeaders.AUTHORIZATION, bearerToken(user)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.unlimited").value(false))
-                .andExpect(jsonPath("$.dailyLimit").value(5))
-                .andExpect(jsonPath("$.remainingDailySpins").value(5))
+                .andExpect(jsonPath("$.dailyLimit").value(3))
+                .andExpect(jsonPath("$.remainingDailySpins").value(3))
                 .andExpect(jsonPath("$.remainingRewardedSpins").value(0));
 
         assertThat(dailyUsageRepository.findAll()).isEmpty();

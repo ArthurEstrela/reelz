@@ -36,8 +36,8 @@ No banco é armazenada a quantidade usada. Por isso, “consumir/decrementar a f
 
 ## Política de franquia
 
-- Free: cinco giros-base por dia.
-- Free com recompensa: depois dos cinco, consome os giros premiados concedidos.
+- Free: três giros-base por dia.
+- Free com recompensa: depois dos três, consome os giros premiados concedidos.
 - Premium: ilimitado e não consome a franquia Free; os giros ficam contabilizados em `roulette_spin` para analytics.
 - Resultado vazio: retorna erro e não consome giro.
 - Replay da mesma chave idempotente: retorna o resultado confirmado sem novo consumo.

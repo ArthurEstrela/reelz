@@ -99,8 +99,8 @@ describe('SocialRoomPage', () => {
     vi.mocked(getSocialRoom).mockResolvedValue(room)
     vi.mocked(getTodayUsage).mockResolvedValue({
       unlimited: false,
-      dailyLimit: 5,
-      remainingDailySpins: 5,
+      dailyLimit: 3,
+      remainingDailySpins: 3,
       remainingRewardedSpins: 0,
     })
     vi.mocked(getVibes).mockResolvedValue([{ id: 'vibe-id', name: 'Para rir' }])

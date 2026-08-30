@@ -47,7 +47,7 @@ describe('experience API services', () => {
   it('loads the current daily quota', async () => {
     const quota = {
       unlimited: false,
-      dailyLimit: 5,
+      dailyLimit: 3,
       remainingDailySpins: 3,
       remainingRewardedSpins: 0,
     }

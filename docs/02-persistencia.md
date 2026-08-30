@@ -28,7 +28,7 @@ No MVP, ofertas `FLATRATE`, `FREE` e `ADS` são elegíveis. `RENT` e `BUY` ficam
 
 `roulette_daily_usage.version` está mapeado com `@Version`. Dois giros concorrentes que carreguem a mesma versão não podem confirmar a atualização: o segundo recebe uma exceção de optimistic locking e o caso de uso deverá refazer a operação ou responder conflito.
 
-O limite de cinco giros não é uma constraint da tabela. Ele depende do plano e deve ser verificado na mesma transação que incrementa o contador.
+O limite de três giros não é uma constraint da tabela. Ele depende do plano e deve ser verificado na mesma transação que incrementa o contador.
 
 ## Constraints relevantes
 

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { useNavigate, useSearchParams } from 'react-router'
 import { AppHeader } from '../components/navigation/AppHeader'
 import { BottomNavigation } from '../components/navigation/BottomNavigation'
+import { getCurrentSubscription } from '../services/billingService'
 import { createSocialRoom, joinSocialRoom, listSocialRooms } from '../services/socialService'
 import type { SocialRoomSummary, SocialRoomType } from '../types/social'
 import { getApiErrorMessage } from '../utils/apiError'
@@ -18,6 +19,8 @@ export function SocialLobbyPage() {
   const [rooms, setRooms] = useState<SocialRoomSummary[]>([])
   const [inviteCode, setInviteCode] = useState('')
   const [loading, setLoading] = useState(true)
+  const [checkingPremium, setCheckingPremium] = useState(true)
+  const [isPremium, setIsPremium] = useState<boolean | null>(null)
   const [pendingAction, setPendingAction] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -33,12 +36,26 @@ export function SocialLobbyPage() {
       .finally(() => {
         if (!cancelled) setLoading(false)
       })
+    getCurrentSubscription()
+      .then((subscription) => {
+        if (!cancelled) setIsPremium(subscription.premium)
+      })
+      .catch(() => {
+        if (!cancelled) setIsPremium(null)
+      })
+      .finally(() => {
+        if (!cancelled) setCheckingPremium(false)
+      })
     return () => {
       cancelled = true
     }
   }, [])
 
   async function handleCreate(type: SocialRoomType) {
+    if (type === 'GROUP' && isPremium === false) {
+      navigate('/premium')
+      return
+    }
     setPendingAction(type)
     setError(null)
     try {
@@ -96,30 +113,45 @@ export function SocialLobbyPage() {
         <section className="mt-8 grid gap-4 sm:grid-cols-2" aria-label="Criar uma sala">
           {(['COUPLE', 'GROUP'] as const).map((type) => {
             const selected = suggestedMode === type
+            const premiumGroup = type === 'GROUP'
+            const groupLocked = premiumGroup && isPremium === false
             return (
               <motion.button
                 key={type}
                 type="button"
                 whileTap={{ scale: 0.97 }}
                 onClick={() => void handleCreate(type)}
-                disabled={pendingAction !== null}
+                disabled={pendingAction !== null || (premiumGroup && checkingPremium)}
                 className={`rounded-2xl border p-6 text-left transition disabled:opacity-50 ${
                   selected
                     ? 'border-reel/45 bg-reel/[0.08] shadow-[0_20px_60px_rgba(233,54,69,.1)]'
                     : 'border-white/10 bg-white/[0.025] hover:border-white/25'
                 }`}
               >
-                <svg viewBox="0 0 24 24" className="size-8 text-reel-bright" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
-                  {type === 'COUPLE' ? <><circle cx="8" cy="9" r="3" /><circle cx="16" cy="9" r="3" /><path d="M3.5 19c.4-3.6 1.9-5.3 4.5-5.3s4.1 1.7 4.5 5.3M11.5 19c.4-3.6 1.9-5.3 4.5-5.3s4.1 1.7 4.5 5.3" /></> : <><circle cx="12" cy="7" r="2.5" /><circle cx="6" cy="10" r="2" /><circle cx="18" cy="10" r="2" /><path d="M7 19c.3-4 2-6 5-6s4.7 2 5 6M2.5 19c.2-2.7 1.4-4.3 3.5-4.3M21.5 19c-.2-2.7-1.4-4.3-3.5-4.3" /></>}
-                </svg>
+                <span className="flex items-start justify-between gap-4">
+                  <svg viewBox="0 0 24 24" className="size-8 text-reel-bright" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+                    {type === 'COUPLE' ? <><circle cx="8" cy="9" r="3" /><circle cx="16" cy="9" r="3" /><path d="M3.5 19c.4-3.6 1.9-5.3 4.5-5.3s4.1 1.7 4.5 5.3M11.5 19c.4-3.6 1.9-5.3 4.5-5.3s4.1 1.7 4.5 5.3" /></> : <><circle cx="12" cy="7" r="2.5" /><circle cx="6" cy="10" r="2" /><circle cx="18" cy="10" r="2" /><path d="M7 19c.3-4 2-6 5-6s4.7 2 5 6M2.5 19c.2-2.7 1.4-4.3 3.5-4.3M21.5 19c-.2-2.7-1.4-4.3-3.5-4.3" /></>}
+                  </svg>
+                  {premiumGroup ? (
+                    <span className="rounded-full border border-gold/25 bg-gold/10 px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[.12em] text-gold">
+                      Premium
+                    </span>
+                  ) : null}
+                </span>
                 <span className="mt-5 block text-xl font-bold">Modo {roomLabel(type).toLowerCase()}</span>
                 <span className="mt-2 block text-sm leading-6 text-white/60">
                   {type === 'COUPLE'
                     ? 'Você e mais uma pessoa, sem perder tempo comparando catálogos.'
-                    : 'Até 8 participantes na mesma escolha de filme.'}
+                    : 'Crie para até 8 pessoas com Premium. Convidados entram gratuitamente.'}
                 </span>
                 <span className="mt-5 block text-xs font-semibold text-reel-bright">
-                  {pendingAction === type ? 'Criando…' : 'Criar sala →'}
+                  {pendingAction === type
+                    ? 'Criando…'
+                    : premiumGroup && checkingPremium
+                      ? 'Verificando plano…'
+                      : groupLocked
+                        ? 'Conhecer Premium →'
+                        : 'Criar sala →'}
                 </span>
               </motion.button>
             )

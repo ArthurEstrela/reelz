@@ -19,7 +19,7 @@ Cada pessoa escolhe até três gêneros e uma vibe opcional. Dentro do palpite d
 
 Todos confirmam “Estou pronto” antes do giro. O anfitrião apenas seleciona, conforme seu plano, quais streamings em comum serão usados e dispara a roleta. Ele não adiciona filtros próprios por cima dos palpites coletivos. Depois de um giro novo, a prontidão é reiniciada para que ninguém reutilize consentimento antigo no próximo sorteio.
 
-O sorteio continua usando `ORDER BY RANDOM() LIMIT 1`. A quota e o plano do anfitrião são usados: conta Free seleciona um provedor e consome um giro; Premium pode cruzar vários provedores e possui giros ilimitados.
+O sorteio continua usando `ORDER BY RANDOM() LIMIT 1`. A criação de sala `GROUP` é exclusiva do anfitrião Premium, mas qualquer conta autenticada pode entrar pelo convite. O modo `COUPLE` continua disponível no Free. A quota e o plano do anfitrião são usados no giro: conta Free seleciona um provedor e consome um giro; Premium pode cruzar vários provedores e possui giros ilimitados.
 
 ## Concorrência e idempotência
 

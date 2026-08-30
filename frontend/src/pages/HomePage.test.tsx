@@ -57,8 +57,8 @@ const vibes: CatalogItem[] = [{ id: VIBE_ID, name: 'Para rir' }]
 
 const initialQuota: SpinQuota = {
   unlimited: false,
-  dailyLimit: 5,
-  remainingDailySpins: 5,
+  dailyLimit: 3,
+  remainingDailySpins: 3,
   remainingRewardedSpins: 0,
 }
 
@@ -84,8 +84,8 @@ const successfulSpin: RouletteSpinResponse = {
   },
   quota: {
     unlimited: false,
-    dailyLimit: 5,
-    remainingDailySpins: 4,
+    dailyLimit: 3,
+    remainingDailySpins: 2,
     remainingRewardedSpins: 0,
   },
 }
@@ -174,7 +174,7 @@ describe('HomePage roulette', () => {
     expect(screen.getByLabelText(/Carregando streaming/)).toBeInTheDocument()
     expect(await screen.findByRole('button', { name: 'Netflix' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Para rir' })).toBeInTheDocument()
-    expect(await screen.findByLabelText('5 giros restantes hoje')).toBeInTheDocument()
+    expect(await screen.findByLabelText('3 giros restantes hoje')).toBeInTheDocument()
     expect(getProviders).toHaveBeenCalledOnce()
     expect(getVibes).toHaveBeenCalledOnce()
     expect(getStreamingPreferences).toHaveBeenCalledOnce()
@@ -227,7 +227,7 @@ describe('HomePage roulette', () => {
       'href',
       'https://www.netflix.com/title/example',
     )
-    expect(await screen.findByLabelText('4 giros restantes hoje')).toBeInTheDocument()
+    expect(await screen.findByLabelText('2 giros restantes hoje')).toBeInTheDocument()
     expect(spinRoulette).toHaveBeenCalledWith({
       idempotencyKey: expect.any(String),
       providerIds: [PROVIDER_ID],

@@ -15,6 +15,7 @@ import com.roletadefilmes.social.domain.SocialRoomMemberRole;
 import com.roletadefilmes.social.domain.SocialRoomStatus;
 import com.roletadefilmes.social.domain.SocialRoomType;
 import com.roletadefilmes.social.domain.exception.InvalidSocialRoomActionException;
+import com.roletadefilmes.social.domain.exception.PremiumSocialRoomRequiredException;
 import com.roletadefilmes.social.domain.exception.SocialRoomAccessDeniedException;
 import com.roletadefilmes.social.domain.exception.SocialRoomConflictException;
 import com.roletadefilmes.social.domain.exception.SocialRoomNotFoundException;
@@ -94,6 +95,9 @@ public class SocialRoomService {
     public SocialRoomResponse create(UUID userId, SocialRoomType type) {
         var owner = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
+        if (type == SocialRoomType.GROUP && !owner.isPremiumAt(Instant.now(clock))) {
+            throw new PremiumSocialRoomRequiredException();
+        }
         var room = roomRepository.saveAndFlush(
                 new SocialRoomEntity(owner, type, generateInviteCode())
         );

@@ -5,7 +5,7 @@ import com.roletadefilmes.roulette.persistence.entity.RouletteDailyUsageEntity;
 
 public final class RouletteQuotaPolicy {
 
-    public static final int FREE_DAILY_SPIN_LIMIT = 5;
+    public static final int FREE_DAILY_SPIN_LIMIT = 3;
 
     private RouletteQuotaPolicy() {
     }

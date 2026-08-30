@@ -33,6 +33,7 @@ public class BillingService {
     private static final List<String> PREMIUM_FEATURES = List.of(
             "Giros ilimitados",
             "Combine vários streamings",
+            "Crie salas para grupos de até 8 pessoas",
             "Experiência sem anúncios",
             "Apoie a evolução do Reelz"
     );

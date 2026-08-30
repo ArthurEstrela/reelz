@@ -160,7 +160,7 @@ class RouletteServiceTest {
 
         assertThat(usage.getBaseSpinsUsed()).isEqualTo(1);
         assertThat(response.movie().tmdbId()).isEqualTo(550L);
-        assertThat(response.quota().remainingDailySpins()).isEqualTo(4);
+        assertThat(response.quota().remainingDailySpins()).isEqualTo(2);
         verify(dailyUsageRepository).save(usage);
 
         var spinCaptor = ArgumentCaptor.forClass(RouletteSpinEntity.class);

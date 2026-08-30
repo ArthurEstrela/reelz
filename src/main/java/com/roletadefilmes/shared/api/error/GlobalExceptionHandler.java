@@ -19,6 +19,7 @@ import com.roletadefilmes.roulette.domain.exception.EmptyProviderSelectionExcept
 import com.roletadefilmes.roulette.domain.exception.FreePlanProviderLimitException;
 import com.roletadefilmes.roulette.domain.exception.NoMoviesFoundException;
 import com.roletadefilmes.social.domain.exception.InvalidSocialRoomActionException;
+import com.roletadefilmes.social.domain.exception.PremiumSocialRoomRequiredException;
 import com.roletadefilmes.social.domain.exception.SocialRoomAccessDeniedException;
 import com.roletadefilmes.social.domain.exception.SocialRoomConflictException;
 import com.roletadefilmes.social.domain.exception.SocialRoomNotFoundException;
@@ -304,6 +305,21 @@ public class GlobalExceptionHandler {
         return error(
                 HttpStatus.NOT_FOUND,
                 "SOCIAL_ROOM_NOT_FOUND",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ExceptionHandler(PremiumSocialRoomRequiredException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiErrorResponse handlePremiumSocialRoomRequired(
+            PremiumSocialRoomRequiredException exception,
+            HttpServletRequest request
+    ) {
+        return error(
+                HttpStatus.FORBIDDEN,
+                "PREMIUM_REQUIRED",
                 exception.getMessage(),
                 request,
                 List.of()
