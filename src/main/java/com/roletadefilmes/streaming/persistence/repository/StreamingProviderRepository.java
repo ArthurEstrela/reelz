@@ -13,6 +13,10 @@ public interface StreamingProviderRepository extends JpaRepository<StreamingProv
 
     Optional<StreamingProviderEntity> findByTmdbProviderId(Integer tmdbProviderId);
 
+    Optional<StreamingProviderEntity> findByStreamingAvailabilityServiceId(String serviceId);
+
+    Optional<StreamingProviderEntity> findFirstByNameIgnoreCase(String name);
+
     List<StreamingProviderEntity> findAllByActiveTrueOrderByDisplayPriorityAsc();
 
     @Query(value = """
@@ -25,4 +29,19 @@ public interface StreamingProviderRepository extends JpaRepository<StreamingProv
              ORDER BY sp.display_priority ASC, sp.name ASC
             """, nativeQuery = true)
     List<StreamingProviderEntity> findEligibleForCountry(@Param("countryCode") String countryCode);
+
+    @Query(value = """
+            SELECT DISTINCT sp.*
+              FROM streaming_provider sp
+              JOIN movie_streaming_offer offer ON offer.provider_id = sp.id
+             WHERE sp.active = TRUE
+               AND offer.country_code = :countryCode
+               AND (:catalogSource = 'ALL' OR offer.catalog_source = :catalogSource)
+               AND offer.monetization_type IN ('FLATRATE', 'FREE', 'ADS')
+             ORDER BY sp.display_priority ASC, sp.name ASC
+            """, nativeQuery = true)
+    List<StreamingProviderEntity> findEligibleForCountryAndCatalogSource(
+            @Param("countryCode") String countryCode,
+            @Param("catalogSource") String catalogSource
+    );
 }

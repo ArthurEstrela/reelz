@@ -9,8 +9,11 @@ import jakarta.persistence.Table;
 @Table(name = "streaming_provider")
 public class StreamingProviderEntity extends AuditableUuidEntity {
 
-    @Column(name = "tmdb_provider_id", nullable = false, unique = true)
+    @Column(name = "tmdb_provider_id", unique = true)
     private Integer tmdbProviderId;
+
+    @Column(name = "streaming_availability_service_id", length = 80)
+    private String streamingAvailabilityServiceId;
 
     @Column(name = "name", nullable = false, length = 120)
     private String name;
@@ -40,6 +43,10 @@ public class StreamingProviderEntity extends AuditableUuidEntity {
         return name;
     }
 
+    public String getStreamingAvailabilityServiceId() {
+        return streamingAvailabilityServiceId;
+    }
+
     public String getLogoPath() {
         return logoPath;
     }
@@ -56,6 +63,16 @@ public class StreamingProviderEntity extends AuditableUuidEntity {
         this.name = name;
         this.logoPath = logoPath;
         this.displayPriority = displayPriority;
+    }
+
+    public void linkStreamingAvailabilityService(
+            String serviceId,
+            String name,
+            String logoPath,
+            int displayPriority
+    ) {
+        this.streamingAvailabilityServiceId = serviceId;
+        refreshCatalogData(name, logoPath, displayPriority);
     }
 
     public void activate() {

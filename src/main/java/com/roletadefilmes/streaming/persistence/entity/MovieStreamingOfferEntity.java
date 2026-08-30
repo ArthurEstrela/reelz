@@ -52,6 +52,9 @@ public class MovieStreamingOfferEntity extends AuditableUuidEntity {
     @Column(name = "last_synced_at", nullable = false)
     private Instant lastSyncedAt;
 
+    @Column(name = "catalog_source", nullable = false, length = 30)
+    private String catalogSource = "TMDB";
+
     protected MovieStreamingOfferEntity() {
     }
 
@@ -101,6 +104,10 @@ public class MovieStreamingOfferEntity extends AuditableUuidEntity {
         return lastSyncedAt;
     }
 
+    public String getCatalogSource() {
+        return catalogSource;
+    }
+
     public void refreshAvailability(
             String attributionUrl,
             Instant availableFrom,
@@ -111,5 +118,16 @@ public class MovieStreamingOfferEntity extends AuditableUuidEntity {
         this.availableFrom = availableFrom;
         this.availableUntil = availableUntil;
         this.lastSyncedAt = syncedAt;
+    }
+
+    public void refreshAvailability(
+            String attributionUrl,
+            Instant availableFrom,
+            Instant availableUntil,
+            Instant syncedAt,
+            String catalogSource
+    ) {
+        refreshAvailability(attributionUrl, availableFrom, availableUntil, syncedAt);
+        this.catalogSource = catalogSource;
     }
 }

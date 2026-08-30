@@ -9,6 +9,7 @@ import com.roletadefilmes.roulette.api.dto.RouletteSpinRequest;
 import com.roletadefilmes.roulette.api.dto.RouletteSpinResponse;
 import com.roletadefilmes.roulette.api.dto.SpinQuotaResponse;
 import com.roletadefilmes.roulette.api.dto.StreamingAvailabilityResponse;
+import com.roletadefilmes.roulette.config.RouletteProperties;
 import com.roletadefilmes.roulette.domain.RouletteSpinStatus;
 import com.roletadefilmes.roulette.domain.exception.DailyLimitExceededException;
 import com.roletadefilmes.roulette.domain.exception.DuplicateSpinException;
@@ -56,6 +57,7 @@ public class RouletteService {
     private final MovieCacheRepository movieRepository;
     private final RouletteSpinRepository spinRepository;
     private final MovieStreamingOfferRepository offerRepository;
+    private final RouletteProperties rouletteProperties;
     private final Clock clock;
     private final ReelzMetrics metrics;
 
@@ -65,6 +67,7 @@ public class RouletteService {
             MovieCacheRepository movieRepository,
             RouletteSpinRepository spinRepository,
             MovieStreamingOfferRepository offerRepository,
+            RouletteProperties rouletteProperties,
             Clock clock,
             ReelzMetrics metrics
     ) {
@@ -73,6 +76,7 @@ public class RouletteService {
         this.movieRepository = movieRepository;
         this.spinRepository = spinRepository;
         this.offerRepository = offerRepository;
+        this.rouletteProperties = rouletteProperties;
         this.clock = clock;
         this.metrics = metrics;
     }
@@ -197,6 +201,7 @@ public class RouletteService {
                     userId,
                     providerIds,
                     countryCode,
+                    rouletteProperties.catalogSource().name(),
                     genreId,
                     vibeId
             );
@@ -205,6 +210,7 @@ public class RouletteService {
                 socialRoomId,
                 providerIds,
                 countryCode,
+                rouletteProperties.catalogSource().name(),
                 genreId,
                 vibeId
         );
@@ -298,6 +304,7 @@ public class RouletteService {
         Map<String, Object> filters = new LinkedHashMap<>();
         filters.put("providerIds", providerIds.stream().map(UUID::toString).toList());
         filters.put("countryCode", countryCode);
+        filters.put("catalogSource", rouletteProperties.catalogSource().name());
         if (request.genreId() != null) {
             filters.put("genreId", request.genreId());
         }
@@ -347,6 +354,7 @@ public class RouletteService {
         for (MovieStreamingOfferEntity offer
                 : offerRepository.findAllByMovieIdAndCountryCode(movie.getId(), countryCode)) {
             if (!selectedProviders.contains(offer.getProvider().getId())
+                    || !rouletteProperties.catalogSource().accepts(offer.getCatalogSource())
                     || !ELIGIBLE_MONETIZATION_TYPES.contains(offer.getMonetizationType())
                     || !isCurrentlyAvailable(offer, now)) {
                 continue;
@@ -358,7 +366,8 @@ public class RouletteService {
                     provider.getName(),
                     provider.getLogoPath(),
                     offer.getMonetizationType(),
-                    offer.getAttributionUrl()
+                    offer.getAttributionUrl(),
+                    offer.getCatalogSource()
             ));
         }
         return List.copyOf(availability);

@@ -184,6 +184,7 @@ class PersistenceIntegrationTest extends PostgresRepositoryIntegrationTest {
                 user.getId(),
                 List.of(netflix.getId()),
                 "BR",
+                "ALL",
                 35,
                 funny.getId()
         );
@@ -195,6 +196,7 @@ class PersistenceIntegrationTest extends PostgresRepositoryIntegrationTest {
                 user.getId(),
                 List.of(netflix.getId()),
                 "BR",
+                "ALL",
                 null,
                 null
         );
@@ -202,6 +204,61 @@ class PersistenceIntegrationTest extends PostgresRepositoryIntegrationTest {
         assertThat(resultWithoutOptionalFilters).isPresent();
         assertThat(resultWithoutOptionalFilters.orElseThrow().getId())
                 .isIn(eligible.getId(), wrongGenre.getId());
+    }
+
+    @Test
+    void shouldFilterRouletteCandidatesByCatalogSourceWithoutDeletingData() {
+        var user = userRepository.save(newUser("catalog-source@reelz.app"));
+        var netflix = providerRepository.save(new StreamingProviderEntity(8, "Netflix"));
+        var tmdbMovie = movieRepository.save(newMovie(2001L, "Filme TMDB", 18));
+        var streamingAvailabilityMovie = movieRepository.save(
+                newMovie(2002L, "Filme Movie of the Night", 18)
+        );
+        var tmdbOffer = newOffer(tmdbMovie, netflix);
+        var streamingAvailabilityOffer = newOffer(streamingAvailabilityMovie, netflix);
+        streamingAvailabilityOffer.refreshAvailability(
+                "https://streaming.example/watch/2002",
+                null,
+                null,
+                Instant.now(),
+                "STREAMING_AVAILABILITY"
+        );
+        offerRepository.saveAll(List.of(tmdbOffer, streamingAvailabilityOffer));
+        entityManager.flush();
+        entityManager.clear();
+
+        var tmdbResult = movieRepository.findRandomAvailableMovie(
+                user.getId(),
+                List.of(netflix.getId()),
+                "BR",
+                "TMDB",
+                null,
+                null
+        );
+        var streamingAvailabilityResult = movieRepository.findRandomAvailableMovie(
+                user.getId(),
+                List.of(netflix.getId()),
+                "BR",
+                "STREAMING_AVAILABILITY",
+                null,
+                null
+        );
+        var allSourcesResult = movieRepository.findRandomAvailableMovie(
+                user.getId(),
+                List.of(netflix.getId()),
+                "BR",
+                "ALL",
+                null,
+                null
+        );
+
+        assertThat(tmdbResult).get().extracting(MovieCacheEntity::getId).isEqualTo(tmdbMovie.getId());
+        assertThat(streamingAvailabilityResult).get()
+                .extracting(MovieCacheEntity::getId)
+                .isEqualTo(streamingAvailabilityMovie.getId());
+        assertThat(allSourcesResult).get()
+                .extracting(MovieCacheEntity::getId)
+                .isIn(tmdbMovie.getId(), streamingAvailabilityMovie.getId());
     }
 
     @Test

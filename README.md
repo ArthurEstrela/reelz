@@ -44,6 +44,7 @@ O MVP inclui:
 - consistência read-after-write entre “Já vi” e o próximo giro.
 - sincronização incremental por provedor, com checkpoint, lease e auditoria operacional;
 - catálogo brasileiro de filmes e disponibilidade sincronizado pelo TMDB;
+- adaptador alternativo da Streaming Availability API, com bootstrap por cursor e atualização via `/changes`;
 - preferências persistentes de streaming, separadas dos filtros de cada giro;
 - atribuição de disponibilidade JustWatch e catálogo filtrado por ofertas elegíveis;
 - onboarding Tinder-style com filmes populares e disponíveis no país do usuário;
@@ -143,4 +144,5 @@ No Docker Compose, a porta do backend fica vinculada somente a `127.0.0.1`. Em p
 - [Pacote beta ready](docs/14-beta-ready.md)
 - [Sistema de conquistas](docs/15-conquistas.md)
 - [Pagamentos e Reelz Premium](docs/16-pagamentos-premium.md)
+- [Streaming Availability API](docs/17-streaming-availability.md)
 - [Front-end React](frontend/README.md)

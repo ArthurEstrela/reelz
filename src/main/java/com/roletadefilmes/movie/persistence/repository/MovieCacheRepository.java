@@ -77,6 +77,7 @@ public interface MovieCacheRepository extends JpaRepository<MovieCacheEntity, UU
                      WHERE o.movie_id = m.id
                        AND o.provider_id IN (:providerIds)
                        AND o.country_code = :countryCode
+                       AND (:catalogSource = 'ALL' OR o.catalog_source = :catalogSource)
                        AND o.monetization_type IN ('FLATRATE', 'FREE', 'ADS')
                        AND sp.active = TRUE
                        AND (o.available_from IS NULL OR o.available_from <= CURRENT_TIMESTAMP)
@@ -89,6 +90,7 @@ public interface MovieCacheRepository extends JpaRepository<MovieCacheEntity, UU
             @Param("userId") UUID userId,
             @Param("providerIds") List<UUID> providerIds,
             @Param("countryCode") String countryCode,
+            @Param("catalogSource") String catalogSource,
             @Param("genreId") Integer genreId,
             @Param("vibeId") UUID vibeId
     );
@@ -144,6 +146,7 @@ public interface MovieCacheRepository extends JpaRepository<MovieCacheEntity, UU
                      WHERE offer.movie_id = m.id
                        AND offer.provider_id IN (:providerIds)
                        AND offer.country_code = :countryCode
+                       AND (:catalogSource = 'ALL' OR offer.catalog_source = :catalogSource)
                        AND offer.monetization_type IN ('FLATRATE', 'FREE', 'ADS')
                        AND provider.active = TRUE
                        AND (offer.available_from IS NULL OR offer.available_from <= CURRENT_TIMESTAMP)
@@ -156,6 +159,7 @@ public interface MovieCacheRepository extends JpaRepository<MovieCacheEntity, UU
             @Param("roomId") UUID roomId,
             @Param("providerIds") List<UUID> providerIds,
             @Param("countryCode") String countryCode,
+            @Param("catalogSource") String catalogSource,
             @Param("genreId") Integer genreId,
             @Param("vibeId") UUID vibeId
     );

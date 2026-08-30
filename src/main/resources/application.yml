@@ -73,6 +73,8 @@ reelz:
   legal:
     terms-version: ${TERMS_VERSION:1.0}
     privacy-version: ${PRIVACY_VERSION:1.0}
+  roulette:
+    catalog-source: ${ROULETTE_CATALOG_SOURCE:ALL}
   tmdb:
     read-access-token: ${TMDB_READ_ACCESS_TOKEN:}
     language: ${TMDB_LANGUAGE:pt-BR}
@@ -89,3 +91,22 @@ reelz:
     retry-base-delay: ${TMDB_RETRY_BASE_DELAY:PT0.25S}
     connect-timeout: ${TMDB_CONNECT_TIMEOUT:PT5S}
     read-timeout: ${TMDB_READ_TIMEOUT:PT15S}
+  streaming-availability:
+    enabled: ${STREAMING_AVAILABILITY_ENABLED:false}
+    api-key: ${STREAMING_AVAILABILITY_API_KEY:}
+    base-url: ${STREAMING_AVAILABILITY_BASE_URL:https://api.movieofthenight.com/v4}
+    country: ${STREAMING_AVAILABILITY_COUNTRY:BR}
+    output-language: ${STREAMING_AVAILABILITY_OUTPUT_LANGUAGE:en}
+    catalogs: ${STREAMING_AVAILABILITY_CATALOGS:netflix.subscription,prime.subscription,disney.subscription,hbo.subscription,apple.subscription,paramount.subscription,mubi.subscription,curiosity.subscription,plutotv.free,crunchyroll.subscription}
+    bootstrap-pages-per-run: ${STREAMING_AVAILABILITY_BOOTSTRAP_PAGES_PER_RUN:20}
+    changes-pages-per-run: ${STREAMING_AVAILABILITY_CHANGES_PAGES_PER_RUN:10}
+    deactivate-unconfigured-providers: ${STREAMING_AVAILABILITY_DEACTIVATE_UNCONFIGURED_PROVIDERS:false}
+    sync-on-startup: ${STREAMING_AVAILABILITY_SYNC_ON_STARTUP:false}
+    scheduled-sync-enabled: ${STREAMING_AVAILABILITY_SCHEDULED_SYNC_ENABLED:false}
+    sync-cron: ${STREAMING_AVAILABILITY_SYNC_CRON:0 0 4 * * *}
+    sync-zone: ${STREAMING_AVAILABILITY_SYNC_ZONE:America/Sao_Paulo}
+    lease-duration: ${STREAMING_AVAILABILITY_SYNC_LEASE_DURATION:PT30M}
+    max-attempts: ${STREAMING_AVAILABILITY_MAX_ATTEMPTS:3}
+    retry-base-delay: ${STREAMING_AVAILABILITY_RETRY_BASE_DELAY:PT0.25S}
+    connect-timeout: ${STREAMING_AVAILABILITY_CONNECT_TIMEOUT:PT5S}
+    read-timeout: ${STREAMING_AVAILABILITY_READ_TIMEOUT:PT20S}

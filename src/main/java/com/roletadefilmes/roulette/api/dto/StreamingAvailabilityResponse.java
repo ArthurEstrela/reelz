@@ -10,6 +10,7 @@ public record StreamingAvailabilityResponse(
         String providerName,
         String logoPath,
         MonetizationType monetizationType,
-        String attributionUrl
+        String attributionUrl,
+        String catalogSource
 ) {
 }

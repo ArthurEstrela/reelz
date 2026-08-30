@@ -52,8 +52,17 @@ public class MovieCacheEntity extends AuditableUuidEntity {
     @Column(name = "runtime_minutes")
     private Integer runtimeMinutes;
 
-    @Column(name = "tmdb_last_synced_at", nullable = false)
-    private Instant tmdbLastSyncedAt;
+    @Column(name = "metadata_last_synced_at", nullable = false)
+    private Instant metadataLastSyncedAt;
+
+    @Column(name = "metadata_source", nullable = false, length = 30)
+    private String metadataSource = "TMDB";
+
+    @Column(name = "external_catalog_id", length = 100)
+    private String externalCatalogId;
+
+    @Column(name = "imdb_id", length = 20)
+    private String imdbId;
 
     protected MovieCacheEntity() {
     }
@@ -62,7 +71,8 @@ public class MovieCacheEntity extends AuditableUuidEntity {
         this.tmdbId = tmdbId;
         this.title = title;
         this.genreIds = genreIds == null ? new Integer[0] : genreIds.clone();
-        this.tmdbLastSyncedAt = tmdbLastSyncedAt;
+        this.metadataLastSyncedAt = tmdbLastSyncedAt;
+        this.externalCatalogId = tmdbId == null ? null : tmdbId.toString();
     }
 
     public Long getTmdbId() {
@@ -114,7 +124,19 @@ public class MovieCacheEntity extends AuditableUuidEntity {
     }
 
     public Instant getTmdbLastSyncedAt() {
-        return tmdbLastSyncedAt;
+        return metadataLastSyncedAt;
+    }
+
+    public String getMetadataSource() {
+        return metadataSource;
+    }
+
+    public String getExternalCatalogId() {
+        return externalCatalogId;
+    }
+
+    public String getImdbId() {
+        return imdbId;
     }
 
     public void refreshMetadata(
@@ -142,6 +164,14 @@ public class MovieCacheEntity extends AuditableUuidEntity {
         this.adult = adult;
         this.originalLanguage = originalLanguage;
         this.runtimeMinutes = runtimeMinutes;
-        this.tmdbLastSyncedAt = syncedAt;
+        this.metadataLastSyncedAt = syncedAt;
+        this.metadataSource = "TMDB";
+        this.externalCatalogId = tmdbId == null ? null : tmdbId.toString();
+    }
+
+    public void identifyExternalMetadata(String source, String externalCatalogId, String imdbId) {
+        this.metadataSource = source;
+        this.externalCatalogId = externalCatalogId;
+        this.imdbId = imdbId;
     }
 }

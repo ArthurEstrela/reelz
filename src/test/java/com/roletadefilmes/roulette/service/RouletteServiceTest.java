@@ -5,6 +5,8 @@ import com.roletadefilmes.movie.persistence.repository.MovieCacheRepository;
 import com.roletadefilmes.observability.ReelzMetrics;
 import com.roletadefilmes.observability.ReelzMetrics.RouletteSpinOutcome;
 import com.roletadefilmes.roulette.api.dto.RouletteSpinRequest;
+import com.roletadefilmes.roulette.config.RouletteCatalogSource;
+import com.roletadefilmes.roulette.config.RouletteProperties;
 import com.roletadefilmes.roulette.domain.RouletteSpinStatus;
 import com.roletadefilmes.roulette.domain.exception.DailyLimitExceededException;
 import com.roletadefilmes.roulette.domain.exception.DuplicateSpinException;
@@ -13,6 +15,9 @@ import com.roletadefilmes.roulette.persistence.entity.RouletteDailyUsageEntity;
 import com.roletadefilmes.roulette.persistence.entity.RouletteSpinEntity;
 import com.roletadefilmes.roulette.persistence.repository.RouletteDailyUsageRepository;
 import com.roletadefilmes.roulette.persistence.repository.RouletteSpinRepository;
+import com.roletadefilmes.streaming.domain.MonetizationType;
+import com.roletadefilmes.streaming.persistence.entity.MovieStreamingOfferEntity;
+import com.roletadefilmes.streaming.persistence.entity.StreamingProviderEntity;
 import com.roletadefilmes.streaming.persistence.repository.MovieStreamingOfferRepository;
 import com.roletadefilmes.user.persistence.entity.UserAccountEntity;
 import com.roletadefilmes.user.persistence.repository.UserAccountRepository;
@@ -38,6 +43,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -80,6 +86,7 @@ class RouletteServiceTest {
                 movieRepository,
                 spinRepository,
                 offerRepository,
+                new RouletteProperties(RouletteCatalogSource.ALL),
                 Clock.fixed(NOW, ZoneOffset.UTC),
                 metrics
         );
@@ -121,6 +128,7 @@ class RouletteServiceTest {
                 userId,
                 List.of(providerId),
                 "BR",
+                "ALL",
                 null,
                 null
         )).thenReturn(Optional.empty());
@@ -150,6 +158,7 @@ class RouletteServiceTest {
                 userId,
                 List.of(providerId),
                 "BR",
+                "ALL",
                 null,
                 null
         )).thenReturn(Optional.of(movie));
@@ -187,6 +196,7 @@ class RouletteServiceTest {
                 userId,
                 List.of(providerId),
                 "BR",
+                "ALL",
                 null,
                 null
         )).thenReturn(Optional.of(movie));
@@ -199,6 +209,55 @@ class RouletteServiceTest {
         assertThat(response.quota().unlimited()).isTrue();
         assertThat(response.quota().remainingDailySpins()).isNull();
         verify(spinRepository).save(any(RouletteSpinEntity.class));
+    }
+
+    @Test
+    void shouldUseOnlyTheConfiguredCatalogSourceForMovieAndAvailability() {
+        service = new RouletteService(
+                userRepository,
+                dailyUsageRepository,
+                movieRepository,
+                spinRepository,
+                offerRepository,
+                new RouletteProperties(RouletteCatalogSource.STREAMING_AVAILABILITY),
+                Clock.fixed(NOW, ZoneOffset.UTC),
+                metrics
+        );
+        var userId = UUID.randomUUID();
+        var providerId = UUID.randomUUID();
+        var user = newFreeUser();
+        var usage = new RouletteDailyUsageEntity(user, USAGE_DATE, user.getTimezone());
+        var movie = new MovieCacheEntity(598L, "Cidade de Deus", new Integer[]{18, 80}, NOW);
+        var provider = mock(StreamingProviderEntity.class);
+        var tmdbOffer = mock(MovieStreamingOfferEntity.class);
+        var streamingAvailabilityOffer = mock(MovieStreamingOfferEntity.class);
+        arrangeUserAndUsage(userId, user, usage);
+        when(movieRepository.findRandomAvailableMovie(
+                userId,
+                List.of(providerId),
+                "BR",
+                "STREAMING_AVAILABILITY",
+                null,
+                null
+        )).thenReturn(Optional.of(movie));
+        when(offerRepository.findAllByMovieIdAndCountryCode(movie.getId(), "BR"))
+                .thenReturn(List.of(tmdbOffer, streamingAvailabilityOffer));
+        when(tmdbOffer.getProvider()).thenReturn(provider);
+        when(tmdbOffer.getCatalogSource()).thenReturn("TMDB");
+        when(streamingAvailabilityOffer.getProvider()).thenReturn(provider);
+        when(streamingAvailabilityOffer.getCatalogSource()).thenReturn("STREAMING_AVAILABILITY");
+        when(streamingAvailabilityOffer.getMonetizationType()).thenReturn(MonetizationType.FLATRATE);
+        when(streamingAvailabilityOffer.getAttributionUrl()).thenReturn("https://netflix.example/watch/598");
+        when(provider.getId()).thenReturn(providerId);
+        when(provider.getTmdbProviderId()).thenReturn(8);
+        when(provider.getName()).thenReturn("Netflix");
+
+        var response = service.spin(userId, request(providerId));
+
+        assertThat(response.movie().streamingAvailability()).singleElement().satisfies(availability -> {
+            assertThat(availability.catalogSource()).isEqualTo("STREAMING_AVAILABILITY");
+            assertThat(availability.attributionUrl()).isEqualTo("https://netflix.example/watch/598");
+        });
     }
 
     @Test

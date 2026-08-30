@@ -40,6 +40,18 @@ public class CatalogSyncCheckpointEntity extends AuditableUuidEntity {
     @Column(name = "last_error", length = 1000)
     private String lastError;
 
+    @Column(name = "next_cursor", columnDefinition = "text")
+    private String nextCursor;
+
+    @Column(name = "sync_window_from")
+    private Instant syncWindowFrom;
+
+    @Column(name = "sync_window_to")
+    private Instant syncWindowTo;
+
+    @Column(name = "bootstrap_completed_at")
+    private Instant bootstrapCompletedAt;
+
     @Version
     @Column(name = "version", nullable = false)
     private long version;
@@ -73,6 +85,26 @@ public class CatalogSyncCheckpointEntity extends AuditableUuidEntity {
         return version;
     }
 
+    public String getNextCursor() {
+        return nextCursor;
+    }
+
+    public Instant getSyncWindowFrom() {
+        return syncWindowFrom;
+    }
+
+    public Instant getSyncWindowTo() {
+        return syncWindowTo;
+    }
+
+    public Instant getBootstrapCompletedAt() {
+        return bootstrapCompletedAt;
+    }
+
+    public boolean isBootstrapCompleted() {
+        return bootstrapCompletedAt != null;
+    }
+
     public void recordSuccess(int page, int nextPage, Instant syncedAt) {
         this.lastSuccessfulPage = page;
         this.nextPage = nextPage;
@@ -82,5 +114,50 @@ public class CatalogSyncCheckpointEntity extends AuditableUuidEntity {
 
     public void recordFailure(String error) {
         this.lastError = error == null || error.length() <= 1000 ? error : error.substring(0, 1000);
+    }
+
+    public void recordBootstrapPageSuccess(int page, String nextCursor, Instant syncedAt) {
+        this.lastSuccessfulPage = page;
+        this.nextPage = page + 1;
+        this.nextCursor = nextCursor;
+        this.lastSuccessAt = syncedAt;
+        this.lastError = null;
+    }
+
+    public void completeBootstrap(int page, Instant completedAt) {
+        this.lastSuccessfulPage = page;
+        this.nextPage = 1;
+        this.nextCursor = null;
+        this.lastSuccessAt = completedAt;
+        this.bootstrapCompletedAt = completedAt;
+        this.syncWindowFrom = null;
+        this.syncWindowTo = null;
+        this.lastError = null;
+    }
+
+    public void recordIncrementalPageSuccess(
+            int page,
+            String nextCursor,
+            Instant windowFrom,
+            Instant windowTo,
+            Instant syncedAt
+    ) {
+        this.lastSuccessfulPage = page;
+        this.nextPage = page + 1;
+        this.nextCursor = nextCursor;
+        this.syncWindowFrom = windowFrom;
+        this.syncWindowTo = windowTo;
+        this.lastSuccessAt = syncedAt;
+        this.lastError = null;
+    }
+
+    public void completeIncrementalSync(int page, Instant completedThrough) {
+        this.lastSuccessfulPage = page;
+        this.nextPage = 1;
+        this.nextCursor = null;
+        this.syncWindowFrom = null;
+        this.syncWindowTo = null;
+        this.lastSuccessAt = completedThrough;
+        this.lastError = null;
     }
 }
