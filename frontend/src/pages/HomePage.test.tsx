@@ -93,7 +93,7 @@ const successfulSpin: RouletteSpinResponse = {
 const context: AuthContextValue = {
   user: {
     id: '0198f032-7370-7000-8000-000000000020',
-    email: 'moviegoer@reelz.app',
+    email: 'moviegoer@cinegiro.app',
     onboardingCompleted: true,
     role: 'USER',
   },

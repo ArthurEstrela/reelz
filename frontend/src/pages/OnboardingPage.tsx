@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
-import { ReelzLogo } from '../components/brand/ReelzLogo'
+import { CineGiroLogo } from '../components/brand/CineGiroLogo'
 import { SwipeMovieCard } from '../components/onboarding/SwipeMovieCard'
 import { useAuth } from '../hooks/useAuth'
 import {
@@ -117,11 +117,11 @@ export function OnboardingPage() {
 
   return (
     <main className="relative min-h-svh overflow-hidden bg-canvas px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-8 text-white">
-      <div className="pointer-events-none absolute -top-32 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-reel/10 blur-[100px]" />
+      <div className="pointer-events-none absolute -top-32 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-brand/10 blur-[100px]" />
 
       <div className="relative mx-auto flex min-h-[calc(100svh-3rem)] w-full max-w-md flex-col">
         <header className="flex items-center justify-between">
-          <ReelzLogo />
+          <CineGiroLogo />
           {movies.length > 0 && (
             <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-extrabold text-white/60">
               {Math.min(currentIndex + 1, movies.length)} de {movies.length}
@@ -130,8 +130,8 @@ export function OnboardingPage() {
         </header>
 
         <div className="mt-6">
-          <p className="reelz-kicker">
-            Ajuste seu Reelz
+          <p className="cinegiro-kicker">
+            Ajuste seu CineGiro
           </p>
           <h1 className="mt-2 text-3xl leading-tight font-extrabold tracking-tight">
             O que você já assistiu?
@@ -141,7 +141,7 @@ export function OnboardingPage() {
           </p>
           <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/8">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-reel to-amber-300"
+              className="h-full rounded-full bg-gradient-to-r from-brand to-amber-300"
               animate={{ width: `${progress}%` }}
               transition={{ type: 'spring', stiffness: 180, damping: 24 }}
             />
@@ -160,7 +160,7 @@ export function OnboardingPage() {
 
           {loadingState === 'error' && (
             <div className="my-auto rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 text-center">
-              <svg viewBox="0 0 24 24" className="mx-auto size-10 text-reel-bright" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m10 8.8 5 3.2-5 3.2V8.8Z" /></svg>
+              <svg viewBox="0 0 24 24" className="mx-auto size-10 text-brand-bright" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m10 8.8 5 3.2-5 3.2V8.8Z" /></svg>
               <p role="alert" className="mt-4 text-sm leading-relaxed text-white/65">
                 {errorMessage}
               </p>
@@ -226,7 +226,7 @@ export function OnboardingPage() {
                   type="button"
                   whileTap={{ scale: 0.94 }}
                   onClick={() => decide(true)}
-                  className="rounded-xl bg-reel px-4 py-4 text-sm font-bold text-white shadow-[0_12px_35px_rgba(233,54,69,.2)]"
+                  className="rounded-xl bg-brand px-4 py-4 text-sm font-bold text-white shadow-[0_12px_35px_rgba(233,54,69,.2)]"
                 >
                   Já assisti →
                 </motion.button>
@@ -262,7 +262,7 @@ export function OnboardingPage() {
                 whileTap={{ scale: 0.96 }}
                 disabled={submitting}
                 onClick={() => void finishOnboarding()}
-                className="mt-7 w-full rounded-xl bg-reel px-5 py-4 text-sm font-bold text-white shadow-[0_14px_40px_rgba(233,54,69,.2)] disabled:cursor-wait disabled:opacity-60"
+                className="mt-7 w-full rounded-xl bg-brand px-5 py-4 text-sm font-bold text-white shadow-[0_14px_40px_rgba(233,54,69,.2)] disabled:cursor-wait disabled:opacity-60"
               >
                 {submitting ? 'Salvando escolhas...' : 'Começar a girar'}
               </motion.button>

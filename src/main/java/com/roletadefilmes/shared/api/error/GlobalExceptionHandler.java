@@ -414,7 +414,7 @@ public class GlobalExceptionHandler {
         return error(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "INTERNAL_ERROR",
-                "O Reelz encontrou um erro inesperado. Tente novamente em instantes.",
+                "O CineGiro encontrou um erro inesperado. Tente novamente em instantes.",
                 request,
                 List.of()
         );

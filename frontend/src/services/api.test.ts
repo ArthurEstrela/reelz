@@ -22,7 +22,7 @@ describe('api interceptors', () => {
     saveAuthSession({
       accessToken: 'signed-token',
       expiresAt: Date.now() + 60_000,
-      user: { id: 'user-id', email: 'person@reelz.app', onboardingCompleted: true, role: 'USER' },
+      user: { id: 'user-id', email: 'person@cinegiro.app', onboardingCompleted: true, role: 'USER' },
     })
     let authorization: string | undefined
 
@@ -40,7 +40,7 @@ describe('api interceptors', () => {
     saveAuthSession({
       accessToken: 'expired-token',
       expiresAt: Date.now() + 60_000,
-      user: { id: 'user-id', email: 'person@reelz.app', onboardingCompleted: true, role: 'USER' },
+      user: { id: 'user-id', email: 'person@cinegiro.app', onboardingCompleted: true, role: 'USER' },
     })
     const eventListener = vi.fn()
     window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, eventListener)

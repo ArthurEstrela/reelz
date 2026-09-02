@@ -1,17 +1,17 @@
 package com.roletadefilmes.observability;
 
-import com.roletadefilmes.observability.ReelzMetrics.RouletteSpinOutcome;
+import com.roletadefilmes.observability.CineGiroMetrics.RouletteSpinOutcome;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ReelzMetricsTest {
+class CineGiroMetricsTest {
 
     @Test
     void shouldRecordTheProductFunnelWithoutHighCardinalityTags() {
         var registry = new SimpleMeterRegistry();
-        var metrics = new ReelzMetrics(registry);
+        var metrics = new CineGiroMetrics(registry);
         var sample = metrics.startRouletteSpin();
 
         metrics.recordUserRegistrationAfterCommit();

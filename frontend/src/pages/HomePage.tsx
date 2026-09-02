@@ -365,7 +365,7 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
                   transition={{ type: 'spring', bounce: 0.44, duration: 0.72 }}
                   className="flex w-full flex-col items-center"
                 >
-                  <p className="reelz-kicker">Sua próxima sessão</p>
+                  <p className="cinegiro-kicker">Sua próxima sessão</p>
                   <h1 className="mt-2 text-4xl font-extrabold tracking-[-0.045em] text-paper sm:text-5xl lg:text-6xl">
                     Hoje vai de quê?
                   </h1>
@@ -385,7 +385,7 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
                   >
                     <span className="absolute inset-0 rounded-full border border-dashed border-white/20 transition-transform duration-500 group-hover:rotate-12" />
                     <span className="absolute inset-3 rounded-full border border-white/12 bg-surface shadow-[0_20px_70px_rgba(233,54,69,.2)]" />
-                    <span className="absolute inset-7 rounded-full bg-reel transition-colors group-hover:bg-reel-bright" />
+                    <span className="absolute inset-7 rounded-full bg-brand transition-colors group-hover:bg-brand-bright" />
                     <svg viewBox="0 0 24 24" className="relative ml-1 size-9 text-white" aria-hidden="true">
                       <path fill="currentColor" d="M8 6.7c0-1.2 1.3-1.9 2.3-1.3l7 4.1a1.7 1.7 0 0 1 0 2.9l-7 4.2A1.5 1.5 0 0 1 8 15.3V6.7Z" />
                     </svg>
@@ -433,7 +433,7 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
 
           </div>
 
-          <aside className="reelz-surface min-w-0 overflow-hidden rounded-2xl p-4 sm:p-5 lg:sticky lg:top-24" aria-label="Filtros rápidos">
+          <aside className="cinegiro-surface min-w-0 overflow-hidden rounded-2xl p-4 sm:p-5 lg:sticky lg:top-24" aria-label="Filtros rápidos">
             <div className="flex items-start justify-between gap-3 border-b border-white/8 pb-4">
               <div>
                 <p className="text-sm font-semibold text-paper">Ajuste o giro</p>

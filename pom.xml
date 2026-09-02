@@ -14,8 +14,8 @@
     <groupId>com.roletadefilmes</groupId>
     <artifactId>backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>roleta-de-filmes-backend</name>
-    <description>Backend da Roleta de Filmes</description>
+    <name>cinegiro-backend</name>
+    <description>Backend do CineGiro</description>
 
     <properties>
         <java.version>21</java.version>

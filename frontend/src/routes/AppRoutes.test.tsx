@@ -34,7 +34,7 @@ function renderRoutes(
 ) {
   const context: AuthContextValue = {
     user: isAuthenticated
-      ? { id: 'user-id', email: 'person@reelz.app', onboardingCompleted, role }
+      ? { id: 'user-id', email: 'person@cinegiro.app', onboardingCompleted, role }
       : null,
     isAuthenticated,
     login: vi.fn(),
@@ -101,7 +101,7 @@ describe('AppRoutes', () => {
   })
 
   it.each([
-    ['/about', 'Sobre o Reelz'],
+    ['/about', 'Sobre o CineGiro'],
     ['/terms', 'Termos de Uso'],
     ['/privacy', 'Política de Privacidade'],
   ])('keeps the public document %s accessible without a session', (path, heading) => {

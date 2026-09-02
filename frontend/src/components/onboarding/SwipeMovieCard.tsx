@@ -64,7 +64,7 @@ export function SwipeMovieCard({
           draggable={false}
         />
       ) : (
-        <div className="flex h-full items-center justify-center bg-gradient-to-br from-white/8 to-reel/15 px-8 text-center text-xl font-black text-white/70">
+        <div className="flex h-full items-center justify-center bg-gradient-to-br from-white/8 to-brand/15 px-8 text-center text-xl font-black text-white/70">
           {movie.title}
         </div>
       )}

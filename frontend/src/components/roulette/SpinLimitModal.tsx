@@ -32,16 +32,16 @@ export function SpinLimitModal({ onClose }: SpinLimitModalProps) {
         transition={{ type: 'spring', bounce: 0.46, duration: 0.72 }}
         className="w-full max-w-sm rounded-2xl border border-white/10 bg-surface-raised p-6 text-center shadow-[0_30px_100px_rgba(0,0,0,.65)]"
       >
-        <svg viewBox="0 0 24 24" className="mx-auto size-12 text-reel-bright" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M5 5h14v4a3 3 0 0 0 0 6v4H5v-4a3 3 0 0 0 0-6V5Z" /><path d="M12 7v2M12 11v2M12 15v2" /></svg>
+        <svg viewBox="0 0 24 24" className="mx-auto size-12 text-brand-bright" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M5 5h14v4a3 3 0 0 0 0 6v4H5v-4a3 3 0 0 0 0-6V5Z" /><path d="M12 7v2M12 11v2M12 15v2" /></svg>
         <h2 id="spin-limit-title" className="mt-5 text-2xl font-bold tracking-tight">
           Seus giros acabaram
         </h2>
         <p className="mt-3 text-sm leading-6 text-white/55">
-          Volte amanhã ou continue sem limites com o Reelz Premium.
+          Volte amanhã ou continue sem limites com o CineGiro Premium.
         </p>
         <Link
           to="/premium"
-          className="mt-6 block w-full rounded-xl bg-reel px-5 py-3.5 text-sm font-bold text-white transition hover:bg-reel-bright focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reel"
+          className="mt-6 block w-full rounded-xl bg-brand px-5 py-3.5 text-sm font-bold text-white transition hover:bg-brand-bright focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
           Conhecer o Premium
         </Link>

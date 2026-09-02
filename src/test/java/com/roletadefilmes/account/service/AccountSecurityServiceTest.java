@@ -56,10 +56,10 @@ class AccountSecurityServiceTest {
 
     @Test
     void shouldNotRevealWhetherPasswordResetEmailExists() {
-        when(userRepository.findByEmailIgnoreCaseAndDeletedAtIsNull("unknown@reelz.app"))
+        when(userRepository.findByEmailIgnoreCaseAndDeletedAtIsNull("unknown@cinegiro.app"))
                 .thenReturn(Optional.empty());
 
-        service.requestPasswordReset(" Unknown@Reelz.App ");
+        service.requestPasswordReset(" Unknown@CineGiro.App ");
 
         verify(tokenRepository, never()).save(any());
         verify(eventPublisher, never()).publishEvent(any(Object.class));
@@ -68,13 +68,13 @@ class AccountSecurityServiceTest {
     @Test
     void shouldPersistOnlyTheTokenHashAndPublishTheRawTokenAfterIssuing() {
         var userId = UUID.randomUUID();
-        when(userRepository.findByEmailIgnoreCaseAndDeletedAtIsNull("person@reelz.app"))
+        when(userRepository.findByEmailIgnoreCaseAndDeletedAtIsNull("person@cinegiro.app"))
                 .thenReturn(Optional.of(user));
         when(user.getId()).thenReturn(userId);
-        when(user.getEmail()).thenReturn("person@reelz.app");
+        when(user.getEmail()).thenReturn("person@cinegiro.app");
         when(user.getDisplayName()).thenReturn("Pessoa");
 
-        service.requestPasswordReset("person@reelz.app");
+        service.requestPasswordReset("person@cinegiro.app");
 
         var event = ArgumentCaptor.forClass(Object.class);
         verify(eventPublisher).publishEvent(event.capture());

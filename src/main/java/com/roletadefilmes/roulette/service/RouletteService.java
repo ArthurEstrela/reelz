@@ -2,8 +2,8 @@ package com.roletadefilmes.roulette.service;
 
 import com.roletadefilmes.movie.persistence.entity.MovieCacheEntity;
 import com.roletadefilmes.movie.persistence.repository.MovieCacheRepository;
-import com.roletadefilmes.observability.ReelzMetrics;
-import com.roletadefilmes.observability.ReelzMetrics.RouletteSpinOutcome;
+import com.roletadefilmes.observability.CineGiroMetrics;
+import com.roletadefilmes.observability.CineGiroMetrics.RouletteSpinOutcome;
 import com.roletadefilmes.roulette.api.dto.RouletteMovieResponse;
 import com.roletadefilmes.roulette.api.dto.RouletteSpinRequest;
 import com.roletadefilmes.roulette.api.dto.RouletteSpinResponse;
@@ -59,7 +59,7 @@ public class RouletteService {
     private final MovieStreamingOfferRepository offerRepository;
     private final RouletteProperties rouletteProperties;
     private final Clock clock;
-    private final ReelzMetrics metrics;
+    private final CineGiroMetrics metrics;
 
     public RouletteService(
             UserAccountRepository userRepository,
@@ -69,7 +69,7 @@ public class RouletteService {
             MovieStreamingOfferRepository offerRepository,
             RouletteProperties rouletteProperties,
             Clock clock,
-            ReelzMetrics metrics
+            CineGiroMetrics metrics
     ) {
         this.userRepository = userRepository;
         this.dailyUsageRepository = dailyUsageRepository;

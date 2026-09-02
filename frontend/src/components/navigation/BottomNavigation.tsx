@@ -27,7 +27,7 @@ export function BottomNavigation() {
             to={item.to}
             end={item.end}
             className={({ isActive }) => `flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl px-2 py-1.5 text-[0.68rem] font-semibold transition ${
-              isActive ? 'bg-reel/14 text-reel-bright' : 'text-white/50 hover:bg-white/[0.04] hover:text-white/75'
+              isActive ? 'bg-brand/14 text-brand-bright' : 'text-white/50 hover:bg-white/[0.04] hover:text-white/75'
             }`}
           >
             <NavigationIcon name={item.icon} />

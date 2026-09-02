@@ -7,8 +7,8 @@
   --color-surface-raised: #1c1c20;
   --color-paper: #f4f0e8;
   --color-muted: #aaa6a0;
-  --color-reel: #e93645;
-  --color-reel-bright: #ff4d59;
+  --color-brand: #e93645;
+  --color-brand-bright: #ff4d59;
   --color-gold: #e7b862;
   --font-sans: "Archivo Variable", Archivo, ui-sans-serif, system-ui, sans-serif;
 }
@@ -34,7 +34,7 @@
   }
 
   :focus-visible {
-    outline-color: var(--color-reel-bright);
+    outline-color: var(--color-brand-bright);
   }
 
   button,
@@ -43,19 +43,19 @@
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--color-reel) 35%, transparent);
+    background: color-mix(in srgb, var(--color-brand) 35%, transparent);
     color: white;
   }
 }
 
 @layer components {
-  .reelz-surface {
+  .cinegiro-surface {
     border: 1px solid rgb(255 255 255 / 0.1);
     background: rgb(255 255 255 / 0.035);
   }
 
-  .reelz-kicker {
-    color: var(--color-reel-bright);
+  .cinegiro-kicker {
+    color: var(--color-brand-bright);
     font-size: 0.6875rem;
     font-weight: 750;
     letter-spacing: 0.13em;

@@ -41,7 +41,7 @@ reelz:
   account:
     public-url: ${PUBLIC_APP_URL:http://localhost}
     mail-mode: ${ACCOUNT_MAIL_MODE:LOG}
-    mail-from: ${MAIL_FROM:no-reply@reelz.app}
+    mail-from: ${MAIL_FROM:no-reply@cinegiro.app}
     verification-ttl: ${EMAIL_VERIFICATION_TTL:PT24H}
     password-reset-ttl: ${PASSWORD_RESET_TTL:PT30M}
     request-cooldown: ${ACCOUNT_TOKEN_COOLDOWN:PT1M}

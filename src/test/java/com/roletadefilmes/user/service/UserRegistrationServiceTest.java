@@ -4,7 +4,7 @@ import com.roletadefilmes.admin.config.AdminProperties;
 import com.roletadefilmes.account.service.AccountSecurityService;
 import com.roletadefilmes.legal.persistence.entity.UserLegalAcceptanceEntity;
 import com.roletadefilmes.legal.persistence.repository.UserLegalAcceptanceRepository;
-import com.roletadefilmes.observability.ReelzMetrics;
+import com.roletadefilmes.observability.CineGiroMetrics;
 import com.roletadefilmes.user.api.dto.RegisterUserRequest;
 import com.roletadefilmes.user.persistence.entity.UserAccountEntity;
 import com.roletadefilmes.user.persistence.repository.UserAccountRepository;
@@ -33,7 +33,7 @@ class UserRegistrationServiceTest {
     private UserLegalAcceptanceRepository legalAcceptanceRepository;
 
     @Mock
-    private ReelzMetrics metrics;
+    private CineGiroMetrics metrics;
 
     @Mock
     private AccountSecurityService accountSecurityService;
@@ -58,13 +58,13 @@ class UserRegistrationServiceTest {
     void shouldHashThePasswordAndPersistBothLegalAcceptances() {
         var request = new RegisterUserRequest(
                 "Pessoa",
-                "Person@Reelz.App",
+                "Person@CineGiro.App",
                 "plain-password",
                 "America/Sao_Paulo",
                 "BR",
                 true
         );
-        when(userRepository.existsByEmailIgnoreCase("person@reelz.app")).thenReturn(false);
+        when(userRepository.existsByEmailIgnoreCase("person@cinegiro.app")).thenReturn(false);
         when(userRepository.saveAndFlush(any(UserAccountEntity.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 

@@ -91,7 +91,7 @@ export function MovieCard({
             onClick={onWatchProvider}
             whileTap={{ scale: 0.97 }}
             aria-label="Ver onde assistir"
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-reel px-5 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(233,54,69,.22)] transition hover:bg-reel-bright focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reel"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(233,54,69,.22)] transition hover:bg-brand-bright focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           >
             {offer.logoPath ? (
               <span className="flex h-7 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-black/20 px-1.5 py-1">
@@ -165,7 +165,7 @@ export function MovieCard({
           onClick={handleWatchedClick}
           disabled={spinning || markingWatched}
           whileTap={{ scale: 0.96 }}
-          className="mt-3 w-full px-4 py-2.5 text-sm font-medium text-white/60 underline decoration-white/20 underline-offset-4 transition hover:text-white disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-reel"
+          className="mt-3 w-full px-4 py-2.5 text-sm font-medium text-white/60 underline decoration-white/20 underline-offset-4 transition hover:text-white disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
           {markingWatched ? 'Marcando como visto…' : 'Já assisti · marcar e girar'}
         </motion.button>

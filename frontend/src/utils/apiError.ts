@@ -13,7 +13,7 @@ export function getApiErrorMessage(error: unknown, fallback: string): string {
     return 'A conexão demorou demais. Tente novamente em instantes.'
   }
   if (!error.response) {
-    return 'Não foi possível conectar ao Reelz. Verifique sua internet.'
+    return 'Não foi possível conectar ao CineGiro. Verifique sua internet.'
   }
   return fallback
 }

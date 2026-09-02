@@ -6,7 +6,7 @@ import { AuthContext, type AuthContextValue } from '../context/authContextDefini
 import { AchievementsPage } from './AchievementsPage'
 
 const authContext: AuthContextValue = {
-  user: { id: 'user-id', email: 'collector@reelz.app', onboardingCompleted: true, role: 'USER' },
+  user: { id: 'user-id', email: 'collector@cinegiro.app', onboardingCompleted: true, role: 'USER' },
   isAuthenticated: true,
   login: vi.fn(),
   register: vi.fn(),

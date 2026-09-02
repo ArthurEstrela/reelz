@@ -10,11 +10,11 @@ import org.springframework.security.test.context.support.WithSecurityContextFact
 import java.util.List;
 import java.util.UUID;
 
-public class WithMockReelzUserSecurityContextFactory
-        implements WithSecurityContextFactory<WithMockReelzUser> {
+public class WithMockCineGiroUserSecurityContextFactory
+        implements WithSecurityContextFactory<WithMockCineGiroUser> {
 
     @Override
-    public SecurityContext createSecurityContext(WithMockReelzUser annotation) {
+    public SecurityContext createSecurityContext(WithMockCineGiroUser annotation) {
         var principal = new AuthenticatedUser(UUID.fromString(annotation.userId()));
         var authentication = UsernamePasswordAuthenticationToken.authenticated(
                 principal,

@@ -40,7 +40,7 @@ export function SlotMachine() {
       >
         <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-surface to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-t from-surface to-transparent" />
-        <div className="pointer-events-none absolute inset-x-4 top-1/2 z-20 h-12 -translate-y-1/2 border-y border-reel/60 bg-reel/8" />
+        <div className="pointer-events-none absolute inset-x-4 top-1/2 z-20 h-12 -translate-y-1/2 border-y border-brand/60 bg-brand/8" />
 
         <motion.div
           animate={prefersReducedMotion ? { opacity: [0.55, 1, 0.55] } : { y: [0, -288] }}
@@ -66,7 +66,7 @@ export function SlotMachine() {
           {[0, 1, 2].map((dot) => (
             <motion.span
               key={dot}
-              className="size-1.5 rounded-full bg-reel-bright"
+              className="size-1.5 rounded-full bg-brand-bright"
               animate={{ opacity: [0.25, 1, 0.25], scale: [0.8, 1.15, 0.8] }}
               transition={{ duration: 0.9, delay: dot * 0.16, repeat: Infinity }}
             />

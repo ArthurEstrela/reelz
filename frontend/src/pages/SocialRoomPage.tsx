@@ -220,7 +220,7 @@ export function SocialRoomPage() {
   if (loading) {
     return (
       <main className="grid min-h-svh place-items-center bg-canvas text-white">
-        <div className="size-12 animate-spin rounded-full border-4 border-white/10 border-t-reel" aria-label="Carregando sala" />
+        <div className="size-12 animate-spin rounded-full border-4 border-white/10 border-t-brand" aria-label="Carregando sala" />
       </main>
     )
   }
@@ -230,7 +230,7 @@ export function SocialRoomPage() {
       <main className="grid min-h-svh place-items-center bg-canvas px-5 text-center text-white">
         <div>
           <p className="font-bold text-red-100">{error || 'Sala não encontrada.'}</p>
-          <button type="button" onClick={() => navigate('/social')} className="mt-5 font-semibold text-reel-bright">Voltar</button>
+          <button type="button" onClick={() => navigate('/social')} className="mt-5 font-semibold text-brand-bright">Voltar</button>
         </div>
       </main>
     )
@@ -263,10 +263,10 @@ export function SocialRoomPage() {
       />
 
       <div className="relative mx-auto max-w-3xl pt-7">
-        <section className="rounded-2xl border border-reel/20 bg-reel/[0.045] p-5">
+        <section className="rounded-2xl border border-brand/20 bg-brand/[0.045] p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="reelz-kicker">
+              <p className="cinegiro-kicker">
                 {room.type === 'COUPLE' ? 'Modo casal' : 'Modo grupo'}
               </p>
               <h1 className="mt-1 text-2xl font-bold">Sala de {room.hostDisplayName}</h1>
@@ -352,7 +352,7 @@ export function SocialRoomPage() {
                           // O clique segue para o streaming mesmo se a telemetria falhar.
                         })
                       }}
-                      className="mt-auto rounded-lg bg-reel px-3 py-2.5 text-center text-xs font-bold text-white"
+                      className="mt-auto rounded-lg bg-brand px-3 py-2.5 text-center text-xs font-bold text-white"
                     >
                       Assistir na {movie.streamingAvailability[0].providerName}
                     </a>
@@ -361,7 +361,7 @@ export function SocialRoomPage() {
                       Disponível na {movie.streamingAvailability[0].providerName}
                     </p>
                   ) : null}
-                  <button type="button" onClick={() => void handleWatched()} className="pt-3 text-left text-xs font-semibold text-reel-bright">
+                  <button type="button" onClick={() => void handleWatched()} className="pt-3 text-left text-xs font-semibold text-brand-bright">
                     Já vi · adicionar à coleção
                   </button>
                 </div>
@@ -369,7 +369,7 @@ export function SocialRoomPage() {
             ) : null}
             {!spinning && !movie ? (
               <motion.div key="social-idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-md">
-                <svg viewBox="0 0 24 24" className="mx-auto size-12 text-reel-bright" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m10 8.8 5 3.2-5 3.2V8.8Z" /></svg>
+                <svg viewBox="0 0 24 24" className="mx-auto size-12 text-brand-bright" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m10 8.8 5 3.2-5 3.2V8.8Z" /></svg>
                 <h2 className="mt-5 text-3xl font-bold tracking-[-.035em]">
                   {waitingForMembers ? 'Esperando companhia' : noCommonProviders ? 'Falta um streaming em comum' : 'Todo mundo pronto?'}
                 </h2>
@@ -389,7 +389,7 @@ export function SocialRoomPage() {
 
         {currentMember && room.status === 'OPEN' ? (
           <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-4 sm:p-6">
-            <p className="reelz-kicker">Seu pitaco</p>
+            <p className="cinegiro-kicker">Seu pitaco</p>
             <h2 className="mt-1 text-xl font-bold">
               {currentMember.ready ? 'Você está pronto' : 'O que você topa assistir?'}
             </h2>
@@ -430,7 +430,7 @@ export function SocialRoomPage() {
                   whileTap={{ scale: 0.97 }}
                   onClick={() => void savePreference(true)}
                   disabled={savingPreference || spinning || (selectedGenres.length === 0 && selectedVibe === null)}
-                  className="mt-6 w-full rounded-xl bg-reel px-5 py-4 text-sm font-bold text-white disabled:bg-white/10 disabled:text-white/40"
+                  className="mt-6 w-full rounded-xl bg-brand px-5 py-4 text-sm font-bold text-white disabled:bg-white/10 disabled:text-white/40"
                 >
                   {savingPreference ? 'Salvando…' : 'Confirmar meu palpite'}
                 </motion.button>
@@ -441,7 +441,7 @@ export function SocialRoomPage() {
 
         {room.currentUserHost && room.status === 'OPEN' ? (
           <section className="mt-4 rounded-2xl border border-white/10 bg-white/[0.025] p-4 sm:p-6">
-            <p className="reelz-kicker">Controle do anfitrião</p>
+            <p className="cinegiro-kicker">Controle do anfitrião</p>
             <div className="mt-5">
               <FilterPills
                 legend={quota?.unlimited ? 'Streamings em comum · escolha vários' : 'Streaming em comum · 1 por giro'}
@@ -456,7 +456,7 @@ export function SocialRoomPage() {
               whileTap={{ scale: 0.96 }}
               onClick={() => void handleSpin()}
               disabled={spinning || waitingForMembers || noCommonProviders || !allReady || selectedProviders.length === 0}
-              className="mt-6 w-full rounded-xl bg-reel px-5 py-4 text-base font-bold shadow-[0_16px_40px_rgba(233,54,69,.2)] disabled:bg-white/10 disabled:text-white/40 disabled:shadow-none"
+              className="mt-6 w-full rounded-xl bg-brand px-5 py-4 text-base font-bold shadow-[0_16px_40px_rgba(233,54,69,.2)] disabled:bg-white/10 disabled:text-white/40 disabled:shadow-none"
             >
               {spinning
                 ? 'Girando para todos…'

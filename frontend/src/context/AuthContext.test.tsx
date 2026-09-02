@@ -19,7 +19,7 @@ function AuthProbe() {
   return (
     <div>
       <span>{user?.email ?? 'anonymous'}</span>
-      <button type="button" onClick={() => void login('Person@Reelz.App', 'password-123')}>
+      <button type="button" onClick={() => void login('Person@CineGiro.App', 'password-123')}>
         login
       </button>
       <button
@@ -27,7 +27,7 @@ function AuthProbe() {
         onClick={() =>
           void register({
             displayName: 'Person',
-            email: 'person@reelz.app',
+            email: 'person@cinegiro.app',
             password: 'password-123',
             termsAccepted: true,
             timezone: 'America/Sao_Paulo',
@@ -62,7 +62,7 @@ describe('AuthProvider', () => {
 
     await user.click(screen.getByRole('button', { name: 'login' }))
 
-    expect(await screen.findByText('person@reelz.app')).toBeInTheDocument()
+    expect(await screen.findByText('person@cinegiro.app')).toBeInTheDocument()
     expect(getAuthSession()?.accessToken).toBe('signed-token')
     expect(getAuthSession()?.user.onboardingCompleted).toBe(false)
 
@@ -75,7 +75,7 @@ describe('AuthProvider', () => {
     mockedRegisterRequest.mockResolvedValue({
       id: 'user-id',
       displayName: 'Person',
-      email: 'person@reelz.app',
+      email: 'person@cinegiro.app',
       plan: 'FREE',
       role: 'USER',
       timezone: 'America/Sao_Paulo',

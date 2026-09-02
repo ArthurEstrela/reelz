@@ -83,7 +83,7 @@ export function AdminAnalyticsPage() {
       <div className="mx-auto mt-9 max-w-6xl">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p className="reelz-kicker">Beta cockpit</p>
+            <p className="cinegiro-kicker">Beta cockpit</p>
             <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Saúde do produto</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-white/60">
               Métricas agregadas e pseudonimizadas. Nenhum e-mail aparece neste painel.
@@ -148,7 +148,7 @@ export function AdminAnalyticsPage() {
                   </div>
                   <div className="flex gap-3 text-[10px] font-semibold text-white/60">
                     <span className="text-sky-300">● cadastro</span>
-                    <span className="text-reel">● giro</span>
+                    <span className="text-brand">● giro</span>
                     <span className="text-emerald-300">● decisão</span>
                   </div>
                 </div>
@@ -156,18 +156,18 @@ export function AdminAnalyticsPage() {
                   {overview.daily.map((item) => (
                     <div key={item.date} className="group flex min-w-2 flex-1 items-end gap-px" title={`${item.date}: ${item.successfulSpins} giros`}>
                       <div className="w-1/3 rounded-t bg-sky-300/70" style={{ height: `${Math.max(2, item.registrations / chartMaximum * 100)}%` }} />
-                      <div className="w-1/3 rounded-t bg-reel/80" style={{ height: `${Math.max(2, item.successfulSpins / chartMaximum * 100)}%` }} />
+                      <div className="w-1/3 rounded-t bg-brand/80" style={{ height: `${Math.max(2, item.successfulSpins / chartMaximum * 100)}%` }} />
                       <div className="w-1/3 rounded-t bg-emerald-300/70" style={{ height: `${Math.max(2, item.decisions / chartMaximum * 100)}%` }} />
                     </div>
                   ))}
                 </div>
               </article>
 
-              <article className="rounded-2xl border border-reel/15 bg-reel/[0.035] p-5">
-                <p className="text-[10px] font-semibold tracking-[.14em] text-reel-bright uppercase">Uso social</p>
+              <article className="rounded-2xl border border-brand/15 bg-brand/[0.035] p-5">
+                <p className="text-[10px] font-semibold tracking-[.14em] text-brand-bright uppercase">Uso social</p>
                 <h2 className="mt-2 text-xl font-bold">Casal e grupo</h2>
                 <div className="mt-5 grid grid-cols-2 gap-3">
-                  <div className="rounded-xl bg-reel/[0.08] p-4">
+                  <div className="rounded-xl bg-brand/[0.08] p-4">
                     <span className="text-2xl font-bold text-paper">{overview.socialRoomsCreated}</span>
                     <p className="text-xs text-white/60">salas criadas</p>
                   </div>

@@ -90,7 +90,7 @@ export function AchievementsPage() {
       <AppHeader />
 
       <section className="relative mx-auto max-w-5xl pt-10 sm:pt-14">
-        <p className="reelz-kicker">Seu caminho no cinema</p>
+        <p className="cinegiro-kicker">Seu caminho no cinema</p>
         <div className="mt-2 grid gap-6 border-b border-white/10 pb-8 md:grid-cols-[1fr_auto] md:items-end">
           <div>
             <h1 className="text-4xl font-extrabold tracking-[-0.045em] sm:text-6xl">Sala de Troféus</h1>

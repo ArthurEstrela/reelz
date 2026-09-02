@@ -1,6 +1,6 @@
-# Pagamentos e Reelz Premium
+# Pagamentos e CineGiro Premium
 
-O módulo `billing` integra o Reelz à API v2 da AbacatePay por uma porta interna (`PaymentGateway`). O restante do produto não conhece detalhes do provedor, permitindo trocar ou adicionar outro gateway sem reescrever as regras de assinatura.
+O módulo `billing` integra o CineGiro à API v2 da AbacatePay por uma porta interna (`PaymentGateway`). O restante do produto não conhece detalhes do provedor, permitindo trocar ou adicionar outro gateway sem reescrever as regras de assinatura.
 
 ## Contrato HTTP
 

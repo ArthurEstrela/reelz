@@ -71,7 +71,7 @@ export function LoginPage() {
         <>
           Ainda não tem uma conta?{' '}
           <Link
-            className="font-bold text-white transition hover:text-reel"
+            className="font-bold text-white transition hover:text-brand"
             to="/register"
             state={{ from: navigationState?.from }}
           >
@@ -88,7 +88,7 @@ export function LoginPage() {
         {navigationState?.accountDeleted && <FormMessage tone="success">Conta excluída e dados anonimizados.</FormMessage>}
         {sessionExpired && <FormMessage>Sua sessão expirou. Entre novamente para continuar.</FormMessage>}
         {errorMessage && <FormMessage>{errorMessage}</FormMessage>}
-        {emailNotVerified && <Link to="/verify-email" state={{ email }} className="block text-sm font-bold text-reel-bright">Reenviar confirmação</Link>}
+        {emailNotVerified && <Link to="/verify-email" state={{ email }} className="block text-sm font-bold text-brand-bright">Reenviar confirmação</Link>}
 
         <FormField
           id="email"
@@ -120,7 +120,7 @@ export function LoginPage() {
         </div>
 
         <SubmitButton loading={loading} loadingLabel="Entrando...">
-          Entrar no Reelz
+          Entrar no CineGiro
         </SubmitButton>
       </form>
     </AuthLayout>

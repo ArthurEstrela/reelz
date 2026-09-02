@@ -43,15 +43,15 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(passwordEncoder.encode("reelz-dummy-password")).thenReturn("dummy-bcrypt-hash");
+        when(passwordEncoder.encode("cinegiro-dummy-password")).thenReturn("dummy-bcrypt-hash");
         service = new AuthService(userRepository, passwordEncoder, jwtService);
     }
 
     @Test
     void shouldReturnATokenForValidCredentials() {
         var userId = UUID.randomUUID();
-        var request = new LoginRequest(" Person@Reelz.App ", "correct-password");
-        when(userRepository.findByEmailIgnoreCaseAndDeletedAtIsNull("person@reelz.app"))
+        var request = new LoginRequest(" Person@CineGiro.App ", "correct-password");
+        when(userRepository.findByEmailIgnoreCaseAndDeletedAtIsNull("person@cinegiro.app"))
                 .thenReturn(Optional.of(user));
         when(user.getPasswordHash()).thenReturn("bcrypt-hash");
         when(user.getId()).thenReturn(userId);
@@ -74,8 +74,8 @@ class AuthServiceTest {
 
     @Test
     void shouldReturnTheSameGenericErrorForAnUnknownEmail() {
-        var request = new LoginRequest("unknown@reelz.app", "some-password");
-        when(userRepository.findByEmailIgnoreCaseAndDeletedAtIsNull("unknown@reelz.app"))
+        var request = new LoginRequest("unknown@cinegiro.app", "some-password");
+        when(userRepository.findByEmailIgnoreCaseAndDeletedAtIsNull("unknown@cinegiro.app"))
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.login(request))
@@ -92,8 +92,8 @@ class AuthServiceTest {
 
     @Test
     void shouldReturnTheSameGenericErrorForAWrongPassword() {
-        var request = new LoginRequest("person@reelz.app", "wrong-password");
-        when(userRepository.findByEmailIgnoreCaseAndDeletedAtIsNull("person@reelz.app"))
+        var request = new LoginRequest("person@cinegiro.app", "wrong-password");
+        when(userRepository.findByEmailIgnoreCaseAndDeletedAtIsNull("person@cinegiro.app"))
                 .thenReturn(Optional.of(user));
         when(user.getPasswordHash()).thenReturn("bcrypt-hash");
         when(passwordEncoder.matches("wrong-password", "bcrypt-hash")).thenReturn(false);
@@ -111,8 +111,8 @@ class AuthServiceTest {
 
     @Test
     void shouldRequireEmailVerificationBeforeCreatingAToken() {
-        var request = new LoginRequest("person@reelz.app", "correct-password");
-        when(userRepository.findByEmailIgnoreCaseAndDeletedAtIsNull("person@reelz.app"))
+        var request = new LoginRequest("person@cinegiro.app", "correct-password");
+        when(userRepository.findByEmailIgnoreCaseAndDeletedAtIsNull("person@cinegiro.app"))
                 .thenReturn(Optional.of(user));
         when(user.getPasswordHash()).thenReturn("bcrypt-hash");
         when(passwordEncoder.matches("correct-password", "bcrypt-hash")).thenReturn(true);

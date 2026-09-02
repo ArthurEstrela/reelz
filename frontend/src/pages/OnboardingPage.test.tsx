@@ -18,7 +18,7 @@ const markOnboardingCompleted = vi.fn()
 const context: AuthContextValue = {
   user: {
     id: 'user-id',
-    email: 'new@reelz.app',
+    email: 'new@cinegiro.app',
     onboardingCompleted: false,
     role: 'USER',
   },

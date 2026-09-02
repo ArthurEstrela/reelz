@@ -141,7 +141,7 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Test
     void shouldCalculateRetroactiveAchievementsAndKeepEvaluationIdempotent() throws Exception {
-        var user = userRepository.saveAndFlush(newUser("achievements@reelz.app"));
+        var user = userRepository.saveAndFlush(newUser("achievements@cinegiro.app"));
         var movies = IntStream.range(0, 10)
                 .mapToObj(index -> newMovieWithGenres(
                         40_000L + index,
@@ -171,6 +171,8 @@ class UserExperienceEndpointsIntegrationTest {
                 .andExpect(jsonPath("$.totalCount").value(10))
                 .andExpect(jsonPath("$.unlockedCount").value(3))
                 .andExpect(jsonPath("$.achievements[?(@.code == 'FIRST_SPIN')].unlocked", hasItem(true)))
+                .andExpect(jsonPath("$.achievements[?(@.code == 'OPEN_PROVIDER')].description",
+                        hasItem("Abra um streaming a partir de uma escolha do CineGiro.")))
                 .andExpect(jsonPath("$.achievements[?(@.code == 'WATCHED_10')].progress", hasItem(10)))
                 .andExpect(jsonPath("$.achievements[?(@.code == 'GENRES_5')].progress", hasItem(5)));
 
@@ -185,11 +187,11 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Test
     void shouldRequirePremiumOnlyToCreateGroupWhileAllowingFreeGuestsToJoin() throws Exception {
-        var freeHost = userRepository.saveAndFlush(newUser("social-free-host@reelz.app"));
-        var premiumHost = newUser("social-premium-host@reelz.app");
+        var freeHost = userRepository.saveAndFlush(newUser("social-free-host@cinegiro.app"));
+        var premiumHost = newUser("social-premium-host@cinegiro.app");
         premiumHost.activatePremium(Instant.now().plus(1, ChronoUnit.DAYS));
         userRepository.saveAndFlush(premiumHost);
-        var freeGuest = userRepository.saveAndFlush(newUser("social-free-guest@reelz.app"));
+        var freeGuest = userRepository.saveAndFlush(newUser("social-free-guest@cinegiro.app"));
 
         mockMvc.perform(post("/api/v1/social/rooms")
                         .header(HttpHeaders.AUTHORIZATION, bearerToken(freeHost))
@@ -233,9 +235,9 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Test
     void shouldCreateJoinAndSpinACoupleRoomExcludingEveryMembersHistory() throws Exception {
-        var host = userRepository.saveAndFlush(newUser("social-host@reelz.app"));
-        var guest = userRepository.saveAndFlush(newUser("social-guest@reelz.app"));
-        var thirdUser = newUser("social-third@reelz.app");
+        var host = userRepository.saveAndFlush(newUser("social-host@cinegiro.app"));
+        var guest = userRepository.saveAndFlush(newUser("social-guest@cinegiro.app"));
+        var thirdUser = newUser("social-third@cinegiro.app");
         thirdUser.promoteToAdmin();
         userRepository.saveAndFlush(thirdUser);
         var provider = providerRepository.saveAndFlush(new StreamingProviderEntity(8, "Netflix"));
@@ -430,8 +432,8 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Test
     void shouldTrackIdempotentProductEventsAndExposeOnlyAggregatesToAdmins() throws Exception {
-        var user = userRepository.saveAndFlush(newUser("analytics-user@reelz.app"));
-        var admin = newUser("analytics-admin@reelz.app");
+        var user = userRepository.saveAndFlush(newUser("analytics-user@cinegiro.app"));
+        var admin = newUser("analytics-admin@cinegiro.app");
         admin.promoteToAdmin();
         userRepository.saveAndFlush(admin);
         var eventId = UUID.randomUUID();
@@ -496,7 +498,7 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Test
     void shouldCreateAndThenUpdateTheHistoryUsingTheTmdbMovieId() throws Exception {
-        var user = userRepository.saveAndFlush(newUser("history-api@reelz.app"));
+        var user = userRepository.saveAndFlush(newUser("history-api@cinegiro.app"));
         movieRepository.saveAndFlush(new MovieCacheEntity(
                 550L,
                 "Clube da Luta",
@@ -534,7 +536,7 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Test
     void shouldReturnOnlyWatchedMoviesPaginatedByMostRecentWatchedDate() throws Exception {
-        var user = userRepository.saveAndFlush(newUser("library-api@reelz.app"));
+        var user = userRepository.saveAndFlush(newUser("library-api@cinegiro.app"));
         var olderMovie = movieRepository.saveAndFlush(newMovie(
                 100L,
                 "Filme antigo",
@@ -601,7 +603,7 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Test
     void shouldListAndRemoveWatchlistItemsWithoutDeletingWatchedHistory() throws Exception {
-        var user = userRepository.saveAndFlush(newUser("watchlist-api@reelz.app"));
+        var user = userRepository.saveAndFlush(newUser("watchlist-api@cinegiro.app"));
         var savedForLater = movieRepository.saveAndFlush(newMovie(
                 401L,
                 "Para ver depois",
@@ -657,7 +659,7 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Test
     void shouldReturnTheCurrentFreeQuotaIncludingRewardedSpins() throws Exception {
-        var user = userRepository.saveAndFlush(newUser("usage-api@reelz.app"));
+        var user = userRepository.saveAndFlush(newUser("usage-api@cinegiro.app"));
         var usage = new RouletteDailyUsageEntity(
                 user,
                 LocalDate.now(ZoneId.of(user.getTimezone())),
@@ -680,7 +682,7 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Test
     void shouldReturnTheFullFreeQuotaWhenThereIsNoUsageForToday() throws Exception {
-        var user = userRepository.saveAndFlush(newUser("fresh-usage-api@reelz.app"));
+        var user = userRepository.saveAndFlush(newUser("fresh-usage-api@cinegiro.app"));
 
         mockMvc.perform(get("/api/v1/roulette/usage/today")
                         .header(HttpHeaders.AUTHORIZATION, bearerToken(user)))
@@ -695,7 +697,7 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Test
     void shouldReturnUnlimitedQuotaForPremiumWithoutCreatingDailyUsage() throws Exception {
-        var user = newUser("premium-usage-api@reelz.app");
+        var user = newUser("premium-usage-api@cinegiro.app");
         user.activatePremium(Instant.now().plusSeconds(3_600));
         userRepository.saveAndFlush(user);
 
@@ -712,7 +714,7 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Test
     void shouldReturnOnlyActiveProviderAndVibeCatalogEntries() throws Exception {
-        var user = userRepository.saveAndFlush(newUser("catalog-api@reelz.app"));
+        var user = userRepository.saveAndFlush(newUser("catalog-api@cinegiro.app"));
         var netflix = providerRepository.saveAndFlush(new StreamingProviderEntity(8, "Netflix"));
         var inactiveProvider = new StreamingProviderEntity(9, "Provider inativo");
         inactiveProvider.deactivate();
@@ -754,7 +756,7 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Test
     void shouldReplaceAndReturnStreamingPreferencesWithoutApplyingTheFreeSpinLimit() throws Exception {
-        var user = userRepository.saveAndFlush(newUser("preferences-api@reelz.app"));
+        var user = userRepository.saveAndFlush(newUser("preferences-api@cinegiro.app"));
         var netflix = new StreamingProviderEntity(8, "Netflix");
         netflix.refreshCatalogData("Netflix", null, 0);
         netflix = providerRepository.saveAndFlush(netflix);
@@ -809,7 +811,7 @@ class UserExperienceEndpointsIntegrationTest {
 
     @Test
     void shouldServePopularMoviesAndCompleteOnboardingAtomically() throws Exception {
-        var user = userRepository.saveAndFlush(newUser("onboarding-api@reelz.app"));
+        var user = userRepository.saveAndFlush(newUser("onboarding-api@cinegiro.app"));
         var provider = providerRepository.saveAndFlush(new StreamingProviderEntity(8, "Netflix"));
         var movies = IntStream.rangeClosed(1, 25)
                 .mapToObj(index -> newMovie(

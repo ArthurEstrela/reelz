@@ -51,7 +51,7 @@ export function VerifyEmailPage() {
           <SubmitButton loading={state === 'loading'} loadingLabel="Enviando...">Reenviar confirmação</SubmitButton>
         </form>
       )}
-      {state === 'error' && token && <Link to="/verify-email" className="mt-5 inline-flex text-sm font-bold text-reel-bright">Solicitar um novo link</Link>}
+      {state === 'error' && token && <Link to="/verify-email" className="mt-5 inline-flex text-sm font-bold text-brand-bright">Solicitar um novo link</Link>}
     </AuthLayout>
   )
 }

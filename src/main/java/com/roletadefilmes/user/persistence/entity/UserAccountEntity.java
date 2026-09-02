@@ -150,7 +150,7 @@ public class UserAccountEntity extends AuditableUuidEntity {
 
     public void anonymizeAndDelete(Instant deletedAt) {
         var anonymousId = getId().toString();
-        this.email = "deleted-" + anonymousId + "@deleted.reelz.invalid";
+        this.email = "deleted-" + anonymousId + "@deleted.cinegiro.invalid";
         this.displayName = "Conta excluída";
         this.passwordHash = "deleted:" + anonymousId;
         this.role = UserRole.USER;

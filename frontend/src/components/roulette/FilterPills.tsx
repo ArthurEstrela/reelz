@@ -66,9 +66,9 @@ export function FilterPills<T extends string | number>({
               whileTap={disabled || option.disabled ? undefined : { scale: 0.94 }}
               animate={selected ? { scale: 1.03, y: -1 } : { scale: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 420, damping: 28 }}
-              className={`shrink-0 snap-start rounded-xl border px-3.5 py-2.5 text-sm font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-reel focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:cursor-not-allowed disabled:opacity-40 ${
+              className={`shrink-0 snap-start rounded-xl border px-3.5 py-2.5 text-sm font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:cursor-not-allowed disabled:opacity-40 ${
                 selected
-                  ? 'border-reel bg-reel text-white shadow-[0_8px_24px_rgba(233,54,69,.2)]'
+                  ? 'border-brand bg-brand text-white shadow-[0_8px_24px_rgba(233,54,69,.2)]'
                   : 'border-white/12 bg-transparent text-white/65 hover:border-white/25 hover:bg-white/[0.05] hover:text-white'
               }`}
             >

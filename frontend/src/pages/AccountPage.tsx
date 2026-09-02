@@ -66,7 +66,7 @@ export function AccountPage() {
       <AppHeader />
       <div className="mx-auto mt-12 grid w-full max-w-4xl gap-6 lg:grid-cols-[1fr_.8fr]">
         <section className="rounded-3xl border border-white/10 bg-surface p-6 sm:p-8">
-          <p className="reelz-kicker">Sua conta</p>
+          <p className="cinegiro-kicker">Sua conta</p>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-paper">Perfil e preferências</h1>
           <p className="mt-2 text-sm text-white/50">{profile?.email ?? 'Carregando...'}</p>
           <form onSubmit={save} className="mt-8 space-y-5">
@@ -78,9 +78,9 @@ export function AccountPage() {
           </form>
         </section>
         <div className="space-y-6">
-          <section className="rounded-3xl border border-reel/25 bg-reel/[0.07] p-6 sm:p-8">
-            <p className="text-xs font-bold uppercase tracking-widest text-reel-bright/80">Seu plano</p>
-            <h2 className="mt-3 text-xl font-bold text-paper">{profile?.plan === 'PREMIUM' ? 'Reelz Premium' : 'Reelz Free'}</h2>
+          <section className="rounded-3xl border border-brand/25 bg-brand/[0.07] p-6 sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-widest text-brand-bright/80">Seu plano</p>
+            <h2 className="mt-3 text-xl font-bold text-paper">{profile?.plan === 'PREMIUM' ? 'CineGiro Premium' : 'CineGiro Free'}</h2>
             <p className="mt-2 text-sm leading-6 text-white/50">
               {profile?.plan === 'PREMIUM' ? 'Giros ilimitados e todos os streamings combinados.' : 'Conheça os giros ilimitados e a experiência sem anúncios.'}
             </p>

@@ -55,7 +55,7 @@ class BillingServiceTest {
                 "prod_annual",
                 1290,
                 9990,
-                "https://reelz.app",
+                "https://cinegiro.app",
                 List.of("CARD"),
                 true,
                 Duration.ofSeconds(5),
@@ -151,7 +151,7 @@ class BillingServiceTest {
 
     private UserAccountEntity newUser() {
         return new UserAccountEntity(
-                "billing@reelz.app",
+                "billing@cinegiro.app",
                 "hash",
                 "Billing User",
                 "America/Sao_Paulo",

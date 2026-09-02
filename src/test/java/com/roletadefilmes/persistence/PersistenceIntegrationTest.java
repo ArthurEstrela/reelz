@@ -79,7 +79,7 @@ class PersistenceIntegrationTest extends PostgresRepositoryIntegrationTest {
 
     @Test
     void shouldPersistAndReloadAValidHistoryEntry() {
-        var user = userRepository.save(newUser("history@reelz.app"));
+        var user = userRepository.save(newUser("history@cinegiro.app"));
         var movie = movieRepository.save(newMovie(550L, "Clube da Luta", 18));
 
         var history = historyRepository.saveAndFlush(new UserMovieHistoryEntity(
@@ -99,7 +99,7 @@ class PersistenceIntegrationTest extends PostgresRepositoryIntegrationTest {
 
     @Test
     void shouldRejectRatingOutsideOneToFive() {
-        var user = userRepository.save(newUser("rating@reelz.app"));
+        var user = userRepository.save(newUser("rating@cinegiro.app"));
         var movie = movieRepository.save(newMovie(551L, "Filme inválido", 18));
 
         var invalidHistory = new UserMovieHistoryEntity(
@@ -117,7 +117,7 @@ class PersistenceIntegrationTest extends PostgresRepositoryIntegrationTest {
 
     @Test
     void shouldRejectFutureWatchedDate() {
-        var user = userRepository.save(newUser("future@reelz.app"));
+        var user = userRepository.save(newUser("future@cinegiro.app"));
         var movie = movieRepository.save(newMovie(552L, "Filme do futuro", 878));
 
         var invalidHistory = new UserMovieHistoryEntity(
@@ -135,7 +135,7 @@ class PersistenceIntegrationTest extends PostgresRepositoryIntegrationTest {
 
     @Test
     void shouldRejectWatchedMetadataForWatchlistStatus() {
-        var user = userRepository.save(newUser("watchlist@reelz.app"));
+        var user = userRepository.save(newUser("watchlist@cinegiro.app"));
         var movie = movieRepository.save(newMovie(553L, "Watchlist inválida", 12));
 
         var invalidHistory = new UserMovieHistoryEntity(
@@ -153,7 +153,7 @@ class PersistenceIntegrationTest extends PostgresRepositoryIntegrationTest {
 
     @Test
     void shouldFindOnlyAnUnwatchedMovieMatchingProviderGenreAndVibe() {
-        var user = userRepository.save(newUser("roulette@reelz.app"));
+        var user = userRepository.save(newUser("roulette@cinegiro.app"));
         var netflix = providerRepository.save(new StreamingProviderEntity(8, "Netflix"));
         var max = providerRepository.save(new StreamingProviderEntity(1899, "Max"));
         preferenceRepository.save(new UserStreamingPreferenceEntity(user, netflix));
@@ -208,7 +208,7 @@ class PersistenceIntegrationTest extends PostgresRepositoryIntegrationTest {
 
     @Test
     void shouldFilterRouletteCandidatesByCatalogSourceWithoutDeletingData() {
-        var user = userRepository.save(newUser("catalog-source@reelz.app"));
+        var user = userRepository.save(newUser("catalog-source@cinegiro.app"));
         var netflix = providerRepository.save(new StreamingProviderEntity(8, "Netflix"));
         var tmdbMovie = movieRepository.save(newMovie(2001L, "Filme TMDB", 18));
         var streamingAvailabilityMovie = movieRepository.save(
@@ -265,7 +265,7 @@ class PersistenceIntegrationTest extends PostgresRepositoryIntegrationTest {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     void shouldRejectAStaleDailyUsageUpdateWithOptimisticLocking() {
         UUID usageId = requiresNewTransaction.execute(status -> {
-            var user = userRepository.save(newUser("locking@reelz.app"));
+            var user = userRepository.save(newUser("locking@cinegiro.app"));
             var usage = dailyUsageRepository.saveAndFlush(new RouletteDailyUsageEntity(
                     user,
                     LocalDate.now(),
@@ -290,7 +290,7 @@ class PersistenceIntegrationTest extends PostgresRepositoryIntegrationTest {
 
     @Test
     void shouldCreateOnlyOneDailyUsageForTheSameUserAndDate() {
-        var user = userRepository.saveAndFlush(newUser("daily-usage@reelz.app"));
+        var user = userRepository.saveAndFlush(newUser("daily-usage@cinegiro.app"));
         var usageDate = LocalDate.of(2026, 7, 29);
 
         var firstInsert = dailyUsageRepository.createIfAbsent(

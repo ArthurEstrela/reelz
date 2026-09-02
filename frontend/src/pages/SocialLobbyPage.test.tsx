@@ -22,7 +22,7 @@ vi.mock('../services/socialService', () => ({
 const authContext: AuthContextValue = {
   user: {
     id: 'user-id',
-    email: 'person@reelz.app',
+    email: 'person@cinegiro.app',
     onboardingCompleted: true,
     role: 'USER',
   },

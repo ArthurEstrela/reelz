@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Reelz — sua próxima sessão",
-  "short_name": "Reelz",
+  "name": "CineGiro — sua próxima sessão",
+  "short_name": "CineGiro",
   "description": "Menos tempo escolhendo, mais tempo assistindo.",
   "lang": "pt-BR",
   "start_url": "/",
@@ -12,19 +12,19 @@
   "categories": ["entertainment", "lifestyle"],
   "icons": [
     {
-      "src": "/icons/reelz-icon-192.png",
+      "src": "/icons/cinegiro-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/reelz-icon-512.png",
+      "src": "/icons/cinegiro-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/reelz-maskable-512.png",
+      "src": "/icons/cinegiro-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -37,7 +37,7 @@
       "url": "/",
       "icons": [
         {
-          "src": "/icons/reelz-icon-192.png",
+          "src": "/icons/cinegiro-icon-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -49,7 +49,7 @@
       "url": "/library",
       "icons": [
         {
-          "src": "/icons/reelz-icon-192.png",
+          "src": "/icons/cinegiro-icon-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }

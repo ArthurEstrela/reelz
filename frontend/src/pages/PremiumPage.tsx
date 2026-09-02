@@ -78,7 +78,7 @@ export function PremiumPage() {
         if (!active) return
         if (current.premium) {
           setCheckingPayment(false)
-          setMessage({ tone: 'success', text: 'Pagamento confirmado. Bem-vindo ao Reelz Premium!' })
+          setMessage({ tone: 'success', text: 'Pagamento confirmado. Bem-vindo ao CineGiro Premium!' })
           setSearchParams({}, { replace: true })
           return
         }
@@ -134,7 +134,7 @@ export function PremiumPage() {
 
       <div className="relative mx-auto mt-12 w-full max-w-5xl">
         <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-2xl text-center">
-          <p className="reelz-kicker">Reelz Premium</p>
+          <p className="cinegiro-kicker">CineGiro Premium</p>
           <h1 className="mt-4 text-4xl font-black tracking-[-0.04em] text-paper sm:text-5xl">
             Menos limite. Mais histórias.
           </h1>
@@ -146,7 +146,7 @@ export function PremiumPage() {
         {message ? <div className="mx-auto mt-7 max-w-xl"><FormMessage tone={message.tone}>{message.text}</FormMessage></div> : null}
 
         {accountStatus ? (
-          <section className="mx-auto mt-7 flex max-w-xl flex-col gap-4 rounded-2xl border border-reel/25 bg-reel/[0.08] p-5 sm:flex-row sm:items-center sm:justify-between">
+          <section className="mx-auto mt-7 flex max-w-xl flex-col gap-4 rounded-2xl border border-brand/25 bg-brand/[0.08] p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-bold text-paper">{accountStatus}</p>
               {subscription?.currentPeriodEnd ? (
@@ -163,7 +163,7 @@ export function PremiumPage() {
 
         {checkingPayment ? (
           <div className="mx-auto mt-8 flex max-w-md items-center justify-center gap-3 rounded-2xl border border-white/10 bg-surface px-5 py-4 text-sm text-white/65">
-            <span className="size-4 animate-spin rounded-full border-2 border-white/20 border-t-reel-bright" />
+            <span className="size-4 animate-spin rounded-full border-2 border-white/20 border-t-brand-bright" />
             Confirmando seu pagamento com segurança…
           </div>
         ) : null}
@@ -175,9 +175,9 @@ export function PremiumPage() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.08, type: 'spring', stiffness: 180, damping: 22 }}
-              className={`relative rounded-3xl border p-6 sm:p-8 ${plan.recommended ? 'border-reel/45 bg-reel/[0.09] shadow-[0_28px_90px_rgba(91,61,196,.2)]' : 'border-white/10 bg-surface'}`}
+              className={`relative rounded-3xl border p-6 sm:p-8 ${plan.recommended ? 'border-brand/45 bg-brand/[0.09] shadow-[0_28px_90px_rgba(91,61,196,.2)]' : 'border-white/10 bg-surface'}`}
             >
-              {plan.recommended ? <span className="absolute right-5 top-5 rounded-full bg-reel px-3 py-1 text-[0.65rem] font-black uppercase tracking-wider">Melhor escolha</span> : null}
+              {plan.recommended ? <span className="absolute right-5 top-5 rounded-full bg-brand px-3 py-1 text-[0.65rem] font-black uppercase tracking-wider">Melhor escolha</span> : null}
               <p className="text-sm font-bold text-white/60">{plan.name}</p>
               <div className="mt-5 flex items-end gap-2">
                 <span className="text-4xl font-black tracking-tight text-paper">{currencyFormatter.format(plan.priceCents / 100)}</span>
@@ -187,7 +187,7 @@ export function PremiumPage() {
               <ul className="mt-7 space-y-3">
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex items-center gap-3 text-sm text-white/70">
-                    <span className="grid size-5 place-items-center rounded-full bg-reel/20 text-xs font-black text-reel-bright">✓</span>
+                    <span className="grid size-5 place-items-center rounded-full bg-brand/20 text-xs font-black text-brand-bright">✓</span>
                     {feature}
                   </li>
                 ))}
@@ -196,7 +196,7 @@ export function PremiumPage() {
                 type="button"
                 disabled={!plan.available || checkoutPlan !== null || Boolean(subscription?.premium)}
                 onClick={() => void startCheckout(plan.code)}
-                className={`mt-8 w-full rounded-xl px-5 py-3.5 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-45 ${plan.recommended ? 'bg-paper text-canvas hover:bg-white' : 'bg-reel text-white hover:bg-reel-bright'}`}
+                className={`mt-8 w-full rounded-xl px-5 py-3.5 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-45 ${plan.recommended ? 'bg-paper text-canvas hover:bg-white' : 'bg-brand text-white hover:bg-brand-bright'}`}
               >
                 {checkoutPlan === plan.code ? 'Abrindo checkout…' : subscription?.premium ? 'Plano ativo' : plan.available ? 'Assinar Premium' : 'Disponível em breve'}
               </button>

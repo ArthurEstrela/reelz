@@ -9,8 +9,8 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@WithSecurityContext(factory = WithMockReelzUserSecurityContextFactory.class)
-public @interface WithMockReelzUser {
+@WithSecurityContext(factory = WithMockCineGiroUserSecurityContextFactory.class)
+public @interface WithMockCineGiroUser {
 
     String userId() default "11111111-1111-1111-1111-111111111111";
 }

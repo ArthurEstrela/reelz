@@ -25,7 +25,7 @@ vi.mock('../hooks/useAchievements', () => ({
 }))
 
 const context: AuthContextValue = {
-  user: { id: 'user-id', email: 'collector@reelz.app', onboardingCompleted: true, role: 'USER' },
+  user: { id: 'user-id', email: 'collector@cinegiro.app', onboardingCompleted: true, role: 'USER' },
   isAuthenticated: true,
   login: vi.fn(),
   register: vi.fn(),

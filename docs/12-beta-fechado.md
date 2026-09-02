@@ -1,6 +1,6 @@
 # Operação do beta fechado
 
-Este documento é o runbook mínimo para colocar pessoas reais no Reelz sem transformar o teste de produto em um risco operacional.
+Este documento é o runbook mínimo para colocar pessoas reais no CineGiro sem transformar o teste de produto em um risco operacional.
 
 ## Escopo permitido
 

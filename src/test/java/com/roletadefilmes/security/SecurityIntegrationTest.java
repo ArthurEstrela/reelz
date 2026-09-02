@@ -6,7 +6,7 @@ import com.roletadefilmes.auth.service.AuthService;
 import com.roletadefilmes.roulette.api.RouletteController;
 import com.roletadefilmes.roulette.service.RouletteService;
 import com.roletadefilmes.shared.config.TimeConfiguration;
-import com.roletadefilmes.support.security.WithMockReelzUser;
+import com.roletadefilmes.support.security.WithMockCineGiroUser;
 import com.roletadefilmes.user.api.UserController;
 import com.roletadefilmes.user.service.UserRegistrationService;
 import com.roletadefilmes.user.service.UserAccountService;
@@ -108,7 +108,7 @@ class SecurityIntegrationTest {
     }
 
     @Test
-    @WithMockReelzUser(userId = MOCK_USER_ID)
+    @WithMockCineGiroUser(userId = MOCK_USER_ID)
     void shouldSupportTheTypedMockPrincipalInControllerTests() throws Exception {
         mockMvc.perform(post("/api/v1/roulette/spin")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -158,7 +158,7 @@ class SecurityIntegrationTest {
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email":"person@reelz.app","password":"correct-password"}
+                                {"email":"person@cinegiro.app","password":"correct-password"}
                                 """))
                 .andExpect(status().isOk());
     }
@@ -170,7 +170,7 @@ class SecurityIntegrationTest {
                         .content("""
                                 {
                                   "displayName":"Pessoa",
-                                  "email":"person@reelz.app",
+                                  "email":"person@cinegiro.app",
                                   "password":"correct-password",
                                   "timezone":"America/Sao_Paulo",
                                   "countryCode":"BR",

@@ -1,6 +1,6 @@
-# Reelz Web
+# CineGiro Web
 
-Front-end mobile-first do Reelz, construído com React, TypeScript, Vite, Tailwind CSS, React Router v8 e Framer Motion.
+Front-end mobile-first do CineGiro, construído com React, TypeScript, Vite, Tailwind CSS, React Router v8 e Framer Motion.
 
 ## Executar
 

@@ -1,15 +1,15 @@
 groups:
-  - name: reelz-beta
+  - name: cinegiro-beta
     rules:
-      - alert: ReelzBackendDown
+      - alert: CineGiroBackendDown
         expr: up{job="reelz-backend"} == 0
         for: 2m
         labels:
           severity: critical
         annotations:
-          summary: "Backend do Reelz indisponivel"
+          summary: "Backend do CineGiro indisponivel"
           description: "O Prometheus nao coleta o backend ha pelo menos 2 minutos."
-      - alert: ReelzHighServerErrorRate
+      - alert: CineGiroHighServerErrorRate
         expr: (sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count[5m])), 0.001)) > 0.05
         for: 5m
         labels:
@@ -17,7 +17,7 @@ groups:
         annotations:
           summary: "Taxa elevada de erros 5xx"
           description: "Mais de 5% das requisicoes resultaram em 5xx nos ultimos 5 minutos."
-      - alert: ReelzSlowRoulette
+      - alert: CineGiroSlowRoulette
         expr: histogram_quantile(0.95, sum by (le) (rate(reelz_roulette_spin_duration_seconds_bucket[10m]))) > 2
         for: 10m
         labels:
@@ -25,7 +25,7 @@ groups:
         annotations:
           summary: "Roleta lenta no percentil 95"
           description: "O processamento de um giro superou 2 segundos no p95."
-      - alert: ReelzDatabasePoolSaturated
+      - alert: CineGiroDatabasePoolSaturated
         expr: hikaricp_connections_active / clamp_min(hikaricp_connections_max, 1) > 0.85
         for: 5m
         labels:

@@ -17,7 +17,7 @@ vi.mock('../services/billingService', () => ({
 }))
 
 vi.mock('../hooks/useAuth', () => ({
-  useAuth: () => ({ user: { email: 'premium@reelz.app', role: 'USER' }, logout: vi.fn() }),
+  useAuth: () => ({ user: { email: 'premium@cinegiro.app', role: 'USER' }, logout: vi.fn() }),
 }))
 
 describe('PremiumPage', () => {

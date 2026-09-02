@@ -8,7 +8,7 @@ import {
 import { PWA_ENGAGEMENT_EVENT, PwaStatusPrompt } from './PwaStatusPrompt'
 
 vi.mock('../../pwa/registerServiceWorker', () => ({
-  PWA_UPDATE_AVAILABLE_EVENT: 'reelz:pwa-update-available',
+  PWA_UPDATE_AVAILABLE_EVENT: 'cinegiro:pwa-update-available',
   activateWaitingServiceWorker: vi.fn(),
 }))
 
@@ -46,13 +46,13 @@ describe('PwaStatusPrompt', () => {
       window.dispatchEvent(installEvent)
     })
 
-    expect(screen.queryByText('Instale o Reelz')).not.toBeInTheDocument()
+    expect(screen.queryByText('Instale o CineGiro')).not.toBeInTheDocument()
     act(() => {
       window.dispatchEvent(new Event(PWA_ENGAGEMENT_EVENT))
       window.dispatchEvent(new Event(PWA_ENGAGEMENT_EVENT))
     })
 
-    expect(screen.getByText('Instale o Reelz')).toBeInTheDocument()
+    expect(screen.getByText('Instale o CineGiro')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Instalar' }))
 
     expect(prompt).toHaveBeenCalledOnce()

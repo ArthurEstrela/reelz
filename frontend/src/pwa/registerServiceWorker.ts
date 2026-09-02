@@ -1,4 +1,4 @@
-export const PWA_UPDATE_AVAILABLE_EVENT = 'reelz:pwa-update-available'
+export const PWA_UPDATE_AVAILABLE_EVENT = 'cinegiro:pwa-update-available'
 
 let refreshing = false
 

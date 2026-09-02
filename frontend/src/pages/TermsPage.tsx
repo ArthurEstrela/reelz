@@ -6,7 +6,7 @@ export function TermsPage() {
       <section>
         <h2>1. Sobre o beta</h2>
         <p>
-          O Reelz é um produto em fase beta criado para ajudar pessoas a escolher filmes. Recursos,
+          O CineGiro é um produto em fase beta criado para ajudar pessoas a escolher filmes. Recursos,
           limites e disponibilidade podem mudar durante os testes. Ao participar, você entende que
           falhas e interrupções podem ocorrer e concorda em fornecer feedback de forma voluntária.
         </p>
@@ -31,7 +31,7 @@ export function TermsPage() {
         <h2>4. Conteúdo de terceiros</h2>
         <p>
           Títulos, pôsteres, notas, sinopses, marcas e links pertencem aos respectivos titulares. O
-          Reelz não hospeda nem transmite filmes. Links externos seguem os termos e políticas de seus
+          CineGiro não hospeda nem transmite filmes. Links externos seguem os termos e políticas de seus
           próprios operadores.
         </p>
       </section>
@@ -48,7 +48,7 @@ export function TermsPage() {
         <p>
           O serviço é oferecido no estado atual durante o beta. Dentro dos limites legais, não nos
           responsabilizamos por alterações de catálogo, indisponibilidade de terceiros ou decisões de
-          compra tomadas fora do Reelz.
+          compra tomadas fora do CineGiro.
         </p>
       </section>
     </LegalPageLayout>

@@ -48,7 +48,7 @@ class BillingWebhookServiceTest {
     void setUp() {
         var properties = new AbacatePayProperties(
                 true, "api-key", SECRET, HMAC_KEY, "prod_monthly", "prod_annual",
-                1290, 9990, "https://reelz.app", List.of("CARD"), true,
+                1290, 9990, "https://cinegiro.app", List.of("CARD"), true,
                 Duration.ofSeconds(5), Duration.ofSeconds(15)
         );
         service = new BillingWebhookService(
@@ -63,7 +63,7 @@ class BillingWebhookServiceTest {
     @Test
     void shouldActivatePremiumOnlyAfterAValidCompletedWebhook() throws Exception {
         var user = new UserAccountEntity(
-                "webhook@reelz.app", "hash", "Webhook User", "America/Sao_Paulo", "BR"
+                "webhook@cinegiro.app", "hash", "Webhook User", "America/Sao_Paulo", "BR"
         );
         var subscription = new BillingSubscriptionEntity(user, BillingPlanCode.PREMIUM_MONTHLY, 1290);
         subscription.attachCheckout("bill_123", "https://pay.example/bill_123");

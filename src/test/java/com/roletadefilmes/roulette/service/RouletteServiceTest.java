@@ -2,8 +2,8 @@ package com.roletadefilmes.roulette.service;
 
 import com.roletadefilmes.movie.persistence.entity.MovieCacheEntity;
 import com.roletadefilmes.movie.persistence.repository.MovieCacheRepository;
-import com.roletadefilmes.observability.ReelzMetrics;
-import com.roletadefilmes.observability.ReelzMetrics.RouletteSpinOutcome;
+import com.roletadefilmes.observability.CineGiroMetrics;
+import com.roletadefilmes.observability.CineGiroMetrics.RouletteSpinOutcome;
 import com.roletadefilmes.roulette.api.dto.RouletteSpinRequest;
 import com.roletadefilmes.roulette.config.RouletteCatalogSource;
 import com.roletadefilmes.roulette.config.RouletteProperties;
@@ -70,7 +70,7 @@ class RouletteServiceTest {
     private MovieStreamingOfferRepository offerRepository;
 
     @Mock
-    private ReelzMetrics metrics;
+    private CineGiroMetrics metrics;
 
     @Mock
     private Timer.Sample spinSample;
@@ -312,7 +312,7 @@ class RouletteServiceTest {
 
     private UserAccountEntity newFreeUser() {
         return new UserAccountEntity(
-                "person@reelz.app",
+                "person@cinegiro.app",
                 "password-hash",
                 "Pessoa",
                 "America/Sao_Paulo",

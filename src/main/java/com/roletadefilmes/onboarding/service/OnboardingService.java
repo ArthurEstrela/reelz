@@ -5,7 +5,7 @@ import com.roletadefilmes.history.persistence.entity.UserMovieHistoryEntity;
 import com.roletadefilmes.history.persistence.repository.UserMovieHistoryRepository;
 import com.roletadefilmes.movie.persistence.entity.MovieCacheEntity;
 import com.roletadefilmes.movie.persistence.repository.MovieCacheRepository;
-import com.roletadefilmes.observability.ReelzMetrics;
+import com.roletadefilmes.observability.CineGiroMetrics;
 import com.roletadefilmes.onboarding.api.dto.CompleteOnboardingRequest;
 import com.roletadefilmes.onboarding.api.dto.CompleteOnboardingResponse;
 import com.roletadefilmes.onboarding.api.dto.OnboardingMovieResponse;
@@ -31,14 +31,14 @@ public class OnboardingService {
     private final MovieCacheRepository movieRepository;
     private final UserMovieHistoryRepository historyRepository;
     private final Clock clock;
-    private final ReelzMetrics metrics;
+    private final CineGiroMetrics metrics;
 
     public OnboardingService(
             UserAccountRepository userRepository,
             MovieCacheRepository movieRepository,
             UserMovieHistoryRepository historyRepository,
             Clock clock,
-            ReelzMetrics metrics
+            CineGiroMetrics metrics
     ) {
         this.userRepository = userRepository;
         this.movieRepository = movieRepository;

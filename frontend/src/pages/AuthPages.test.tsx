@@ -54,9 +54,9 @@ describe('authentication pages', () => {
     const user = userEvent.setup()
     renderAt('/login', { login })
 
-    await user.type(screen.getByLabelText('E-mail'), 'person@reelz.app')
+    await user.type(screen.getByLabelText('E-mail'), 'person@cinegiro.app')
     await user.type(screen.getByLabelText('Senha'), 'wrong-password')
-    await user.click(screen.getByRole('button', { name: 'Entrar no Reelz' }))
+    await user.click(screen.getByRole('button', { name: 'Entrar no CineGiro' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('E-mail ou senha inválidos.')
   })
@@ -67,17 +67,17 @@ describe('authentication pages', () => {
     renderAt('/register', { register })
 
     await user.type(screen.getByLabelText('Como podemos te chamar?'), 'Pessoa')
-    await user.type(screen.getByLabelText('E-mail'), 'person@reelz.app')
+    await user.type(screen.getByLabelText('E-mail'), 'person@cinegiro.app')
     await user.type(screen.getByLabelText('Senha'), 'password-123')
     await user.click(screen.getByRole('checkbox'))
     await user.click(screen.getByRole('button', { name: 'Criar conta grátis' }))
 
     expect(await screen.findByText('Confira sua caixa de entrada.')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('person@reelz.app')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('person@cinegiro.app')).toBeInTheDocument()
     expect(register).toHaveBeenCalledWith(
       expect.objectContaining({
         displayName: 'Pessoa',
-        email: 'person@reelz.app',
+        email: 'person@cinegiro.app',
         termsAccepted: true,
         timezone: expect.any(String),
         countryCode: expect.stringMatching(/^[A-Z]{2}$/),

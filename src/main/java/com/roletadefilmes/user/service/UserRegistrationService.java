@@ -5,7 +5,7 @@ import com.roletadefilmes.account.service.AccountSecurityService;
 import com.roletadefilmes.legal.domain.LegalDocumentType;
 import com.roletadefilmes.legal.persistence.entity.UserLegalAcceptanceEntity;
 import com.roletadefilmes.legal.persistence.repository.UserLegalAcceptanceRepository;
-import com.roletadefilmes.observability.ReelzMetrics;
+import com.roletadefilmes.observability.CineGiroMetrics;
 import com.roletadefilmes.user.api.dto.RegisterUserRequest;
 import com.roletadefilmes.user.api.dto.UserResponse;
 import com.roletadefilmes.user.domain.exception.EmailAlreadyRegisteredException;
@@ -32,7 +32,7 @@ public class UserRegistrationService {
     private final PasswordEncoder passwordEncoder;
     private final String termsVersion;
     private final String privacyVersion;
-    private final ReelzMetrics metrics;
+    private final CineGiroMetrics metrics;
     private final AdminProperties adminProperties;
     private final AccountSecurityService accountSecurityService;
 
@@ -42,7 +42,7 @@ public class UserRegistrationService {
             PasswordEncoder passwordEncoder,
             @Value("${reelz.legal.terms-version}") String termsVersion,
             @Value("${reelz.legal.privacy-version}") String privacyVersion,
-            ReelzMetrics metrics,
+            CineGiroMetrics metrics,
             AdminProperties adminProperties,
             AccountSecurityService accountSecurityService
     ) {

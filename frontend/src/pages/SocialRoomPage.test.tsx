@@ -70,7 +70,7 @@ const room: SocialRoom = {
 const authContext: AuthContextValue = {
   user: {
     id: hostId,
-    email: 'ana@reelz.app',
+    email: 'ana@cinegiro.app',
     onboardingCompleted: true,
     role: 'USER',
   },

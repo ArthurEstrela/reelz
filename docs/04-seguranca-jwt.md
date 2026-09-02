@@ -94,7 +94,7 @@ Para testes MVC que não precisam exercitar a assinatura JWT, use a anotação t
 
 ```java
 @Test
-@WithMockReelzUser(userId = "11111111-1111-1111-1111-111111111111")
+@WithMockCineGiroUser(userId = "11111111-1111-1111-1111-111111111111")
 void shouldSpinAsAnAuthenticatedUser() {
     // ...
 }

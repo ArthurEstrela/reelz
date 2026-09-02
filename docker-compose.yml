@@ -41,7 +41,7 @@ services:
       ANALYTICS_RETENTION_DAYS: ${ANALYTICS_RETENTION_DAYS:-180}
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost}
       ACCOUNT_MAIL_MODE: ${ACCOUNT_MAIL_MODE:-LOG}
-      MAIL_FROM: ${MAIL_FROM:-no-reply@reelz.app}
+      MAIL_FROM: ${MAIL_FROM:-no-reply@cinegiro.app}
       MAIL_HOST: ${MAIL_HOST:-localhost}
       MAIL_PORT: ${MAIL_PORT:-1025}
       MAIL_USERNAME: ${MAIL_USERNAME:-}

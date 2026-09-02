@@ -1,6 +1,6 @@
 # Pacote beta ready
 
-Este documento é o gate operacional para abrir o Reelz a pessoas externas. Código pronto não substitui as credenciais e decisões de infraestrutura abaixo.
+Este documento é o gate operacional para abrir o CineGiro a pessoas externas. Código pronto não substitui as credenciais e decisões de infraestrutura abaixo.
 
 ## O que já está implementado
 

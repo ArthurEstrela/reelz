@@ -270,7 +270,7 @@ export function LibraryPage() {
       <AppHeader />
 
       <section className="relative mx-auto max-w-6xl pt-10 sm:pt-14">
-        <p className="reelz-kicker">Sua videoteca</p>
+        <p className="cinegiro-kicker">Sua videoteca</p>
         <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-4xl font-extrabold tracking-[-0.045em] sm:text-6xl">Biblioteca</h1>
@@ -284,7 +284,7 @@ export function LibraryPage() {
           </div>
           {!initialLoading && totalElements !== null && totalElements > 0 ? (
             <div className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center">
-              <strong className="block text-2xl font-bold text-reel-bright">{totalElements}</strong>
+              <strong className="block text-2xl font-bold text-brand-bright">{totalElements}</strong>
               <span className="text-[10px] font-semibold uppercase tracking-wider text-white/55">
                 {isWatchedTab ? 'na coleção' : 'para assistir'}
               </span>
@@ -360,7 +360,7 @@ export function LibraryPage() {
 
           {!initialLoading && movies.length === 0 && !error ? (
             <div className="mx-auto max-w-md border-y border-white/10 px-7 py-12 text-center">
-              <svg viewBox="0 0 24 24" className="mx-auto size-11 text-reel-bright" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+              <svg viewBox="0 0 24 24" className="mx-auto size-11 text-brand-bright" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
                 {isWatchedTab ? <><rect x="4" y="5" width="16" height="15" rx="2" /><path d="m4 10 16-3M8 5l3 4M14 4l3 4" /></> : <path d="M7 4h10a1 1 0 0 1 1 1v15l-6-3-6 3V5a1 1 0 0 1 1-1Z" />}
               </svg>
               <h2 className="mt-5 text-xl font-bold">
@@ -373,7 +373,7 @@ export function LibraryPage() {
                   ? 'Marque um resultado como “Já vi” e ele aparecerá aqui.'
                   : 'Salve um resultado da roleta para assistir quando chegar a hora certa.'}
               </p>
-              <Link to="/" className="mt-6 inline-flex rounded-xl bg-reel px-5 py-3 text-sm font-bold text-white">
+              <Link to="/" className="mt-6 inline-flex rounded-xl bg-brand px-5 py-3 text-sm font-bold text-white">
                 Girar agora
               </Link>
             </div>

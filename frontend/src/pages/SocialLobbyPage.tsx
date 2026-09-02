@@ -91,12 +91,12 @@ export function SocialLobbyPage() {
       <AppHeader />
 
       <div className="relative mx-auto max-w-4xl pt-10">
-        <p className="reelz-kicker">Decisão compartilhada</p>
+        <p className="cinegiro-kicker">Decisão compartilhada</p>
         <h1 className="mt-2 max-w-2xl text-4xl font-extrabold tracking-[-.045em] sm:text-5xl">
           Todo mundo dá o pitaco.
         </h1>
         <p className="mt-4 max-w-xl leading-7 text-white/60">
-          Cada pessoa escolhe o que topa. O Reelz encontra um filme disponível para o grupo inteiro.
+          Cada pessoa escolhe o que topa. O CineGiro encontra um filme disponível para o grupo inteiro.
         </p>
 
         {error ? (
@@ -124,12 +124,12 @@ export function SocialLobbyPage() {
                 disabled={pendingAction !== null || (premiumGroup && checkingPremium)}
                 className={`rounded-2xl border p-6 text-left transition disabled:opacity-50 ${
                   selected
-                    ? 'border-reel/45 bg-reel/[0.08] shadow-[0_20px_60px_rgba(233,54,69,.1)]'
+                    ? 'border-brand/45 bg-brand/[0.08] shadow-[0_20px_60px_rgba(233,54,69,.1)]'
                     : 'border-white/10 bg-white/[0.025] hover:border-white/25'
                 }`}
               >
                 <span className="flex items-start justify-between gap-4">
-                  <svg viewBox="0 0 24 24" className="size-8 text-reel-bright" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" className="size-8 text-brand-bright" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
                     {type === 'COUPLE' ? <><circle cx="8" cy="9" r="3" /><circle cx="16" cy="9" r="3" /><path d="M3.5 19c.4-3.6 1.9-5.3 4.5-5.3s4.1 1.7 4.5 5.3M11.5 19c.4-3.6 1.9-5.3 4.5-5.3s4.1 1.7 4.5 5.3" /></> : <><circle cx="12" cy="7" r="2.5" /><circle cx="6" cy="10" r="2" /><circle cx="18" cy="10" r="2" /><path d="M7 19c.3-4 2-6 5-6s4.7 2 5 6M2.5 19c.2-2.7 1.4-4.3 3.5-4.3M21.5 19c-.2-2.7-1.4-4.3-3.5-4.3" /></>}
                   </svg>
                   {premiumGroup ? (
@@ -144,7 +144,7 @@ export function SocialLobbyPage() {
                     ? 'Você e mais uma pessoa, sem perder tempo comparando catálogos.'
                     : 'Crie para até 8 pessoas com Premium. Convidados entram gratuitamente.'}
                 </span>
-                <span className="mt-5 block text-xs font-semibold text-reel-bright">
+                <span className="mt-5 block text-xs font-semibold text-brand-bright">
                   {pendingAction === type
                     ? 'Criando…'
                     : premiumGroup && checkingPremium
@@ -158,7 +158,7 @@ export function SocialLobbyPage() {
           })}
         </section>
 
-        <form onSubmit={handleJoin} className="mt-5 flex gap-2 rounded-xl border border-white/10 bg-white/[0.025] p-2 focus-within:border-reel/55 focus-within:ring-4 focus-within:ring-reel/8">
+        <form onSubmit={handleJoin} className="mt-5 flex gap-2 rounded-xl border border-white/10 bg-white/[0.025] p-2 focus-within:border-brand/55 focus-within:ring-4 focus-within:ring-brand/8">
           <label htmlFor="invite-code" className="sr-only">Código do convite</label>
           <input
             id="invite-code"
@@ -189,7 +189,7 @@ export function SocialLobbyPage() {
                 key={room.id}
                 type="button"
                 onClick={() => navigate(`/social/rooms/${room.id}`)}
-                className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.025] p-4 text-left transition hover:border-reel/35"
+                className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.025] p-4 text-left transition hover:border-brand/35"
               >
                 <span>
                   <span className="block text-sm font-semibold">{roomLabel(room.type)}</span>

@@ -1,6 +1,6 @@
-# Reelz
+# CineGiro
 
-Reelz é uma roleta de filmes gamificada para reduzir o tempo de escolha do que assistir. O produto cruza preferências do usuário, histórico de filmes e disponibilidade em serviços de streaming.
+CineGiro é uma roleta de filmes gamificada para reduzir o tempo de escolha do que assistir. O produto cruza preferências do usuário, histórico de filmes e disponibilidade em serviços de streaming.
 
 ## Estado atual
 
@@ -98,7 +98,9 @@ A Home privada contém a experiência funcional da roleta e consome os catálogo
 mvn test
 ```
 
-Os testes de persistência precisam do Docker em execução. Para iniciar a aplicação, configure `DATABASE_URL`, `DATABASE_USERNAME` e `DATABASE_PASSWORD`; os valores padrão apontam para um PostgreSQL local chamado `reelz`.
+Os testes de persistência precisam do Docker em execução. Para iniciar a aplicação, configure `DATABASE_URL`, `DATABASE_USERNAME` e `DATABASE_PASSWORD`; os valores padrão apontam para o PostgreSQL local legado chamado `reelz`.
+
+> Compatibilidade: alguns identificadores internos anteriores ao rebranding (`reelz.*`, issuer JWT, métricas, banco e volume Docker) foram preservados deliberadamente. Renomeá-los sem uma migração operacional criaria uma base vazia, invalidaria sessões ou interromperia dashboards; eles não aparecem na experiência do usuário.
 
 Também é obrigatório configurar `JWT_SECRET` com uma chave aleatória de pelo menos 256 bits em Base64. Não existe segredo padrão no código.
 
@@ -143,6 +145,6 @@ No Docker Compose, a porta do backend fica vinculada somente a `127.0.0.1`. Em p
 - [Modos Casal e Grupo](docs/13-modos-sociais.md)
 - [Pacote beta ready](docs/14-beta-ready.md)
 - [Sistema de conquistas](docs/15-conquistas.md)
-- [Pagamentos e Reelz Premium](docs/16-pagamentos-premium.md)
+- [Pagamentos e CineGiro Premium](docs/16-pagamentos-premium.md)
 - [Streaming Availability API](docs/17-streaming-availability.md)
 - [Front-end React](frontend/README.md)

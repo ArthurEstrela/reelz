@@ -15,7 +15,7 @@ function fingerprintBundle(fileNames: string[]): string {
 
 function versionedServiceWorker(): Plugin {
   return {
-    name: 'reelz-versioned-service-worker',
+    name: 'cinegiro-versioned-service-worker',
     apply: 'build',
     generateBundle(_options, bundle) {
       const bundleFileNames = Object.keys(bundle)
@@ -29,8 +29,8 @@ function versionedServiceWorker(): Plugin {
         type: 'asset',
         fileName: 'sw.js',
         source: serviceWorkerTemplate
-          .replace('__REELZ_BUILD_VERSION__', buildVersion)
-          .replace('  __REELZ_BUNDLE_ASSETS__', bundleAssets),
+          .replace('__CINEGIRO_BUILD_VERSION__', buildVersion)
+          .replace('  __CINEGIRO_BUNDLE_ASSETS__', bundleAssets),
       })
     },
   }

@@ -28,7 +28,7 @@ public class AuthService {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
-        this.dummyPasswordHash = passwordEncoder.encode("reelz-dummy-password");
+        this.dummyPasswordHash = passwordEncoder.encode("cinegiro-dummy-password");
     }
 
     @Transactional(readOnly = true)

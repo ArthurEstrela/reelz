@@ -48,7 +48,7 @@ const overview: AnalyticsOverview = {
 const authContext: AuthContextValue = {
   user: {
     id: 'admin-id',
-    email: 'admin@reelz.app',
+    email: 'admin@cinegiro.app',
     onboardingCompleted: true,
     role: 'ADMIN',
   },

@@ -10,11 +10,11 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.Locale;
 
 @Component
-public class ReelzMetrics {
+public class CineGiroMetrics {
 
     private final MeterRegistry registry;
 
-    public ReelzMetrics(MeterRegistry registry) {
+    public CineGiroMetrics(MeterRegistry registry) {
         this.registry = registry;
     }
 

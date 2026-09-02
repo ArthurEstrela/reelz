@@ -57,7 +57,7 @@ export function RegisterPage() {
         <>
           Já tem uma conta?{' '}
           <Link
-            className="font-bold text-white transition hover:text-reel"
+            className="font-bold text-white transition hover:text-brand"
             to="/login"
             state={{ from: navigationState?.from }}
           >
@@ -114,7 +114,7 @@ export function RegisterPage() {
             checked={termsAccepted}
             onChange={(event) => setTermsAccepted(event.target.checked)}
             required
-            className="mt-0.5 size-4 shrink-0 accent-reel"
+            className="mt-0.5 size-4 shrink-0 accent-brand"
           />
           <span className="text-xs leading-5 text-white/48">
             Li e aceito os <Link to="/terms" target="_blank" className="font-semibold text-white/72 underline decoration-white/20 underline-offset-2">Termos de Uso</Link> e a{' '}

@@ -1,15 +1,16 @@
 export const serviceWorkerTemplate = `
-const BUILD_VERSION = '__REELZ_BUILD_VERSION__'
-const CACHE_PREFIX = 'reelz-'
+const BUILD_VERSION = '__CINEGIRO_BUILD_VERSION__'
+const CACHE_PREFIX = 'cinegiro-'
+const LEGACY_CACHE_PREFIX = 'reelz-'
 const SHELL_CACHE = CACHE_PREFIX + 'shell-' + BUILD_VERSION
 const STATIC_CACHE = CACHE_PREFIX + 'static-' + BUILD_VERSION
 const SHELL_URLS = [
   '/index.html',
   '/manifest.webmanifest',
-  '/icons/reelz-icon-192.png',
-  '/icons/reelz-icon-512.png',
-  '/icons/reelz-maskable-512.png',
-  __REELZ_BUNDLE_ASSETS__
+  '/icons/cinegiro-icon-192.png',
+  '/icons/cinegiro-icon-512.png',
+  '/icons/cinegiro-maskable-512.png',
+  __CINEGIRO_BUNDLE_ASSETS__
 ]
 
 self.addEventListener('install', (event) => {
@@ -24,7 +25,7 @@ self.addEventListener('activate', (event) => {
       .then((cacheNames) => Promise.all(
         cacheNames
           .filter((cacheName) => (
-            cacheName.startsWith(CACHE_PREFIX)
+            (cacheName.startsWith(CACHE_PREFIX) || cacheName.startsWith(LEGACY_CACHE_PREFIX))
             && cacheName !== SHELL_CACHE
             && cacheName !== STATIC_CACHE
           ))

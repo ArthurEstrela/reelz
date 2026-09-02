@@ -10,7 +10,7 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
-export const PWA_ENGAGEMENT_EVENT = 'reelz:pwa-engagement'
+export const PWA_ENGAGEMENT_EVENT = 'cinegiro:pwa-engagement'
 
 export function PwaStatusPrompt() {
   const [updateAvailable, setUpdateAvailable] = useState(false)
@@ -84,14 +84,14 @@ export function PwaStatusPrompt() {
           className="fixed inset-x-4 bottom-24 z-[60] mx-auto flex max-w-md items-center gap-3 rounded-xl border border-white/12 bg-surface-raised/95 p-3 shadow-2xl backdrop-blur-xl lg:bottom-6"
         >
           <span
-            className="grid size-10 shrink-0 place-items-center rounded-lg bg-reel text-base font-bold text-white"
+            className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand text-base font-bold text-white"
             aria-hidden="true"
           >
             {updateAvailable ? '↻' : '↓'}
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-bold text-paper">
-              {updateAvailable ? 'Nova versão disponível' : 'Instale o Reelz'}
+              {updateAvailable ? 'Nova versão disponível' : 'Instale o CineGiro'}
             </p>
             <p className="mt-0.5 text-xs leading-5 text-white/45">
               {updateAvailable

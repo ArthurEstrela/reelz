@@ -16,7 +16,7 @@ export function SubmitButton({
     <button
       type="submit"
       disabled={disabled || loading}
-      className="group flex h-13 w-full items-center justify-center gap-2 rounded-lg bg-reel px-5 text-sm font-bold text-white shadow-[0_12px_32px_rgba(233,54,69,.18)] transition hover:bg-reel-bright hover:shadow-[0_15px_36px_rgba(233,54,69,.24)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-reel disabled:cursor-not-allowed disabled:opacity-55"
+      className="group flex h-13 w-full items-center justify-center gap-2 rounded-lg bg-brand px-5 text-sm font-bold text-white shadow-[0_12px_32px_rgba(233,54,69,.18)] transition hover:bg-brand-bright hover:shadow-[0_15px_36px_rgba(233,54,69,.24)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-55"
       {...buttonProps}
     >
       {loading && (

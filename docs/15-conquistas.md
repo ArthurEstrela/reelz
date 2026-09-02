@@ -1,6 +1,6 @@
 # Sistema de conquistas
 
-O Reelz usa conquistas para reforçar comportamentos que entregam valor ao usuário. Não há XP por giro, ranking global ou sequência diária: essas mecânicas incentivariam quantidade e ansiedade, enquanto o produto existe para reduzir o tempo de decisão.
+O CineGiro usa conquistas para reforçar comportamentos que entregam valor ao usuário. Não há XP por giro, ranking global ou sequência diária: essas mecânicas incentivariam quantidade e ansiedade, enquanto o produto existe para reduzir o tempo de decisão.
 
 ## Contrato
 

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router'
 import { useAuth } from '../../hooks/useAuth'
 import { FeedbackDialog } from '../feedback/FeedbackDialog'
-import { ReelzLogo } from '../brand/ReelzLogo'
+import { CineGiroLogo } from '../brand/CineGiroLogo'
 import { NavigationIcon, type NavigationIconName } from './NavigationIcon'
 
 interface AppHeaderProps {
@@ -38,7 +38,7 @@ export function AppHeader({ accessory }: AppHeaderProps) {
     }
   }, [menuOpen])
 
-  const initial = user?.email.charAt(0).toUpperCase() || 'R'
+  const initial = user?.email.charAt(0).toUpperCase() || 'C'
   const navigationItems = user?.role === 'ADMIN'
     ? [...primaryItems, { to: '/admin/analytics', label: 'Analytics', icon: 'analytics' as const }]
     : primaryItems
@@ -47,7 +47,7 @@ export function AppHeader({ accessory }: AppHeaderProps) {
     <>
       <header className="relative z-40 mx-auto grid w-full max-w-7xl grid-cols-[1fr_auto] items-center gap-4 lg:grid-cols-[1fr_auto_1fr]">
         <div className="justify-self-start">
-          <ReelzLogo />
+          <CineGiroLogo />
         </div>
 
         <nav aria-label="Navegação principal" className="hidden items-center gap-1 rounded-2xl border border-white/10 bg-surface/90 p-1.5 shadow-xl lg:flex">
@@ -83,7 +83,7 @@ export function AppHeader({ accessory }: AppHeaderProps) {
               <div className="absolute right-0 top-12 w-64 overflow-hidden rounded-2xl border border-white/10 bg-surface-raised p-2 shadow-2xl" role="menu">
                 <div className="border-b border-white/8 px-3 py-3">
                   <p className="truncate text-sm font-semibold text-paper">{user?.email}</p>
-                  <p className="mt-1 text-xs text-white/50">Conta Reelz</p>
+                  <p className="mt-1 text-xs text-white/50">Conta CineGiro</p>
                 </div>
                 <NavLink
                   to="/account"
@@ -99,8 +99,8 @@ export function AppHeader({ accessory }: AppHeaderProps) {
                   onClick={() => setMenuOpen(false)}
                   className="mt-1 flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-medium text-white/70 transition hover:bg-white/[0.06] hover:text-white"
                 >
-                  <span>Reelz Premium</span>
-                  <span className="rounded-full bg-reel/20 px-2 py-0.5 text-[0.62rem] font-black uppercase tracking-wide text-reel-bright">Pro</span>
+                  <span>CineGiro Premium</span>
+                  <span className="rounded-full bg-brand/20 px-2 py-0.5 text-[0.62rem] font-black uppercase tracking-wide text-brand-bright">Pro</span>
                 </NavLink>
                 <button
                   type="button"

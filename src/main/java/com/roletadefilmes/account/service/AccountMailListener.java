@@ -41,7 +41,7 @@ public class AccountMailListener {
         var verification = event.tokenType() == AccountActionTokenType.EMAIL_VERIFICATION;
         var path = verification ? "/verify-email?token=" : "/reset-password?token=";
         var link = publicUrl + path + event.rawToken();
-        var subject = verification ? "Confirme seu e-mail no Reelz" : "Redefina sua senha do Reelz";
+        var subject = verification ? "Confirme seu e-mail no CineGiro" : "Redefina sua senha do CineGiro";
         var body = "Ola, " + event.displayName() + "!\n\n" +
                 (verification ? "Confirme seu e-mail: " : "Crie uma nova senha: ") + link +
                 "\n\nSe voce nao fez esta solicitacao, ignore esta mensagem.";

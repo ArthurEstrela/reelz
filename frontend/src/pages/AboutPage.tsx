@@ -4,11 +4,11 @@ const TMDB_LOGO_URL = 'https://www.themoviedb.org/assets/2/v4/logos/v2/blue_squa
 
 export function AboutPage() {
   return (
-    <LegalPageLayout eyebrow="Créditos" title="Sobre o Reelz" updatedAt="28 de agosto de 2026">
+    <LegalPageLayout eyebrow="Créditos" title="Sobre o CineGiro" updatedAt="28 de agosto de 2026">
       <section>
         <h2>Decidir sem transformar a noite em catálogo</h2>
         <p>
-          O Reelz combina seus streamings e filtros rápidos para sortear uma opção elegível, excluindo
+          O CineGiro combina seus streamings e filtros rápidos para sortear uma opção elegível, excluindo
           o que você já assistiu. O beta existe para descobrir se essa experiência realmente reduz o
           tempo até a decisão.
         </p>

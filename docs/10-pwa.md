@@ -1,6 +1,6 @@
 # Progressive Web App
 
-O frontend do Reelz pode ser instalado como aplicativo em navegadores
+O frontend do CineGiro pode ser instalado como aplicativo em navegadores
 compatíveis. A implementação não adiciona plugins de build e mantém a estratégia
 de cache explícita e auditável.
 

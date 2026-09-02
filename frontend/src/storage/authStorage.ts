@@ -1,9 +1,11 @@
 import type { AuthSession } from '../types/auth'
 
-const AUTH_SESSION_KEY = 'reelz.auth.session'
-const AUTH_SESSION_EXPIRED_KEY = 'reelz.auth.expired'
+const AUTH_SESSION_KEY = 'cinegiro.auth.session'
+const LEGACY_AUTH_SESSION_KEY = 'reelz.auth.session'
+const AUTH_SESSION_EXPIRED_KEY = 'cinegiro.auth.expired'
+const LEGACY_AUTH_SESSION_EXPIRED_KEY = 'reelz.auth.expired'
 
-export const AUTH_SESSION_EXPIRED_EVENT = 'reelz:auth-session-expired'
+export const AUTH_SESSION_EXPIRED_EVENT = 'cinegiro:auth-session-expired'
 
 function isAuthSession(value: unknown): value is AuthSession {
   if (typeof value !== 'object' || value === null) return false
@@ -22,6 +24,7 @@ function isAuthSession(value: unknown): value is AuthSession {
 
 export function getAuthSession(): AuthSession | null {
   const serializedSession = sessionStorage.getItem(AUTH_SESSION_KEY)
+    ?? sessionStorage.getItem(LEGACY_AUTH_SESSION_KEY)
   if (!serializedSession) return null
 
   try {
@@ -30,6 +33,8 @@ export function getAuthSession(): AuthSession | null {
       clearAuthSession()
       return null
     }
+    saveAuthSession(session)
+    sessionStorage.removeItem(LEGACY_AUTH_SESSION_KEY)
     return session
   } catch {
     clearAuthSession()
@@ -43,6 +48,7 @@ export function saveAuthSession(session: AuthSession): void {
 
 export function clearAuthSession(): void {
   sessionStorage.removeItem(AUTH_SESSION_KEY)
+  sessionStorage.removeItem(LEGACY_AUTH_SESSION_KEY)
 }
 
 export function markAuthSessionExpired(): void {
@@ -51,6 +57,8 @@ export function markAuthSessionExpired(): void {
 
 export function consumeAuthSessionExpired(): boolean {
   const expired = sessionStorage.getItem(AUTH_SESSION_EXPIRED_KEY) === 'true'
+    || sessionStorage.getItem(LEGACY_AUTH_SESSION_EXPIRED_KEY) === 'true'
   sessionStorage.removeItem(AUTH_SESSION_EXPIRED_KEY)
+  sessionStorage.removeItem(LEGACY_AUTH_SESSION_EXPIRED_KEY)
   return expired
 }

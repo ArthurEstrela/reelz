@@ -35,7 +35,7 @@ public class BillingService {
             "Combine vários streamings",
             "Crie salas para grupos de até 8 pessoas",
             "Experiência sem anúncios",
-            "Apoie a evolução do Reelz"
+            "Apoie a evolução do CineGiro"
     );
 
     private final BillingSubscriptionRepository subscriptionRepository;
@@ -83,7 +83,7 @@ public class BillingService {
         var user = userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
         if (user.isPremiumAt(clock.instant())) {
-            throw new BillingSubscriptionConflictException("Sua conta já possui o Reelz Premium ativo.");
+            throw new BillingSubscriptionConflictException("Sua conta já possui o CineGiro Premium ativo.");
         }
 
         var liveSubscription = subscriptionRepository

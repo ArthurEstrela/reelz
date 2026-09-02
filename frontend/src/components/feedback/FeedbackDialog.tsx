@@ -72,7 +72,7 @@ export function FeedbackDialog({ open, onClose }: FeedbackDialogProps) {
           >
             {submitted ? (
               <div className="py-5 text-center">
-                <svg viewBox="0 0 24 24" className="mx-auto size-10 text-reel-bright" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg>
+                <svg viewBox="0 0 24 24" className="mx-auto size-10 text-brand-bright" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg>
                 <h2 id="feedback-title" className="mt-3 text-2xl font-bold">Feedback recebido</h2>
                 <p className="mt-2 text-sm leading-6 text-white/50">
                   Valeu por ajudar a deixar a próxima sessão mais certeira.
@@ -85,8 +85,8 @@ export function FeedbackDialog({ open, onClose }: FeedbackDialogProps) {
               <form onSubmit={submit}>
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="reelz-kicker">Beta Reelz</p>
-                    <h2 id="feedback-title" className="mt-1 text-xl font-bold">O Reelz ajudou você a decidir?</h2>
+                    <p className="cinegiro-kicker">Beta CineGiro</p>
+                    <h2 id="feedback-title" className="mt-1 text-xl font-bold">O CineGiro ajudou você a decidir?</h2>
                   </div>
                   <button type="button" onClick={close} aria-label="Fechar feedback" className="rounded-full bg-white/5 px-3 py-2 text-white/50">×</button>
                 </div>
@@ -103,7 +103,7 @@ export function FeedbackDialog({ open, onClose }: FeedbackDialogProps) {
                           aria-label={`${value}: ${label}`}
                           aria-pressed={score === value}
                           onClick={() => setScore(value)}
-                          className={`rounded-lg py-3 text-lg font-bold transition ${score === value ? 'bg-reel text-white' : 'bg-white/5 text-white/60 hover:bg-white/10'}`}
+                          className={`rounded-lg py-3 text-lg font-bold transition ${score === value ? 'bg-brand text-white' : 'bg-white/5 text-white/60 hover:bg-white/10'}`}
                         >
                           {value}
                         </button>
@@ -122,7 +122,7 @@ export function FeedbackDialog({ open, onClose }: FeedbackDialogProps) {
                   maxLength={1000}
                   onChange={(event) => setMessage(event.target.value)}
                   placeholder="Ex.: encontrei rápido, mas o link do streaming estava errado..."
-                  className="mt-2 min-h-28 w-full resize-none rounded-xl border border-white/10 bg-white/[0.035] p-4 text-sm text-white outline-none placeholder:text-white/40 focus:border-reel/60 focus:ring-4 focus:ring-reel/10"
+                  className="mt-2 min-h-28 w-full resize-none rounded-xl border border-white/10 bg-white/[0.035] p-4 text-sm text-white outline-none placeholder:text-white/40 focus:border-brand/60 focus:ring-4 focus:ring-brand/10"
                 />
                 <p className="mt-1 text-right text-[10px] text-white/50">{message.length}/1000</p>
                 <p className="mt-1 text-[10px] text-white/50">Não inclua senha, telefone ou outros dados pessoais.</p>

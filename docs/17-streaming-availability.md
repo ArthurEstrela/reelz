@@ -60,7 +60,7 @@ oferece, inclusive o Globoplay.
 
 ## Compatibilidade e limitações
 
-- O ID do TMDB retornado pela nova API continua sendo a chave externa pública do Reelz. Histórico,
+- O ID do TMDB retornado pela nova API continua sendo a chave externa pública do CineGiro. Histórico,
   watchlist e URLs existentes não precisam ser migrados.
 - A nota de 0 a 100 é normalizada para a escala de 0 a 10 já usada pelo frontend.
 - Imagens e logos podem ser URLs absolutas; o frontend aceita tanto essas URLs quanto caminhos antigos

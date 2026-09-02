@@ -32,7 +32,7 @@ export function PrivacyPage() {
       <section>
         <h2>4. Compartilhamento e terceiros</h2>
         <p>
-          O Reelz utiliza infraestrutura de hospedagem e fornecedores externos de catálogo e
+          O CineGiro utiliza infraestrutura de hospedagem e fornecedores externos de catálogo e
           disponibilidade, incluindo TMDB e Movie of the Night. Ao abrir “onde
           assistir”, você é direcionado a uma página externa e passa a estar sujeito à política desse
           serviço. Não utilizamos publicidade comportamental neste beta fechado.

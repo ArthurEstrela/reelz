@@ -71,7 +71,7 @@ export function StreamingPreferencesModal({
         <header className="border-b border-white/8 px-5 py-5 sm:px-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="reelz-kicker">Sua assinatura, seu catálogo</p>
+              <p className="cinegiro-kicker">Sua assinatura, seu catálogo</p>
               <h2 id="streaming-preferences-title" className="mt-1 text-2xl font-bold tracking-tight">
                 Meus streamings
               </h2>
@@ -106,7 +106,7 @@ export function StreamingPreferencesModal({
                   transition={{ type: 'spring', stiffness: 420, damping: 28 }}
                   className={`min-h-16 rounded-xl border px-3 py-3 text-left text-sm font-semibold transition-colors ${
                     selected
-                      ? 'border-reel bg-reel/15 text-white shadow-[0_8px_30px_rgba(255,60,72,.14)]'
+                      ? 'border-brand bg-brand/15 text-white shadow-[0_8px_30px_rgba(255,60,72,.14)]'
                       : 'border-white/8 bg-white/[0.035] text-white/55 hover:border-white/15 hover:text-white'
                   }`}
                 >
@@ -114,7 +114,7 @@ export function StreamingPreferencesModal({
                     <span
                       aria-hidden="true"
                       className={`grid size-5 shrink-0 place-items-center rounded-md border text-xs ${
-                        selected ? 'border-reel bg-reel text-white' : 'border-white/15 text-transparent'
+                        selected ? 'border-brand bg-brand text-white' : 'border-white/15 text-transparent'
                       }`}
                     >
                       ✓
@@ -138,7 +138,7 @@ export function StreamingPreferencesModal({
             onClick={() => void save()}
             disabled={saving}
             whileTap={saving ? undefined : { scale: 0.96 }}
-            className="rounded-xl bg-reel px-5 py-3 text-sm font-bold text-white shadow-[0_12px_32px_rgba(233,54,69,.2)] disabled:cursor-wait disabled:opacity-55"
+            className="rounded-xl bg-brand px-5 py-3 text-sm font-bold text-white shadow-[0_12px_32px_rgba(233,54,69,.2)] disabled:cursor-wait disabled:opacity-55"
           >
             {saving ? 'Salvando…' : 'Salvar streamings'}
           </motion.button>
