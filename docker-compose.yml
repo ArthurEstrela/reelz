@@ -40,6 +40,7 @@ services:
       ADMIN_EMAILS: ${ADMIN_EMAILS:-}
       ANALYTICS_RETENTION_DAYS: ${ANALYTICS_RETENTION_DAYS:-180}
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost}
       ACCOUNT_MAIL_MODE: ${ACCOUNT_MAIL_MODE:-LOG}
       MAIL_FROM: ${MAIL_FROM:-no-reply@cinegiro.app}
       MAIL_HOST: ${MAIL_HOST:-localhost}

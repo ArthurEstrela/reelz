@@ -31,6 +31,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -40,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RouletteController.class,
         AuthController.class,
         UserController.class
-})
+}, properties = "reelz.security.cors.allowed-origins=https://cinegiro-five.vercel.app")
 @Import({
         SecurityConfig.class,
         RestAuthenticationEntryPoint.class,
@@ -178,5 +179,27 @@ class SecurityIntegrationTest {
                                 }
                                 """))
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    void shouldAllowPreflightFromTheConfiguredFrontend() throws Exception {
+        mockMvc.perform(options("/api/v1/users")
+                        .header(HttpHeaders.ORIGIN, "https://cinegiro-five.vercel.app")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "content-type"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(
+                        HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN,
+                        "https://cinegiro-five.vercel.app"
+                ));
+    }
+
+    @Test
+    void shouldRejectPreflightFromAnUnknownOrigin() throws Exception {
+        mockMvc.perform(options("/api/v1/users")
+                        .header(HttpHeaders.ORIGIN, "https://malicious.example")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))
+                .andExpect(status().isForbidden())
+                .andExpect(header().doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN));
     }
 }
