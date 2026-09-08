@@ -19,7 +19,9 @@ export interface LibraryMovie {
   id: string
   movieId: number
   title: string
+  overview: string | null
   posterPath: string | null
+  releaseDate: string | null
   tmdbRating: number | null
   status: UserMovieStatus
   watchedAt: string | null

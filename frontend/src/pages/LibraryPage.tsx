@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AppHeader } from '../components/navigation/AppHeader'
 import { BottomNavigation } from '../components/navigation/BottomNavigation'
+import { LibraryMovieDetails } from '../components/library/LibraryMovieDetails'
 import {
   getWatchedHistory,
   getWatchlist,
@@ -28,6 +29,7 @@ interface LibraryPosterProps {
   pending: boolean
   onMarkWatched: (movie: LibraryMovie) => void
   onRemove: (movie: LibraryMovie) => void
+  onOpenDetails: (movie: LibraryMovie) => void
 }
 
 function LibraryPoster({
@@ -36,6 +38,7 @@ function LibraryPoster({
   pending,
   onMarkWatched,
   onRemove,
+  onOpenDetails,
 }: LibraryPosterProps) {
   const [imageFailed, setImageFailed] = useState(false)
   const posterUrl = imageFailed ? null : resolveCatalogImageUrl(movie.posterPath)
@@ -54,24 +57,31 @@ function LibraryPoster({
       className="group relative aspect-[2/3] overflow-hidden rounded-lg border border-white/10 bg-surface shadow-xl"
       title={watchedDate ? `${movie.title} · assistido em ${watchedDate}` : movie.title}
     >
-      {posterUrl ? (
-        <img
-          src={posterUrl}
-          alt={`Pôster de ${movie.title}`}
-          loading="lazy"
-          onError={() => setImageFailed(true)}
-          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-        />
-      ) : (
-        <div className="grid h-full place-items-center px-3 text-center text-xs font-semibold text-white/55">
-          {movie.title}
-        </div>
-      )}
+      <button
+        type="button"
+        onClick={() => onOpenDetails(movie)}
+        aria-label={`Ver detalhes de ${movie.title}`}
+        className="absolute inset-0 h-full w-full text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
+      >
+        {posterUrl ? (
+          <img
+            src={posterUrl}
+            alt={`Pôster de ${movie.title}`}
+            loading="lazy"
+            onError={() => setImageFailed(true)}
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <span className="grid h-full place-items-center px-3 text-center text-xs font-semibold text-white/55">
+            {movie.title}
+          </span>
+        )}
+      </button>
 
       {isWatchlist ? (
         <>
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-black/15 to-transparent" />
-          <div className="absolute inset-x-2 bottom-2 grid grid-cols-[1fr_auto] gap-1.5">
+          <div className="absolute inset-x-2 bottom-2 z-10 grid grid-cols-[1fr_auto] gap-1.5">
             <button
               type="button"
               disabled={pending}
@@ -146,6 +156,7 @@ export function LibraryPage() {
   const [pendingMovieIds, setPendingMovieIds] = useState<Set<number>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const [mutationError, setMutationError] = useState<string | null>(null)
+  const [selectedMovie, setSelectedMovie] = useState<LibraryMovie | null>(null)
 
   const loadPage = useCallback(async (
     status: UserMovieStatus,
@@ -208,6 +219,7 @@ export function LibraryPage() {
     setLastPage(false)
     setError(null)
     setMutationError(null)
+    setSelectedMovie(null)
     setInitialLoading(true)
     setActiveStatus(status)
   }
@@ -352,6 +364,7 @@ export function LibraryPage() {
                     onRemove={(selectedMovie) => {
                       void mutateWatchlist(selectedMovie, 'REMOVE')
                     }}
+                    onOpenDetails={setSelectedMovie}
                   />
                 ))}
               </AnimatePresence>
@@ -422,6 +435,15 @@ export function LibraryPage() {
           ) : null}
         </div>
       </section>
+
+      <AnimatePresence>
+        {selectedMovie ? (
+          <LibraryMovieDetails
+            movie={selectedMovie}
+            onClose={() => setSelectedMovie(null)}
+          />
+        ) : null}
+      </AnimatePresence>
 
       <BottomNavigation />
     </main>

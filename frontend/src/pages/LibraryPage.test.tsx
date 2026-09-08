@@ -38,7 +38,9 @@ const movies: WatchedMovie[] = [
     id: 'history-1',
     movieId: 550,
     title: 'Clube da Luta',
+    overview: 'Um homem insone encontra uma forma clandestina de escapar da rotina.',
     posterPath: '/fight-club.jpg',
+    releaseDate: '1999-10-15',
     tmdbRating: 8.4,
     status: 'WATCHED',
     watchedAt: '2026-07-30T12:00:00Z',
@@ -48,7 +50,9 @@ const movies: WatchedMovie[] = [
     id: 'history-2',
     movieId: 551,
     title: 'Matrix',
+    overview: 'Um programador descobre que o mundo ao seu redor não é o que parece.',
     posterPath: '/matrix.jpg',
+    releaseDate: '1999-03-31',
     tmdbRating: 8.2,
     status: 'WATCHED',
     watchedAt: '2026-07-29T12:00:00Z',
@@ -61,7 +65,9 @@ const watchlistMovies: WatchlistMovie[] = [
     id: 'watchlist-1',
     movieId: 603,
     title: 'Matrix',
+    overview: 'Um programador descobre que o mundo ao seu redor não é o que parece.',
     posterPath: '/matrix.jpg',
+    releaseDate: '1999-03-31',
     tmdbRating: 8.2,
     status: 'WATCHLIST',
     watchedAt: null,
@@ -71,7 +77,9 @@ const watchlistMovies: WatchlistMovie[] = [
     id: 'watchlist-2',
     movieId: 680,
     title: 'Pulp Fiction',
+    overview: 'Histórias de crime se cruzam em Los Angeles.',
     posterPath: '/pulp-fiction.jpg',
+    releaseDate: '1994-09-10',
     tmdbRating: 8.5,
     status: 'WATCHLIST',
     watchedAt: null,
@@ -150,6 +158,29 @@ describe('LibraryPage', () => {
     expect(await screen.findByRole('heading', { name: 'Sua coleção começa no próximo giro' }))
       .toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Girar agora' })).toHaveAttribute('href', '/')
+  })
+
+  it('opens movie details without adding synopsis noise to the poster grid', async () => {
+    vi.mocked(getWatchedHistory).mockResolvedValueOnce({
+      content: [movies[0]],
+      page: { number: 0, size: 24, totalElements: 1, totalPages: 1 },
+    })
+    const user = userEvent.setup()
+    renderLibrary()
+
+    await user.click(await screen.findByRole('button', {
+      name: 'Ver detalhes de Clube da Luta',
+    }))
+
+    const dialog = screen.getByRole('dialog', { name: 'Clube da Luta' })
+    expect(dialog).toBeInTheDocument()
+    expect(screen.getByText('Um homem insone encontra uma forma clandestina de escapar da rotina.'))
+      .toBeInTheDocument()
+    expect(screen.getByText('1999')).toBeInTheDocument()
+    expect(screen.getByText(/Assistido em/)).toBeInTheDocument()
+
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
 
   it('lists watchlist movies and supports optimistic removal and status change', async () => {
