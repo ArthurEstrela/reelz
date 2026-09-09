@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Identidade refinada · CineGiro</title>
+    <style>
+      :root { color-scheme: dark; font-family: Archivo, Inter, system-ui, sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #0b0b0d; color: #f4f0e8; }
+      main { width: min(1180px, calc(100% - 40px)); margin: 0 auto; padding: 64px 0 80px; }
+      header { margin-bottom: 40px; }
+      .kicker { margin: 0 0 10px; color: #ff4d59; font-size: 12px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+      h1 { margin: 0; font-size: clamp(32px, 5vw, 54px); letter-spacing: -.05em; }
+      header p:last-child { max-width: 650px; color: #aaa6a0; line-height: 1.65; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+      .card { min-height: 250px; padding: 32px; border: 1px solid #2a2a30; border-radius: 28px; background: #151518; display: flex; flex-direction: column; justify-content: space-between; gap: 30px; }
+      .card.light { background: #f4f0e8; color: #0b0b0d; }
+      .card h2 { margin: 0; color: #aaa6a0; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+      .card.light h2 { color: #66615c; }
+      .horizontal { width: min(100%, 440px); }
+      .stacked { width: 230px; align-self: center; }
+      .icons { display: flex; align-items: flex-end; justify-content: center; gap: 30px; }
+      .app { width: 168px; height: 168px; }
+      .symbol { width: 88px; height: 88px; }
+      .favicon { width: 32px; height: 32px; image-rendering: auto; }
+      .palette { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+      .swatch { min-height: 100px; padding: 14px; border-radius: 18px; display: flex; align-items: flex-end; font-size: 11px; font-weight: 700; }
+      @media (max-width: 760px) { main { width: min(100% - 24px, 560px); padding-top: 32px; } .grid { grid-template-columns: 1fr; } .palette { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="kicker">Sistema de marca · segunda geração</p>
+        <h1>CineGiro</h1>
+        <p>C + giro + play. Uma identidade mais arredondada, direta e alinhada à experiência do produto.</p>
+      </header>
+
+      <div class="grid">
+        <section class="card">
+          <h2>Principal · fundo escuro</h2>
+          <img class="horizontal" src="svg/cinegiro-lockup-horizontal-escuro.svg" alt="CineGiro">
+        </section>
+        <section class="card light">
+          <h2>Principal · fundo claro</h2>
+          <img class="horizontal" src="svg/cinegiro-lockup-horizontal-claro.svg" alt="CineGiro">
+        </section>
+        <section class="card">
+          <h2>Ícone, símbolo e favicon</h2>
+          <div class="icons">
+            <img class="app" src="svg/cinegiro-icone-app.svg" alt="Ícone do CineGiro">
+            <img class="symbol" src="svg/cinegiro-simbolo.svg" alt="Símbolo do CineGiro">
+            <img class="favicon" src="svg/cinegiro-favicon.svg" alt="Favicon do CineGiro">
+          </div>
+        </section>
+        <section class="card light">
+          <h2>Lockup empilhado</h2>
+          <img class="stacked" src="svg/cinegiro-lockup-empilhado-claro.svg" alt="CineGiro empilhado">
+        </section>
+        <section class="card" style="grid-column: 1 / -1">
+          <h2>Paleta essencial</h2>
+          <div class="palette">
+            <div class="swatch" style="background:#e93645">#E93645</div>
+            <div class="swatch" style="background:#ff4d59">#FF4D59</div>
+            <div class="swatch" style="background:#f4f0e8;color:#0b0b0d">#F4F0E8</div>
+            <div class="swatch" style="background:#e7b862;color:#0b0b0d">#E7B862</div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>

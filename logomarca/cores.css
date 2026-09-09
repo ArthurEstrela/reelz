@@ -1,0 +1,30 @@
+/* CineGiro — paleta oficial
+   Os oito tokens abaixo são a paleta definida. Os derivados vêm depois. */
+
+:root {
+  /* ---- Paleta oficial ---- */
+  --cg-red:            #E93645;  /* vermelho principal */
+  --cg-red-bright:     #FF4D59;  /* vermelho destaque */
+  --cg-bg:             #0B0B0D;  /* fundo */
+  --cg-surface:        #151518;  /* superfície */
+  --cg-surface-raised: #1C1C20;  /* superfície elevada */
+  --cg-text:           #F4F0E8;  /* texto principal */
+  --cg-text-muted:     #AAA6A0;  /* texto secundário */
+  --cg-reward:         #E7B862;  /* recompensas */
+
+  /* ---- Derivados ---- */
+  /* Estados do botão principal */
+  --cg-red-hover:      #FF4D59;  /* usa o destaque no hover */
+  --cg-red-press:      #C22C39;  /* escurecido 16% */
+
+  /* Bordas e divisores, derivados da superfície elevada */
+  --cg-border:         #2A2A30;
+  --cg-border-strong:  #3A3A42;
+
+  /* Recompensas — estados */
+  --cg-reward-hover:   #F2CA84;
+  --cg-reward-dim:     #B8914C;
+
+  /* Texto sobre superfície escura, terceiro nível */
+  --cg-text-subtle:    #7A7772;
+}

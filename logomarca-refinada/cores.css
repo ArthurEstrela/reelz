@@ -1,0 +1,11 @@
+:root {
+  --cinegiro-brand: #e93645;
+  --cinegiro-brand-bright: #ff4d59;
+  --cinegiro-canvas: #0b0b0d;
+  --cinegiro-surface: #151518;
+  --cinegiro-surface-raised: #1c1c20;
+  --cinegiro-paper: #f4f0e8;
+  --cinegiro-muted: #aaa6a0;
+  --cinegiro-reward: #e7b862;
+  --cinegiro-font: "Archivo Variable", Archivo, system-ui, sans-serif;
+}
