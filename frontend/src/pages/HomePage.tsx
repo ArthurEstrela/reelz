@@ -27,6 +27,12 @@ import type { CatalogItem } from '../types/catalog'
 import type { RouletteMovie, SpinQuota } from '../types/roulette'
 import { getApiErrorMessage } from '../utils/apiError'
 import { useAchievements } from '../hooks/useAchievements'
+import { useAuth } from '../hooks/useAuth'
+import {
+  clearRouletteFilterDraft,
+  getRouletteFilterDraft,
+  saveRouletteFilterDraft,
+} from '../storage/rouletteFilterStorage'
 
 type RouletteState = 'idle' | 'spinning' | 'result' | 'empty'
 type CatalogState = 'loading' | 'ready' | 'error'
@@ -56,8 +62,19 @@ async function waitForMinimumDuration(startedAt: number, minimumDuration: number
 }
 
 export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
+  const { user } = useAuth()
   const { refreshAchievements } = useAchievements()
   const productSessionId = useMemo(() => getProductSessionId(), [])
+  const userId = user?.id
+  const restoredFilters = useMemo(
+    () => userId ? getRouletteFilterDraft(userId) : null,
+    [userId],
+  )
+  const restoredGenreId = restoredFilters?.genreId ?? null
+  const validRestoredGenreId = restoredGenreId !== null
+    && GENRE_OPTIONS.some((option) => option.value === restoredGenreId)
+    ? restoredGenreId
+    : null
   const quotaRequestSequence = useRef(0)
   const [providers, setProviders] = useState<CatalogItem[]>([])
   const [vibeOptions, setVibeOptions] = useState<PillOption<string>[]>([])
@@ -66,8 +83,8 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
   const [selectedProviders, setSelectedProviders] = useState<string[]>([])
   const [ownedProviderIds, setOwnedProviderIds] = useState<string[]>([])
   const [showStreamingPreferences, setShowStreamingPreferences] = useState(false)
-  const [selectedGenre, setSelectedGenre] = useState<number | null>(null)
-  const [selectedVibe, setSelectedVibe] = useState<string | null>(null)
+  const [selectedGenre, setSelectedGenre] = useState<number | null>(validRestoredGenreId)
+  const [selectedVibe, setSelectedVibe] = useState<string | null>(restoredFilters?.vibeId ?? null)
   const [rouletteState, setRouletteState] = useState<RouletteState>('idle')
   const [movie, setMovie] = useState<RouletteMovie | null>(null)
   const [quota, setQuota] = useState<SpinQuota | null>(null)
@@ -183,11 +200,25 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
   }
 
   function toggleGenre(genreId: number) {
-    setSelectedGenre((current) => (current === genreId ? null : genreId))
+    const nextGenreId = selectedGenre === genreId ? null : genreId
+    setSelectedGenre(nextGenreId)
+    if (userId) {
+      saveRouletteFilterDraft(userId, { genreId: nextGenreId, vibeId: selectedVibe })
+    }
   }
 
   function toggleVibe(vibeId: string) {
-    setSelectedVibe((current) => (current === vibeId ? null : vibeId))
+    const nextVibeId = selectedVibe === vibeId ? null : vibeId
+    setSelectedVibe(nextVibeId)
+    if (userId) {
+      saveRouletteFilterDraft(userId, { genreId: selectedGenre, vibeId: nextVibeId })
+    }
+  }
+
+  function clearOptionalFilters() {
+    setSelectedGenre(null)
+    setSelectedVibe(null)
+    if (userId) clearRouletteFilterDraft(userId)
   }
 
   function showSpinFailure(nextMessage: string) {
@@ -339,8 +370,7 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
 
   function handleBroaderSpin() {
     if (isSpinning) return
-    setSelectedGenre(null)
-    setSelectedVibe(null)
+    clearOptionalFilters()
     void executeSpin(performance.now(), { genreId: null, vibeId: null })
   }
 
@@ -520,6 +550,19 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
                 loading={catalogLoading}
                 disabled={isSpinning}
               />
+              {selectedGenre !== null || selectedVibe !== null ? (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={clearOptionalFilters}
+                    disabled={isSpinning}
+                    className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold text-white/50 transition hover:bg-white/[0.05] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <span aria-hidden="true">×</span>
+                    Limpar gênero e clima
+                  </button>
+                </div>
+              ) : null}
             </div>
             {catalogState === 'error' ? (
               <div className="mt-4 flex items-center gap-2 text-xs text-gold" role="alert">

@@ -18,6 +18,7 @@ import {
 import type { ApiErrorResponse } from '../types/api'
 import type { CatalogItem } from '../types/catalog'
 import type { RouletteSpinResponse, SpinQuota } from '../types/roulette'
+import { getRouletteFilterDraft } from '../storage/rouletteFilterStorage'
 import { HomePage } from './HomePage'
 
 vi.mock('../services/catalogService', () => ({
@@ -105,7 +106,7 @@ const context: AuthContextValue = {
 }
 
 function renderHome() {
-  render(
+  return render(
     <AuthContext.Provider value={context}>
       <MemoryRouter>
         <HomePage minimumSpinDuration={0} />
@@ -179,6 +180,30 @@ describe('HomePage roulette', () => {
     expect(getVibes).toHaveBeenCalledOnce()
     expect(getStreamingPreferences).toHaveBeenCalledOnce()
     expect(getTodayUsage).toHaveBeenCalledOnce()
+  })
+
+  it('restores genre and vibe after a reload and lets the user clear the draft', async () => {
+    const user = userEvent.setup()
+    const firstRender = renderHome()
+
+    await screen.findByRole('button', { name: 'Netflix' })
+    await user.click(screen.getByRole('button', { name: 'Comédia' }))
+    await user.click(screen.getByRole('button', { name: 'Para rir' }))
+    expect(getRouletteFilterDraft(context.user!.id)).toMatchObject({
+      genreId: 35,
+      vibeId: VIBE_ID,
+    })
+
+    firstRender.unmount()
+    renderHome()
+
+    expect(await screen.findByRole('button', { name: 'Comédia' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'Para rir' })).toHaveAttribute('aria-pressed', 'true')
+    await user.click(screen.getByRole('button', { name: 'Limpar gênero e clima' }))
+
+    expect(screen.getByRole('button', { name: 'Comédia' })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('button', { name: 'Para rir' })).toHaveAttribute('aria-pressed', 'false')
+    expect(getRouletteFilterDraft(context.user!.id)).toBeNull()
   })
 
   it('uses saved subscriptions and lets the user manage multiple owned streamings', async () => {

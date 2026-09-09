@@ -2,7 +2,7 @@ import { LegalPageLayout } from '../components/legal/LegalPageLayout'
 
 export function PrivacyPage() {
   return (
-    <LegalPageLayout eyebrow="Transparência" title="Política de Privacidade" updatedAt="28 de agosto de 2026">
+    <LegalPageLayout eyebrow="Transparência" title="Política de Privacidade" updatedAt="9 de setembro de 2026">
       <section>
         <h2>1. Dados tratados</h2>
         <ul>
@@ -25,8 +25,9 @@ export function PrivacyPage() {
         <h2>3. Armazenamento local</h2>
         <p>
           O navegador usa sessionStorage para manter a sessão autenticada e um identificador aleatório
-          da sessão de produto. Eles são removidos quando a sessão do navegador termina ou no logout,
-          conforme o item.
+          da sessão de produto. O último gênero e clima selecionados são mantidos no localStorage por até
+          12 horas para recuperar um giro interrompido. Esses filtros podem ser limpos diretamente na
+          roleta e não são compartilhados entre contas no mesmo navegador.
         </p>
       </section>
       <section>
