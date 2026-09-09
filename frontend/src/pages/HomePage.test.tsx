@@ -272,8 +272,13 @@ describe('HomePage roulette', () => {
     expect(await screen.findByText('Procurando a sessão perfeita…')).toBeInTheDocument()
   })
 
-  it('shows a playful filter hint when the spin returns 404', async () => {
-    vi.mocked(spinRoulette).mockRejectedValueOnce(apiError(404))
+  it('does not trap the user or reduce the visible quota when the spin returns 404', async () => {
+    vi.mocked(spinRoulette)
+      .mockRejectedValueOnce(apiError(404))
+      .mockResolvedValueOnce(successfulSpin)
+    vi.mocked(getTodayUsage)
+      .mockResolvedValueOnce(initialQuota)
+      .mockResolvedValueOnce(initialQuota)
     const user = userEvent.setup()
     renderHome()
 
@@ -281,6 +286,38 @@ describe('HomePage roulette', () => {
     await user.click(screen.getByRole('button', { name: 'Girar Roleta' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('mudar os filtros')
+    expect(screen.getByRole('alert')).toHaveTextContent('giro não foi descontado')
+    expect(screen.getByRole('button', { name: 'Girar novamente' })).toBeInTheDocument()
+    await waitFor(() => expect(getTodayUsage).toHaveBeenCalledTimes(2))
+    expect(screen.getByLabelText('3 giros restantes hoje')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Girar novamente' }))
+
+    expect(await screen.findByRole('heading', { name: 'Clube da Luta' })).toBeInTheDocument()
+    expect(spinRoulette).toHaveBeenCalledTimes(2)
+  })
+
+  it('can broaden an empty search and spin again without optional filters', async () => {
+    vi.mocked(spinRoulette)
+      .mockRejectedValueOnce(apiError(404))
+      .mockResolvedValueOnce(successfulSpin)
+    const user = userEvent.setup()
+    renderHome()
+
+    await screen.findByRole('button', { name: 'Netflix' })
+    await user.click(screen.getByRole('button', { name: 'Comédia' }))
+    await user.click(screen.getByRole('button', { name: 'Para rir' }))
+    await user.click(screen.getByRole('button', { name: 'Girar Roleta' }))
+    await user.click(await screen.findByRole('button', { name: 'Girar sem gênero e clima' }))
+
+    expect(await screen.findByRole('heading', { name: 'Clube da Luta' })).toBeInTheDocument()
+    expect(spinRoulette).toHaveBeenLastCalledWith({
+      idempotencyKey: expect.any(String),
+      providerIds: [PROVIDER_ID],
+      genreId: null,
+      vibeId: null,
+      sessionId: expect.any(String),
+    })
   })
 
   it('opens the exhausted-spins modal when the spin returns 429', async () => {

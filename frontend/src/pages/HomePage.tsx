@@ -41,6 +41,11 @@ interface ToastMessage {
   tone?: 'error' | 'success' | 'info'
 }
 
+interface SpinFilterSelection {
+  genreId: number | null
+  vibeId: string | null
+}
+
 function toPillOptions(items: CatalogItem[]): PillOption<string>[] {
   return items.map((item) => ({ value: item.id, label: item.name }))
 }
@@ -192,7 +197,15 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
     setFailureKey((current) => current + 1)
   }
 
-  async function executeSpin(startedAt = performance.now()) {
+  async function executeSpin(
+    startedAt = performance.now(),
+    filterSelection?: SpinFilterSelection,
+  ) {
+    const activeFilters = filterSelection ?? {
+      genreId: selectedGenre,
+      vibeId: selectedVibe,
+    }
+
     setMessage(null)
     setMovie(null)
     setRouletteState('spinning')
@@ -201,8 +214,8 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
       const response = await spinRoulette({
         idempotencyKey: crypto.randomUUID(),
         providerIds: selectedProviders,
-        genreId: selectedGenre,
-        vibeId: selectedVibe,
+        genreId: activeFilters.genreId,
+        vibeId: activeFilters.vibeId,
         sessionId: productSessionId,
       })
       setQuota(response.quota)
@@ -217,7 +230,8 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
       const status = axios.isAxiosError(error) ? error.response?.status : undefined
 
       if (status === 404) {
-        showSpinFailure('A roleta procurou até debaixo do sofá e não achou nada. Que tal mudar os filtros?')
+        void synchronizeQuota()
+        showSpinFailure('A roleta procurou até debaixo do sofá e não achou nada. Que tal mudar os filtros? Seu giro não foi descontado.')
         return
       }
 
@@ -323,6 +337,13 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
     void executeSpin()
   }
 
+  function handleBroaderSpin() {
+    if (isSpinning) return
+    setSelectedGenre(null)
+    setSelectedVibe(null)
+    void executeSpin(performance.now(), { genreId: null, vibeId: null })
+  }
+
   function handleWatchProvider() {
     if (!movie?.streamingAvailability[0]) return
     void trackProductEvent('WATCH_PROVIDER_CLICKED', {
@@ -414,7 +435,11 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
                   initial={{ opacity: 0, scale: 0.88 }}
                   animate={{ opacity: 1, scale: 1, x: [0, -15, 13, -10, 7, 0] }}
                   exit={{ opacity: 0, scale: 0.85 }}
-                  transition={{ type: 'spring', stiffness: 430, damping: 20 }}
+                  transition={{
+                    opacity: { duration: 0.18 },
+                    scale: { type: 'spring', stiffness: 430, damping: 20 },
+                    x: { duration: 0.42, ease: 'easeInOut' },
+                  }}
                   className="max-w-sm rounded-2xl border border-gold/20 bg-gold/[0.06] p-7"
                   role="alert"
                 >
@@ -422,6 +447,25 @@ export function HomePage({ minimumSpinDuration = 2_000 }: HomePageProps) {
                     <circle cx="12" cy="12" r="9" /><path d="M8.5 9h.01M15.5 9h.01M8.5 16c1.6-2 5.4-2 7 0" />
                   </svg>
                   <p className="mt-4 text-base font-semibold leading-7 text-white/80">{message}</p>
+                  <div className="mt-6 flex flex-col gap-2.5">
+                    <motion.button
+                      type="button"
+                      onClick={handleSpin}
+                      whileTap={{ scale: 0.96 }}
+                      className="rounded-xl bg-paper px-5 py-3 text-sm font-bold text-ink transition hover:bg-white"
+                    >
+                      Girar novamente
+                    </motion.button>
+                    {selectedGenre !== null || selectedVibe !== null ? (
+                      <button
+                        type="button"
+                        onClick={handleBroaderSpin}
+                        className="rounded-xl border border-white/12 px-5 py-3 text-sm font-semibold text-white/70 transition hover:border-white/25 hover:text-white"
+                      >
+                        Girar sem gênero e clima
+                      </button>
+                    ) : null}
+                  </div>
                 </motion.div>
               ) : null}
             </AnimatePresence>
