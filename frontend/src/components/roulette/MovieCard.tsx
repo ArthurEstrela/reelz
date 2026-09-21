@@ -25,6 +25,7 @@ export function MovieCard({
   const [savingToWatchlist, setSavingToWatchlist] = useState(false)
   const [savedToWatchlist, setSavedToWatchlist] = useState(false)
   const offer = movie.streamingAvailability[0]
+  const hasRectangularProviderLogo = offer?.catalogSource === 'STREAMING_AVAILABILITY'
   const posterUrl = imageFailed ? null : resolveCatalogImageUrl(movie.posterPath)
   const releaseYear = movie.releaseDate?.slice(0, 4)
   const formattedRating = movie.tmdbRating === null ? null : Number(movie.tmdbRating).toFixed(1)
@@ -93,7 +94,7 @@ export function MovieCard({
             aria-label="Ver onde assistir"
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(233,54,69,.22)] transition hover:bg-brand-bright focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           >
-            {offer.logoPath ? (
+            {offer.logoPath && hasRectangularProviderLogo ? (
               <span className="flex h-7 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-black/20 px-1.5 py-1">
                 <img
                   src={resolveCatalogImageUrl(offer.logoPath, 'original') ?? undefined}
@@ -101,6 +102,12 @@ export function MovieCard({
                   className="max-h-full max-w-full object-contain"
                 />
               </span>
+            ) : offer.logoPath ? (
+              <img
+                src={resolveCatalogImageUrl(offer.logoPath, 'original') ?? undefined}
+                alt=""
+                className="size-7 shrink-0 rounded-md object-cover"
+              />
             ) : null}
             Assistir na {offer.providerName}
           </motion.a>

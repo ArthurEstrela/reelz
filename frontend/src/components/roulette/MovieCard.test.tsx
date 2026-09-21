@@ -39,4 +39,30 @@ describe('MovieCard', () => {
     expect(logo?.parentElement).toHaveClass('w-12')
     expect(logo?.parentElement).toHaveClass('bg-black/20')
   })
+
+  it('renderiza o logo quadrado do TMDB diretamente no botão', () => {
+    const tmdbMovie: RouletteMovie = {
+      ...movie,
+      streamingAvailability: [{
+        ...movie.streamingAvailability[0],
+        logoPath: '/emthp39XA2YScoYL1p0sdbAH2WA.jpg',
+        catalogSource: 'TMDB',
+      }],
+    }
+
+    const { container } = render(
+      <MovieCard
+        movie={tmdbMovie}
+        onWatchedAndSpinAgain={vi.fn()}
+        onSaveToWatchlist={vi.fn().mockResolvedValue(true)}
+        onSpinAgain={vi.fn()}
+        onWatchProvider={vi.fn()}
+      />,
+    )
+
+    const logo = container.querySelector('a > img')
+    expect(logo).toHaveClass('size-7')
+    expect(logo).toHaveClass('object-cover')
+    expect(container.querySelector('a > span')).not.toBeInTheDocument()
+  })
 })
