@@ -6,6 +6,9 @@ export const GENRE_OPTIONS: PillOption<number>[] = [
   { value: 28, label: 'Ação' },
   { value: 27, label: 'Terror' },
   { value: 18, label: 'Drama' },
+  { value: 10749, label: 'Romance' },
+  { value: 16, label: 'Animação' },
+  { value: 99, label: 'Documentário' },
   { value: 878, label: 'Ficção' },
   { value: 53, label: 'Suspense' },
 ]
