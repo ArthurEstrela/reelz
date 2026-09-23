@@ -71,9 +71,14 @@ public class BillingSubscriptionEntity extends AuditableUuidEntity {
     protected BillingSubscriptionEntity() {
     }
 
-    public BillingSubscriptionEntity(UserAccountEntity user, BillingPlanCode planCode, int amountCents) {
+    public BillingSubscriptionEntity(
+            UserAccountEntity user,
+            BillingProvider provider,
+            BillingPlanCode planCode,
+            int amountCents
+    ) {
         this.user = user;
-        this.provider = BillingProvider.ABACATEPAY;
+        this.provider = provider;
         this.planCode = planCode;
         this.status = BillingSubscriptionStatus.CHECKOUT_PENDING;
         this.amountCents = amountCents;
@@ -95,8 +100,9 @@ public class BillingSubscriptionEntity extends AuditableUuidEntity {
     public Instant getCanceledAt() { return canceledAt; }
     public long getVersion() { return version; }
 
-    public void attachCheckout(String providerCheckoutId, String checkoutUrl) {
+    public void attachCheckout(String providerCheckoutId, String providerSubscriptionId, String checkoutUrl) {
         this.providerCheckoutId = providerCheckoutId;
+        this.providerSubscriptionId = providerSubscriptionId;
         this.checkoutUrl = checkoutUrl;
     }
 

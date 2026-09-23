@@ -205,7 +205,7 @@ export function PremiumPage() {
         </div>
 
         <p className="mx-auto mt-8 max-w-xl text-center text-xs leading-5 text-white/35">
-          Pagamento processado pela AbacatePay. O Premium só é ativado após a confirmação segura do pagamento.
+          Pagamento processado pelo Mercado Pago. O Premium só é ativado após a confirmação segura do pagamento.
         </p>
 
         {subscription?.cancelable ? (

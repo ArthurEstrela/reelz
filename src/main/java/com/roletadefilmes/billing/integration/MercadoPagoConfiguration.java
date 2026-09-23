@@ -11,11 +11,11 @@ import org.springframework.web.client.RestClient;
 import java.net.http.HttpClient;
 
 @Configuration
-@EnableConfigurationProperties(AbacatePayProperties.class)
-public class AbacatePayConfiguration {
+@EnableConfigurationProperties(MercadoPagoProperties.class)
+public class MercadoPagoConfiguration {
 
     @Bean
-    RestClient abacatePayRestClient(RestClient.Builder builder, AbacatePayProperties properties) {
+    RestClient mercadoPagoRestClient(RestClient.Builder builder, MercadoPagoProperties properties) {
         var httpClient = HttpClient.newBuilder()
                 .connectTimeout(properties.connectTimeout())
                 .build();
@@ -23,8 +23,8 @@ public class AbacatePayConfiguration {
         requestFactory.setReadTimeout(properties.readTimeout());
 
         return builder
-                .baseUrl("https://api.abacatepay.com/v2")
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + properties.apiKey())
+                .baseUrl("https://api.mercadopago.com")
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + properties.accessToken())
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .requestFactory(requestFactory)

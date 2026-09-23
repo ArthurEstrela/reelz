@@ -1,24 +1,51 @@
 package com.roletadefilmes.billing.service;
 
-import java.util.List;
-import java.util.Map;
-
 public interface PaymentGateway {
 
     CheckoutResult createSubscriptionCheckout(CheckoutCommand command);
 
     void cancelSubscription(String providerSubscriptionId);
 
+    ProviderSubscription getSubscription(String providerSubscriptionId);
+
+    ProviderPayment getAuthorizedPayment(String providerPaymentId);
+
+    ProviderPayment getPayment(String providerPaymentId);
+
     record CheckoutCommand(
             String externalId,
-            String productId,
-            String returnUrl,
-            String completionUrl,
-            List<String> methods,
-            Map<String, String> metadata
+            String payerEmail,
+            String description,
+            int amountCents,
+            int frequencyInMonths,
+            String returnUrl
     ) {
     }
 
-    record CheckoutResult(String providerCheckoutId, String checkoutUrl, int amountCents) {
+    record CheckoutResult(
+            String providerCheckoutId,
+            String providerSubscriptionId,
+            String checkoutUrl,
+            int amountCents
+    ) {
+    }
+
+    record ProviderSubscription(
+            String id,
+            String externalReference,
+            String status,
+            String paymentMethod
+    ) {
+    }
+
+    record ProviderPayment(
+            String id,
+            String subscriptionId,
+            String externalReference,
+            String status,
+            String currency,
+            int amountCents,
+            String paymentMethod
+    ) {
     }
 }

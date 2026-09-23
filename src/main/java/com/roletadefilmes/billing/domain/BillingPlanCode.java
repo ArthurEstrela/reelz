@@ -27,6 +27,10 @@ public enum BillingPlanCode {
         return interval;
     }
 
+    public int frequencyInMonths() {
+        return months + (years * 12);
+    }
+
     public Instant nextPeriodEnd(Instant base) {
         return base.atZone(ZoneOffset.UTC).plusMonths(months).plusYears(years).toInstant();
     }

@@ -3,6 +3,9 @@ package com.roletadefilmes.security;
 import com.roletadefilmes.auth.api.AuthController;
 import com.roletadefilmes.auth.api.dto.LoginResponse;
 import com.roletadefilmes.auth.service.AuthService;
+import com.roletadefilmes.billing.api.BillingWebhookController;
+import com.roletadefilmes.billing.api.dto.WebhookResponse;
+import com.roletadefilmes.billing.service.BillingWebhookService;
 import com.roletadefilmes.roulette.api.RouletteController;
 import com.roletadefilmes.roulette.service.RouletteService;
 import com.roletadefilmes.shared.config.TimeConfiguration;
@@ -40,7 +43,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = {
         RouletteController.class,
         AuthController.class,
-        UserController.class
+        UserController.class,
+        BillingWebhookController.class
 }, properties = "reelz.security.cors.allowed-origins=https://cinegiro-five.vercel.app")
 @Import({
         SecurityConfig.class,
@@ -77,6 +81,9 @@ class SecurityIntegrationTest {
 
     @MockitoBean
     private UserAccountRepository userAccountRepository;
+
+    @MockitoBean
+    private BillingWebhookService billingWebhookService;
 
     @MockitoBean
     private JwtService jwtService;
@@ -179,6 +186,24 @@ class SecurityIntegrationTest {
                                 }
                                 """))
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    void shouldAllowMercadoPagoWebhookWithoutJwt() throws Exception {
+        var body = """
+                {"id":123,"type":"payment","action":"payment.updated","data":{"id":"789"}}
+                """;
+        when(billingWebhookService.handle(any(), eq("789"), eq("ts=1,v1=signature"), eq("request-1")))
+                .thenReturn(new WebhookResponse(true, false));
+
+        mockMvc.perform(post("/api/v1/webhooks/mercadopago")
+                        .queryParam("data.id", "789")
+                        .header("X-Signature", "ts=1,v1=signature")
+                        .header("X-Request-Id", "request-1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accepted").value(true));
     }
 
     @Test

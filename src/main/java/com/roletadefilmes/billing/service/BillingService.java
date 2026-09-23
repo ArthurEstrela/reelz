@@ -4,12 +4,13 @@ import com.roletadefilmes.billing.api.dto.BillingPlanResponse;
 import com.roletadefilmes.billing.api.dto.CheckoutResponse;
 import com.roletadefilmes.billing.api.dto.SubscriptionResponse;
 import com.roletadefilmes.billing.domain.BillingPlanCode;
+import com.roletadefilmes.billing.domain.BillingProvider;
 import com.roletadefilmes.billing.domain.BillingSubscriptionStatus;
 import com.roletadefilmes.billing.domain.exception.BillingNotConfiguredException;
 import com.roletadefilmes.billing.domain.exception.BillingProviderException;
 import com.roletadefilmes.billing.domain.exception.BillingSubscriptionConflictException;
 import com.roletadefilmes.billing.domain.exception.BillingSubscriptionNotFoundException;
-import com.roletadefilmes.billing.integration.AbacatePayProperties;
+import com.roletadefilmes.billing.integration.MercadoPagoProperties;
 import com.roletadefilmes.billing.persistence.entity.BillingSubscriptionEntity;
 import com.roletadefilmes.billing.persistence.repository.BillingSubscriptionRepository;
 import com.roletadefilmes.user.domain.exception.UserNotFoundException;
@@ -19,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -41,14 +41,14 @@ public class BillingService {
     private final BillingSubscriptionRepository subscriptionRepository;
     private final UserAccountRepository userRepository;
     private final PaymentGateway paymentGateway;
-    private final AbacatePayProperties properties;
+    private final MercadoPagoProperties properties;
     private final Clock clock;
 
     public BillingService(
             BillingSubscriptionRepository subscriptionRepository,
             UserAccountRepository userRepository,
             PaymentGateway paymentGateway,
-            AbacatePayProperties properties,
+            MercadoPagoProperties properties,
             Clock clock
     ) {
         this.subscriptionRepository = subscriptionRepository;
@@ -103,20 +103,29 @@ public class BillingService {
         }
 
         var subscription = subscriptionRepository.saveAndFlush(
-                new BillingSubscriptionEntity(user, planCode, properties.priceCents(planCode))
+                new BillingSubscriptionEntity(
+                        user,
+                        BillingProvider.MERCADO_PAGO,
+                        planCode,
+                        properties.priceCents(planCode)
+                )
         );
         var checkout = paymentGateway.createSubscriptionCheckout(new PaymentGateway.CheckoutCommand(
                 subscription.getId().toString(),
-                properties.productId(planCode),
-                properties.appUrl("/premium"),
-                properties.appUrl("/premium?checkout=success"),
-                properties.safeMethods(),
-                Map.of("reelzUserId", userId.toString(), "reelzPlanCode", planCode.name())
+                user.getEmail(),
+                "CineGiro " + planCode.label(),
+                subscription.getAmountCents(),
+                planCode.frequencyInMonths(),
+                properties.appUrl("/premium?checkout=success")
         ));
         if (checkout.amountCents() != subscription.getAmountCents()) {
             throw new BillingProviderException("O valor retornado pelo checkout não corresponde ao plano configurado.");
         }
-        subscription.attachCheckout(checkout.providerCheckoutId(), checkout.checkoutUrl());
+        subscription.attachCheckout(
+                checkout.providerCheckoutId(),
+                checkout.providerSubscriptionId(),
+                checkout.checkoutUrl()
+        );
         return new CheckoutResponse(planCode, checkout.checkoutUrl(), false);
     }
 

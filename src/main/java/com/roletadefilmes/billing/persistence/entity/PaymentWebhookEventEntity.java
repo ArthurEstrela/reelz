@@ -41,8 +41,14 @@ public class PaymentWebhookEventEntity extends AuditableUuidEntity {
     protected PaymentWebhookEventEntity() {
     }
 
-    public PaymentWebhookEventEntity(String providerEventId, String eventType, String payloadSha256, Instant receivedAt) {
-        this.provider = BillingProvider.ABACATEPAY;
+    public PaymentWebhookEventEntity(
+            BillingProvider provider,
+            String providerEventId,
+            String eventType,
+            String payloadSha256,
+            Instant receivedAt
+    ) {
+        this.provider = provider;
         this.providerEventId = providerEventId;
         this.eventType = eventType;
         this.payloadSha256 = payloadSha256;

@@ -18,14 +18,15 @@ public class BillingWebhookController {
         this.webhookService = webhookService;
     }
 
-    @PostMapping("/api/v1/webhooks/abacatepay")
-    public ResponseEntity<WebhookResponse> abacatePay(
-            @RequestParam String webhookSecret,
-            @RequestHeader(value = "X-Webhook-Signature", required = false) String webhookSignature,
-            @RequestHeader(value = "X-Abacate-Signature", required = false) String abacateSignature,
+    @PostMapping("/api/v1/webhooks/mercadopago")
+    public ResponseEntity<WebhookResponse> mercadoPago(
+            @RequestParam(name = "data.id", required = false) String dottedDataId,
+            @RequestParam(name = "data_id", required = false) String underscoredDataId,
+            @RequestHeader(value = "X-Signature", required = false) String signature,
+            @RequestHeader(value = "X-Request-Id", required = false) String requestId,
             @RequestBody byte[] rawBody
     ) {
-        var signature = webhookSignature != null ? webhookSignature : abacateSignature;
-        return ResponseEntity.ok(webhookService.handle(rawBody, webhookSecret, signature));
+        var dataId = dottedDataId != null ? dottedDataId : underscoredDataId;
+        return ResponseEntity.ok(webhookService.handle(rawBody, dataId, signature, requestId));
     }
 }

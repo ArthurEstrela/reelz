@@ -58,7 +58,7 @@ public class SecurityConfig {
                                 "/actuator/prometheus"
                         )
                         .permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/webhooks/abacatepay")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/webhooks/mercadopago")
                         .permitAll()
                         .requestMatchers("/api/v1/admin/**")
                         .hasRole("ADMIN")

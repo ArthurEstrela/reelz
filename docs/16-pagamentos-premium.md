@@ -1,6 +1,6 @@
 # Pagamentos e CineGiro Premium
 
-O módulo `billing` integra o CineGiro à API v2 da AbacatePay por uma porta interna (`PaymentGateway`). O restante do produto não conhece detalhes do provedor, permitindo trocar ou adicionar outro gateway sem reescrever as regras de assinatura.
+O módulo `billing` integra o CineGiro às Assinaturas do Mercado Pago por uma porta interna (`PaymentGateway`). O checkout é hospedado pelo Mercado Pago: o CineGiro não recebe nem armazena dados de cartão.
 
 ## Contrato HTTP
 
@@ -8,51 +8,56 @@ O módulo `billing` integra o CineGiro à API v2 da AbacatePay por uma porta int
 - `GET /api/v1/billing/subscription`: estado financeiro da conta autenticada.
 - `POST /api/v1/billing/checkout`: cria ou reutiliza o checkout pendente. Corpo: `{"planCode":"PREMIUM_MONTHLY"}`.
 - `POST /api/v1/billing/subscription/cancel`: cancela imediatamente a assinatura ativa.
-- `POST /api/v1/webhooks/abacatepay`: endpoint público autenticado pelo secret da URL e HMAC do corpo bruto.
+- `POST /api/v1/webhooks/mercadopago`: endpoint público que valida `x-signature` e consulta o recurso diretamente na API do Mercado Pago.
 
-O redirecionamento de sucesso nunca concede Premium. Apenas os eventos `subscription.completed` e `subscription.renewed`, após validação criptográfica e idempotência, atualizam `user_account.plan` e `premium_until`.
+O redirecionamento de sucesso nunca concede Premium. O acesso só é liberado quando o Mercado Pago confirma uma cobrança com status `approved`, moeda `BRL` e valor idêntico ao plano reservado.
 
-## Preparação da AbacatePay
+## Preparação no Mercado Pago
 
-1. Crie no painel/API um produto mensal com `cycle=MONTHLY`, preço de 1290 centavos.
-2. Crie um produto anual com `cycle=ANNUALLY`, preço de 9990 centavos.
-3. Copie apenas os IDs públicos `prod_...` para as variáveis de ambiente.
-4. Gere um secret aleatório para a URL: `openssl rand -hex 32`.
-5. Cadastre o webhook HTTPS: `https://SEU_DOMINIO/api/v1/webhooks/abacatepay?webhookSecret=SEU_SECRET`.
-6. Assine os eventos `subscription.completed`, `subscription.renewed`, `subscription.payment_failed` e `subscription.cancelled`.
-7. Configure a chave HMAC pública informada pela documentação/painel. Ela não é a chave privada da API.
+1. Em **Suas integrações**, crie uma aplicação para o CineGiro e selecione pagamentos online/assinaturas quando solicitado.
+2. Comece com as credenciais de teste. Copie o **Access Token** para `MERCADOPAGO_ACCESS_TOKEN`; a Public Key não é usada neste checkout hospedado.
+3. Em **Webhooks**, configure a URL de teste:
+   `https://SEU_BACKEND/api/v1/webhooks/mercadopago`
+4. Ative os eventos de **Pagamentos** e **Planos e assinaturas**. O backend processa os tópicos `payment`, `subscription_preapproval` e `subscription_authorized_payment`.
+5. Salve e copie a assinatura secreta do webhook para `MERCADOPAGO_WEBHOOK_SECRET`.
+6. Use uma conta compradora de teste diferente da conta vendedora para concluir o checkout.
 
 Variáveis necessárias:
 
 ```dotenv
-ABACATEPAY_ENABLED=true
-ABACATEPAY_API_KEY=abc_...
-ABACATEPAY_WEBHOOK_SECRET=...
-ABACATEPAY_WEBHOOK_HMAC_KEY=...
-ABACATEPAY_MONTHLY_PRODUCT_ID=prod_...
-ABACATEPAY_ANNUAL_PRODUCT_ID=prod_...
-ABACATEPAY_METHODS=CARD
-ABACATEPAY_ACCEPT_DEV_EVENTS=false
+MERCADOPAGO_ENABLED=true
+MERCADOPAGO_ACCESS_TOKEN=TEST-...
+MERCADOPAGO_WEBHOOK_SECRET=...
+MERCADOPAGO_CONNECT_TIMEOUT=PT5S
+MERCADOPAGO_READ_TIMEOUT=PT15S
 REELZ_PREMIUM_MONTHLY_PRICE_CENTS=1290
 REELZ_PREMIUM_ANNUAL_PRICE_CENTS=9990
-PUBLIC_APP_URL=https://seu-dominio
+PUBLIC_APP_URL=https://cinegiro-five.vercel.app
 ```
 
-Para testar eventos de uma conta/chave de desenvolvimento, use `ABACATEPAY_ACCEPT_DEV_EVENTS=true` somente no ambiente de teste. Produção deve permanecer em `false`.
+Depois de validar o fluxo completo, substitua as credenciais de teste pelas credenciais de produção e configure também a URL de produção no Mercado Pago. Nunca misture Access Token de teste com webhook/conta de produção.
 
-## Invariantes de segurança
+## Fluxo e invariantes de segurança
 
-- A chave da API existe somente no backend e nunca usa prefixo `VITE_`.
-- Secret da URL e assinatura HMAC são comparados em tempo constante.
-- O hash SHA-256 do payload é guardado; o payload completo, que pode conter dados pessoais, não é persistido.
-- `provider_event_id` é único, impedindo renovação duplicada em retentativas do webhook.
-- O valor do checkout e o valor confirmado pelo webhook precisam coincidir com a reserva local.
-- Existe no máximo uma assinatura pendente/ativa/inadimplente por usuário.
-- A exclusão da conta é bloqueada enquanto houver checkout ou assinatura em andamento, evitando cobranças órfãs.
-- O cancelamento no provedor acontece antes da remoção local do Premium.
+1. O backend reserva uma assinatura local com um UUID próprio.
+2. Cria um `preapproval` pendente no Mercado Pago, usando esse UUID como `external_reference`.
+3. O frontend redireciona somente para o `init_point` devolvido pelo provedor.
+4. No webhook, a assinatura HMAC é validada usando `data.id`, `x-request-id`, o timestamp e o secret da aplicação.
+5. O payload recebido não é considerado fonte da verdade: o backend busca a assinatura, fatura ou pagamento na API do Mercado Pago.
+6. Cada pagamento/status é idempotente em `payment_webhook_event`, impedindo dupla renovação em retentativas ou tópicos sobrepostos.
+7. Valor e moeda são conferidos antes da ativação ou renovação.
+8. O cancelamento no Mercado Pago acontece antes da remoção local do Premium.
+
+A migração V19 preserva registros históricos da AbacatePay, mas cancela checkouts antigos ainda pendentes. Nenhuma nova cobrança usa o provedor anterior.
 
 ## Teste local
 
-Com pagamentos desativados, a tela `/premium` continua visível e os botões informam que o checkout estará disponível em breve. Isso permite rodar o projeto e o CI sem credenciais externas.
+Com `MERCADOPAGO_ENABLED=false`, a tela `/premium` continua visível, mas os planos ficam indisponíveis para checkout. Para testar pagamentos reais é necessário um backend HTTPS público, pois o Mercado Pago precisa entregar os webhooks.
 
-Para um teste real, exponha o frontend por HTTPS, configure as variáveis acima e use o ambiente de desenvolvimento da AbacatePay. Nunca publique `.env` nem cole a chave privada em issues ou mensagens.
+Ao testar, confira:
+
+- o checkout abre no domínio do Mercado Pago;
+- retornar ao CineGiro não ativa o Premium sozinho;
+- uma cobrança aprovada ativa o plano;
+- reenviar o mesmo webhook não estende o plano novamente;
+- cancelar no CineGiro altera o `preapproval` para `canceled` no provedor.

@@ -1,9 +1,10 @@
 package com.roletadefilmes.billing.service;
 
 import com.roletadefilmes.billing.domain.BillingPlanCode;
+import com.roletadefilmes.billing.domain.BillingProvider;
 import com.roletadefilmes.billing.domain.BillingSubscriptionStatus;
 import com.roletadefilmes.billing.domain.exception.BillingSubscriptionConflictException;
-import com.roletadefilmes.billing.integration.AbacatePayProperties;
+import com.roletadefilmes.billing.integration.MercadoPagoProperties;
 import com.roletadefilmes.billing.persistence.entity.BillingSubscriptionEntity;
 import com.roletadefilmes.billing.persistence.repository.BillingSubscriptionRepository;
 import com.roletadefilmes.user.persistence.entity.UserAccountEntity;
@@ -46,18 +47,13 @@ class BillingServiceTest {
 
     @BeforeEach
     void setUp() {
-        var properties = new AbacatePayProperties(
+        var properties = new MercadoPagoProperties(
                 true,
-                "abc_dev_key",
+                "TEST-access-token",
                 "webhook-secret",
-                "hmac-key",
-                "prod_monthly",
-                "prod_annual",
                 1290,
                 9990,
                 "https://cinegiro.app",
-                List.of("CARD"),
-                true,
                 Duration.ofSeconds(5),
                 Duration.ofSeconds(15)
         );
@@ -84,26 +80,34 @@ class BillingServiceTest {
             return entity;
         });
         when(paymentGateway.createSubscriptionCheckout(any())).thenReturn(
-                new PaymentGateway.CheckoutResult("bill_123", "https://pay.example/bill_123", 1290)
+                new PaymentGateway.CheckoutResult(
+                        "preapproval_123",
+                        "preapproval_123",
+                        "https://pay.example/preapproval_123",
+                        1290
+                )
         );
 
         var response = service.createCheckout(userId, BillingPlanCode.PREMIUM_MONTHLY);
 
-        assertThat(response.checkoutUrl()).isEqualTo("https://pay.example/bill_123");
+        assertThat(response.checkoutUrl()).isEqualTo("https://pay.example/preapproval_123");
         assertThat(response.reused()).isFalse();
         var command = org.mockito.ArgumentCaptor.forClass(PaymentGateway.CheckoutCommand.class);
         verify(paymentGateway).createSubscriptionCheckout(command.capture());
         assertThat(command.getValue().externalId()).isEqualTo(subscriptionId.toString());
-        assertThat(command.getValue().productId()).isEqualTo("prod_monthly");
-        assertThat(command.getValue().metadata()).containsEntry("reelzUserId", userId.toString());
+        assertThat(command.getValue().payerEmail()).isEqualTo("billing@cinegiro.app");
+        assertThat(command.getValue().amountCents()).isEqualTo(1290);
+        assertThat(command.getValue().frequencyInMonths()).isEqualTo(1);
     }
 
     @Test
     void shouldReuseThePendingCheckoutWithoutCreatingASecondCharge() {
         var userId = UUID.randomUUID();
         var user = newUser();
-        var pending = new BillingSubscriptionEntity(user, BillingPlanCode.PREMIUM_MONTHLY, 1290);
-        pending.attachCheckout("bill_existing", "https://pay.example/existing");
+        var pending = new BillingSubscriptionEntity(
+                user, BillingProvider.MERCADO_PAGO, BillingPlanCode.PREMIUM_MONTHLY, 1290
+        );
+        pending.attachCheckout("preapproval_existing", "preapproval_existing", "https://pay.example/existing");
         when(userRepository.findByIdForUpdate(userId)).thenReturn(Optional.of(user));
         when(subscriptionRepository.findFirstByUserIdAndStatusInOrderByCreatedAtDesc(any(), any()))
                 .thenReturn(Optional.of(pending));
@@ -133,7 +137,9 @@ class BillingServiceTest {
         var userId = UUID.randomUUID();
         var user = newUser();
         user.activatePremium(NOW.plusSeconds(3_600));
-        var subscription = new BillingSubscriptionEntity(user, BillingPlanCode.PREMIUM_MONTHLY, 1290);
+        var subscription = new BillingSubscriptionEntity(
+                user, BillingProvider.MERCADO_PAGO, BillingPlanCode.PREMIUM_MONTHLY, 1290
+        );
         subscription.activate("subs_123", "CARD", NOW.minusSeconds(60), NOW.plusSeconds(3_600));
         when(userRepository.findByIdForUpdate(userId)).thenReturn(Optional.of(user));
         when(subscriptionRepository.findFirstByUserIdAndStatusInOrderByCreatedAtDesc(
